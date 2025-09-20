@@ -94,7 +94,7 @@ def import_location_content(cursor, file_path):
     
     total_rows = 0
     for chunk in pd.read_csv(file_path, chunksize=chunk_size):
-        chunk = chunk.where(pd.notnull(chunk), None) # Replace NaN with None for SQL NULL
+        chunk = chunk.where(pd.notnull(chunk), None) 
         
         rows_in_chunk = 0
         for _, row in chunk.iterrows():
