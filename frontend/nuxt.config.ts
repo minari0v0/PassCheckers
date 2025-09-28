@@ -18,9 +18,10 @@ export default defineNuxtConfig({
   vite: {
     server: {
       hmr: {
+        host: '0.0.0.0',
         port: 80
       },
-      host: '0.0.0.0',
+      
       allowedHosts: [
         'passcheckers.kro.kr',
         'localhost',
