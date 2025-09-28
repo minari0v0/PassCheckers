@@ -17,7 +17,6 @@ except Exception as e:
     GEMINI_API_KEY = None
 
 # Gemini 모델에게 역할을 부여하고, 응답 규칙을 정의하는 시스템 프롬프트입니다.
-# Gemini 모델에게 역할을 부여하고, 응답 규칙을 정의하는 시스템 프롬프트입니다.
 SYSTEM_PROMPT = """
 You are a specialized AI assistant for a luggage inspection application. Your primary role is to provide accurate baggage regulations and REALISTIC weight estimations for items.
 

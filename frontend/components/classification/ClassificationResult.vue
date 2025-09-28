@@ -411,7 +411,7 @@ const detectionResults = ref([])
 const imageContainerRef = ref(null)
 const hoveredIndex = ref(null)
 const originalImageSize = ref({ width: 1, height: 1 });
-const expandedIndex = ref(null); // For accordion
+const expandedIndex = ref(null); // 아코디언용
 const isImageLoaded = ref(false);
 
 // 토스트 상태
@@ -446,15 +446,15 @@ const calculateBoxStyleForMain = (bbox, containerEl) => {
   const imgEl = containerEl.querySelector('img');
   if (!imgEl) return { display: 'none' };
 
-  // Get rendered dimensions of the image
+  // 이미지의 렌더링된 크기 가져오기
   const displayedWidth = imgEl.clientWidth;
   const displayedHeight = imgEl.clientHeight;
 
-  // Get position of image and container relative to viewport
+  // 뷰포트에 상대적인 이미지와 컨테이너의 위치 가져오기
   const imgRect = imgEl.getBoundingClientRect();
   const containerRect = containerEl.getBoundingClientRect();
 
-  // Calculate the offset of the image relative to the container
+  // 컨테이너에 상대적인 이미지의 오프셋 계산
   const offsetX = imgRect.left - containerRect.left;
   const offsetY = imgRect.top - containerRect.top;
 
@@ -575,7 +575,6 @@ const confirmItemEdit = (item) => {
     return;
   }
   item.isEditing = false;
-  // item.originalName = item.name_ko; // This is the bug. Do not update originalName here.
 }
 
 const startRedrawBbox = (item, index) => {
@@ -949,8 +948,8 @@ let resizeTimeout;
 const handleResize = () => {
   clearTimeout(resizeTimeout);
   resizeTimeout = setTimeout(() => {
-    // Re-calculate BBoxes on resize
-    // This is a placeholder for a potential future improvement if needed
+    // 크기 조정 시 BBox 재계산
+    // 필요시 향후 개선을 위한 플레이스홀더
   }, 150);
 }
 

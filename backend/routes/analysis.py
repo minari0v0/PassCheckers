@@ -66,7 +66,7 @@ def save_analysis_results():
                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
                 """)
 
-                # Schema migration: destination 컬럼이 없는 경우 추가
+                # 스키마 마이그레이션: destination 컬럼이 없는 경우 추가
                 db_name = conn.db.decode() if isinstance(conn.db, bytes) else conn.db
                 cursor.execute("""
                     SELECT COUNT(*) as cnt
@@ -79,7 +79,7 @@ def save_analysis_results():
                     cursor.execute("ALTER TABLE analysis_results ADD COLUMN destination VARCHAR(100) NULL")
                     print("[DB MIGRATION] 'destination' column added to 'analysis_results' table.")
 
-                # Schema migration: analysis_items에 weight 관련 컬럼이 없는 경우 위치를 지정하여 추가
+                # 스키마 마이그레이션: analysis_items에 weight 관련 컬럼이 없는 경우 위치를 지정하여 추가
                 # predicted_weight_value 컬럼 존재 여부를 기준으로 한 번만 체크합니다.
                 cursor.execute("""
                     SELECT COUNT(*) as cnt

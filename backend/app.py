@@ -26,7 +26,7 @@ jwt = JWTManager(app)
 # CORS 설정
 CORS(app, origins=Config.CORS_ORIGINS, supports_credentials=True)
 
-# Blueprint 등록
+# 블루프린트 등록
 app.register_blueprint(classify_bp)
 app.register_blueprint(items_bp)
 app.register_blueprint(analysis_bp)
@@ -133,7 +133,7 @@ def init_db():
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     """)
 
-    # Schema migration: items 테이블에 category 컬럼이 없는 경우 추가
+    # 스키마 마이그레이션: items 테이블에 category 컬럼이 없는 경우 추가
     db_name = conn.db.decode() if isinstance(conn.db, bytes) else conn.db
     cursor.execute("""
         SELECT COUNT(*) as cnt
