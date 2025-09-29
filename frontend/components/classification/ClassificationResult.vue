@@ -357,13 +357,54 @@ const saveChanges = async () => {
 
     isSaving.value = true;
     try {
-        const itemsToAdd = itemsInEditor.value.filter(item => item.isNew && item.isConfirmed && !item.isDeleted && item.name_ko && item.bbox);
-        const itemsToDelete = itemsInEditor.value.filter(item => !item.isNew && item.isDeleted);
-        const itemsToUpdate = itemsInEditor.value.filter(item => 
-          !item.isNew && 
-          !item.isDeleted && 
-          (item.name_ko !== item.originalName || JSON.stringify(item.bbox) !== JSON.stringify(detectionResults.value.find(d => d.item_id === item.item_id)?.bbox))
-        );
+        // 원본 탐지 결과와 현재 에디터 상태 비교
+        const originalItems = detectionResults.value
+        const currentItems = itemsInEditor.filter(item => !item.isDeleted) // 삭제되지 않은 아이템들만
+        
+        console.log('=== 비교 분석 ===')
+        console.log('원본 아이템 수:', originalItems.length)
+        console.log('현재 아이템 수:', currentItems.length)
+        
+        // 1. 추가된 아이템 찾기 (원본에 없고 현재에 있는 것)
+        const itemsToAdd = currentItems.filter(current => {
+          // item_id가 없으면 새로 추가된 아이템 (원본에 없음)
+          const isNewItem = !current.item_id && current.isConfirmed && current.name_ko && current.bbox
+          if (!current.item_id) {
+            console.log(`새 아이템 체크 - ${current.name_ko}:`, {
+              hasItemId: !!current.item_id,
+              isConfirmed: current.isConfirmed,
+              hasName: !!current.name_ko,
+              hasBbox: !!current.bbox,
+              결과: isNewItem
+            })
+          }
+          return isNewItem
+        })
+        
+        // 2. 삭제된 아이템 찾기 (원본에 있고 현재에 없는 것)
+        const itemsToDelete = originalItems.filter(original => 
+          !currentItems.some(current => current.item_id === original.item_id)
+        )
+        
+        // 3. 수정된 아이템 찾기 (원본에 있고 현재에도 있지만 내용이 다른 것)
+        const itemsToUpdate = []
+        originalItems.forEach(original => {
+          const current = currentItems.find(c => c.item_id === original.item_id)
+          console.log(`비교 중 - 원본: ${original.name_ko} (${original.item_id}), 현재: ${current?.name_ko || '없음'}`)
+          if (current) {
+            const nameChanged = current.name_ko !== original.name_ko
+            const bboxChanged = JSON.stringify(current.bbox) !== JSON.stringify(original.bbox)
+            console.log(`  이름 변경: ${nameChanged}, 위치 변경: ${bboxChanged}`)
+            if (nameChanged || bboxChanged) {
+              itemsToUpdate.push(current)
+              console.log(`  -> 수정 대상에 추가`)
+            }
+          }
+        })
+
+        console.log('추가할 아이템:', itemsToAdd.length)
+        console.log('삭제할 아이템:', itemsToDelete.length) 
+        console.log('수정할 아이템:', itemsToUpdate.length)
 
         if (itemsToAdd.length === 0 && itemsToDelete.length === 0 && itemsToUpdate.length === 0) {
             $q.notify({ message: '변경 사항이 없습니다.', color: 'info' });
