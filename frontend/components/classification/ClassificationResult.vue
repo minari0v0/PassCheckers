@@ -906,4 +906,304 @@ onUnmounted(() => {
 .action-btn--undo::after {
   background: #ed6c02;
 }
+
+/* 액션 버튼 스타일 */
+.action-button {
+  border-radius: 20px !important;
+  padding: 12px 24px !important;
+  font-weight: 600 !important;
+  transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease !important;
+  text-transform: none !important;
+  font-size: 14px !important;
+}
+
+/* 기본 버튼 스타일 - 최대 특이성을 가진 파란색 그라데이션 */
+.q-btn.action-button.action-button--primary,
+.q-btn.action-button--primary,
+button.q-btn.action-button--primary {
+  background: linear-gradient(135deg, #1976d2 0%, #42a5f5 50%, #1976d2 100%) !important;
+  background-color: #1976d2 !important;
+  background-image: linear-gradient(135deg, #1976d2 0%, #42a5f5 50%, #1976d2 100%) !important;
+  color: white !important;
+  border: 2px solid #1976d2 !important;
+  transition: background 0.3s ease, background-image 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease !important;
+}
+
+.q-btn.action-button.action-button--primary:hover,
+.q-btn.action-button--primary:hover,
+button.q-btn.action-button--primary:hover,
+.q-btn.action-button.action-button--primary.q-btn--hover,
+.q-btn.action-button--primary.q-btn--hover {
+  background: linear-gradient(135deg, #1565c0 0%, #1e88e5 50%, #1565c0 100%) !important;
+  background-color: #1565c0 !important;
+  background-image: linear-gradient(135deg, #1565c0 0%, #1e88e5 50%, #1565c0 100%) !important;
+  border-color: #1565c0 !important;
+  color: white !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3) !important;
+}
+
+/* 파란색 그라데이션으로 모든 Quasar 스타일 강제 오버라이드 */
+div .q-btn.action-button--primary,
+div button.q-btn.action-button--primary {
+  background: linear-gradient(135deg, #1976d2 0%, #42a5f5 50%, #1976d2 100%) !important;
+  background-color: #1976d2 !important;
+  background-image: linear-gradient(135deg, #1976d2 0%, #42a5f5 50%, #1976d2 100%) !important;
+}
+
+div .q-btn.action-button--primary:hover,
+div button.q-btn.action-button--primary:hover {
+  background: linear-gradient(135deg, #1565c0 0%, #1e88e5 50%, #1565c0 100%) !important;
+  background-color: #1565c0 !important;
+  background-image: linear-gradient(135deg, #1565c0 0%, #1e88e5 50%, #1565c0 100%) !important;
+}
+
+/* 모든 Quasar 기본 색상 그라데이션 오버라이드 */
+.q-btn.bg-primary,
+.q-btn[class*="bg-primary"],
+.q-btn[style*="gradient"],
+.q-btn[style*="background"] {
+  background: linear-gradient(135deg, #1976d2 0%, #42a5f5 50%, #1976d2 100%) !important;
+  background-color: #1976d2 !important;
+  background-image: linear-gradient(135deg, #1976d2 0%, #42a5f5 50%, #1976d2 100%) !important;
+}
+
+/* Quasar 프레임워크를 위한 추가 특이성 */
+.q-btn.action-button--primary.bg-primary,
+.q-btn.action-button--primary[data-color="primary"] {
+  background: linear-gradient(135deg, #1976d2 0%, #42a5f5 50%, #1976d2 100%) !important;
+  background-image: linear-gradient(135deg, #1976d2 0%, #42a5f5 50%, #1976d2 100%) !important;
+  transition: background 0.3s ease, background-image 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease !important;
+}
+
+/* 기본 버튼을 위한 전역 main.css 및 theme.css 스타일 오버라이드 */
+div .q-btn.action-button--primary {
+  background: linear-gradient(135deg, #1976d2 0%, #42a5f5 50%, #1976d2 100%) !important;
+  background-image: linear-gradient(135deg, #1976d2 0%, #42a5f5 50%, #1976d2 100%) !important;
+  opacity: 1 !important;
+  display: inline-flex !important;
+}
+
+/* 기본 버튼을 위한 전역 ::after 의사 요소 비활성화 */
+div .q-btn.action-button--primary::after,
+.q-btn.action-button--primary::after {
+  display: none !important;
+}
+
+div .q-btn.action-button--primary:hover::after,
+.q-btn.action-button--primary:hover::after {
+  display: none !important;
+}
+
+/* 기본 버튼을 위한 모든 전역 버튼 스타일 강제 오버라이드 */
+.q-btn.action-button--primary {
+  background: linear-gradient(135deg, #1976d2 0%, #42a5f5 50%, #1976d2 100%) !important;
+  background-image: linear-gradient(135deg, #1976d2 0%, #42a5f5 50%, #1976d2 100%) !important;
+  color: white !important;
+  border: 2px solid #1976d2 !important;
+  border-radius: 20px !important;
+  padding: 12px 24px !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  text-transform: none !important;
+  min-height: auto !important;
+  height: auto !important;
+  min-width: auto !important;
+  width: auto !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+  overflow: visible !important;
+}
+
+/* 최대 특이성을 가진 긍정적 버튼 스타일 - 초록색 그라데이션 */
+.q-btn.action-button.action-button--positive,
+.q-btn.action-button--positive,
+button.q-btn.action-button--positive {
+  background: linear-gradient(135deg, #4caf50 0%, #66bb6a 50%, #4caf50 100%) !important;
+  background-color: #4caf50 !important;
+  background-image: linear-gradient(135deg, #4caf50 0%, #66bb6a 50%, #4caf50 100%) !important;
+  color: white !important;
+  border: 2px solid #4caf50 !important;
+  transition: background 0.3s ease, background-image 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease !important;
+}
+
+.q-btn.action-button.action-button--positive:hover,
+.q-btn.action-button--positive:hover,
+button.q-btn.action-button--positive:hover,
+.q-btn.action-button.action-button--positive.q-btn--hover,
+.q-btn.action-button--positive.q-btn--hover {
+  background: linear-gradient(135deg, #45a049 0%, #5cb85c 50%, #45a049 100%) !important;
+  background-color: #45a049 !important;
+  background-image: linear-gradient(135deg, #45a049 0%, #5cb85c 50%, #45a049 100%) !important;
+  border-color: #45a049 !important;
+  color: white !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3) !important;
+}
+
+/* 초록색 그라데이션으로 모든 Quasar 스타일 강제 오버라이드 */
+div .q-btn.action-button--positive,
+div button.q-btn.action-button--positive {
+  background: linear-gradient(135deg, #4caf50 0%, #66bb6a 50%, #4caf50 100%) !important;
+  background-color: #4caf50 !important;
+  background-image: linear-gradient(135deg, #4caf50 0%, #66bb6a 50%, #4caf50 100%) !important;
+}
+
+div .q-btn.action-button--positive:hover,
+div button.q-btn.action-button--positive:hover {
+  background: linear-gradient(135deg, #45a049 0%, #5cb85c 50%, #45a049 100%) !important;
+  background-color: #45a049 !important;
+  background-image: linear-gradient(135deg, #45a049 0%, #5cb85c 50%, #45a049 100%) !important;
+}
+
+/* 우리의 초록색 그라데이션으로 모든 Quasar 긍정적 색상 그라데이션 오버라이드 */
+.q-btn.bg-positive,
+.q-btn[class*="bg-positive"],
+.q-btn[style*="gradient"],
+.q-btn[style*="background"] {
+  background: linear-gradient(135deg, #4caf50 0%, #66bb6a 50%, #4caf50 100%) !important;
+  background-color: #4caf50 !important;
+  background-image: linear-gradient(135deg, #4caf50 0%, #66bb6a 50%, #4caf50 100%) !important;
+}
+
+/* Quasar 프레임워크를 위한 추가 특이성 */
+.q-btn.action-button--positive.bg-positive,
+.q-btn.action-button--positive[data-color="positive"] {
+  background: linear-gradient(135deg, #4caf50 0%, #66bb6a 50%, #4caf50 100%) !important;
+  background-image: linear-gradient(135deg, #4caf50 0%, #66bb6a 50%, #4caf50 100%) !important;
+  transition: background 0.3s ease, background-image 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease !important;
+}
+
+/* Quasar의 기본 전환 효과 비활성화 및 전역 스타일 오버라이드 */
+.q-btn.action-button--positive,
+.q-btn.action-button--positive * {
+  transition: background 0.3s ease, background-image 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease !important;
+}
+
+.q-btn.action-button--positive .q-btn__content {
+  transition: none !important;
+}
+
+/* 전역 main.css 및 theme.css 스타일 오버라이드 */
+div .q-btn.action-button--positive {
+  background: linear-gradient(135deg, #4caf50 0%, #66bb6a 50%, #4caf50 100%) !important;
+  background-image: linear-gradient(135deg, #4caf50 0%, #66bb6a 50%, #4caf50 100%) !important;
+  opacity: 1 !important;
+  display: inline-flex !important;
+}
+
+/* 전역 ::after 의사 요소 비활성화 */
+div .q-btn.action-button--positive::after,
+.q-btn.action-button--positive::after {
+  display: none !important;
+}
+
+div .q-btn.action-button--positive:hover::after,
+.q-btn.action-button--positive:hover::after {
+  display: none !important;
+}
+
+/* 모든 전역 버튼 스타일 강제 오버라이드 */
+.q-btn.action-button--positive {
+  background: linear-gradient(135deg, #4caf50 0%, #66bb6a 50%, #4caf50 100%) !important;
+  background-image: linear-gradient(135deg, #4caf50 0%, #66bb6a 50%, #4caf50 100%) !important;
+  color: white !important;
+  border: 2px solid #4caf50 !important;
+  border-radius: 20px !important;
+  padding: 12px 24px !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  text-transform: none !important;
+  min-height: auto !important;
+  height: auto !important;
+  min-width: auto !important;
+  width: auto !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+  overflow: visible !important;
+}
+
+.q-btn.action-button--positive:disabled {
+  background-color: #a5d6a7 !important;
+  border-color: #a5d6a7 !important;
+  color: white !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* 아이템 편집 버튼 - 최대 특이성을 가진 둥근 스타일 */
+.q-btn.edit-items-btn,
+.q-btn.edit-items-btn.q-btn--flat,
+button.q-btn.edit-items-btn {
+  border-radius: 50px !important;
+  padding: 8px 16px !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  font-size: 13px !important;
+  background-color: #1976d2 !important;
+  color: white !important;
+  border: 2px solid #1976d2 !important;
+  transition: background-color 0.3s ease, border-color 0.3s ease !important;
+  min-height: auto !important;
+  height: auto !important;
+  min-width: auto !important;
+  width: auto !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+  overflow: visible !important;
+}
+
+.q-btn.edit-items-btn:hover,
+.q-btn.edit-items-btn.q-btn--flat:hover,
+button.q-btn.edit-items-btn:hover,
+.q-btn.edit-items-btn.q-btn--hover,
+.q-btn.edit-items-btn.q-btn--flat.q-btn--hover {
+  background-color: #87ceeb !important;
+  border-color: #87ceeb !important;
+  color: white !important;
+}
+
+/* 모든 Quasar 스타일 강제 오버라이드 */
+div .q-btn.edit-items-btn,
+div button.q-btn.edit-items-btn {
+  background-color: #1976d2 !important;
+  border-color: #1976d2 !important;
+  color: white !important;
+}
+
+div .q-btn.edit-items-btn:hover,
+div button.q-btn.edit-items-btn:hover {
+  background-color: #87ceeb !important;
+  border-color: #87ceeb !important;
+  color: white !important;
+}
+
+/* 전역 main.css 및 theme.css 스타일 오버라이드 */
+div .q-btn.edit-items-btn {
+  background-color: #1976d2 !important;
+  opacity: 1 !important;
+  display: inline-flex !important;
+}
+
+/* 전역 ::after 의사 요소 비활성화 */
+div .q-btn.edit-items-btn::after,
+.q-btn.edit-items-btn::after {
+  display: none !important;
+}
+
+div .q-btn.edit-items-btn:hover::after,
+.q-btn.edit-items-btn:hover::after {
+  display: none !important;
+}
+
+/* 모든 Quasar 버튼 스타일 오버라이드 */
+.q-btn.edit-items-btn[class*="bg-"],
+.q-btn.edit-items-btn[style*="background"] {
+  background-color: #1976d2 !important;
+}
+
+.q-btn.edit-items-btn[class*="bg-"]:hover,
+.q-btn.edit-items-btn[style*="background"]:hover {
+  background-color: #87ceeb !important;
+}
 </style>
