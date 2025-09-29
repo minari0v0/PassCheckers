@@ -55,38 +55,6 @@
               </div>
             </q-card>
 
-            <!-- 여행지 입력 UI -->
-            <div class="column items-center q-mt-md" style="min-height: 60px;">
-              <transition
-                appear
-                enter-active-class="animated fadeIn"
-                leave-active-class="animated fadeOut"
-                @after-leave="isSaveButtonVisible = true"
-              >
-                <div v-if="showDestinationInput" class="row items-center q-gutter-md">
-                  <q-input
-                    v-model="destination"
-                    label="여행지 입력"
-                    outlined
-                    dense
-                    autofocus
-                    @keyup.enter="saveAnalysisResults"
-                  />
-                  <q-btn 
-                    label="저장" 
-                    color="positive"
-                    @click="saveAnalysisResults"
-                    :loading="isSavingResults"
-                  />
-                  <q-btn 
-                    label="취소" 
-                    color="grey-7"
-                    flat
-                    @click="showDestinationInput = false"
-                  />
-                </div>
-              </transition>
-            </div>
 
             
 
