@@ -478,57 +478,6 @@ const saveChanges = async () => {
     }
 };
 
-const handleNewValue = (inputValue, doneFn) => {
-  if (inputValue.length > 0) {
-    if (!autocompleteSuggestions.value.some(s => s.toLowerCase() === inputValue.toLowerCase())) {
-      doneFn(inputValue, 'add-unique');
-    }
-  }
-}
-
-const onSelectBlur = (evt, item) => {
-  if (evt.target && evt.target.value === '') {
-    item.name_ko = '';
-  }
-};
-
-const resolveItem = (item) => {
-  if (!item || !item.name_ko) {
-    $q.notify({ message: '물품명을 입력하거나 선택해주세요.', color: 'warning' });
-    return;
-  }
-  
-  item.isConfirmed = true;
-  
-  $q.notify({
-    message: `'${item.name_ko}'(으)로 확정되었습니다. 이제 위치를 지정해주세요.`,
-    color: 'info',
-    icon: 'edit_location',
-    timeout: 2000
-  });
-};
-
-const handleEnterKey = async (event, index) => {
-  const selectComponent = searchSelectRefs.value[index];
-  const currentInputValue = event.target.value;
-
-  if (selectComponent && currentInputValue) {
-    try {
-            const response = await fetch(`http://${window.location.hostname}:5001/api/items/autocomplete?q=${currentInputValue}`);
-      if (!response.ok) throw new Error('Network response was not ok');
-      
-      const suggestions = await response.json();
-      autocompleteSuggestions.value = suggestions;
-      
-      selectComponent.showPopup();
-
-    } catch (error) {
-      console.error('Error fetching autocomplete suggestions on enter:', error);
-      autocompleteSuggestions.value = [];
-      selectComponent.showPopup();
-    }
-  }
-};
 
 const onImageLoad = () => {
   isImageLoaded.value = true;
