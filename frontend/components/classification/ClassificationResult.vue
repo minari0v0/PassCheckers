@@ -681,19 +681,20 @@ const selectNewImage = () => {
   }, 300) // 0.3초 후 이동
 }
 
+// 저장 다이얼로그 표시 함수
+const openSaveDialog = () => {
+  showSaveDialog.value = true;
+}
+
+// 저장 다이얼로그 취소 함수
+const cancelSaveDialog = () => {
+  showSaveDialog.value = false;
+}
+
 // 분석 결과 저장 함수
 const saveAnalysisResults = async () => {
   if (isSavingResults.value) return;
 
-  if (!destination.value) {
-    $q.notify({
-      type: 'warning',
-      message: '여행지를 입력해주세요.',
-      position: 'top'
-    });
-    return;
-  }
-  
   isSavingResults.value = true;
   
   try {
