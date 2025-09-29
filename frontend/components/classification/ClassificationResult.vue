@@ -185,6 +185,15 @@
       redirect-to="/"
     />
 
+    <!-- 저장용 토스트 컴포넌트 -->
+    <SaveAnalysisToast 
+      :show="showSaveDialog"
+      :is-saving="isSavingResults"
+      @save="handleSaveAnalysis"
+      @cancel="cancelSaveDialog"
+      @update:show="(value) => showSaveDialog = value"
+    />
+
   </div>
 </template>
 
