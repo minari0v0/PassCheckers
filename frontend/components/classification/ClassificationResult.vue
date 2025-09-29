@@ -39,7 +39,7 @@
                 />
                 
 
-                <!-- Bounding Box 표시 시작 -->
+                <!-- 바운딩 박스 표시 시작 -->
                 <template v-if="isImageLoaded">
                   <div
                     v-for="(item, index) in detectionResults"
@@ -50,7 +50,7 @@
                     <div class="box-label">{{ item.name_ko }}</div>
                   </div>
                 </template>
-                <!-- Bounding Box 표시 끝 -->
+                <!-- 바운딩 박스 표시 끝 -->
 
               </div>
             </q-card>
@@ -77,7 +77,7 @@
               <div v-else class="column" style="height:100%;">
                 <q-card-section class="row items-center justify-between q-py-sm">
                   <div class="text-weight-bold">탐지된 물품 목록</div>
-                  <q-btn icon="edit" label="물품 수정/추가" flat dense @click="openEditModal" />
+                  <q-btn icon="edit" label="물품 수정/추가" flat dense class="edit-items-btn" @click="openEditModal" />
                 </q-card-section>
                 <q-separator />
                 <q-scroll-area style="height: 350px;" class="col">
@@ -147,6 +147,7 @@
         label="다른 이미지 선택" 
         color="primary" 
         outline
+        class="action-button action-button--primary"
         @click="selectNewImage"
       />
       <transition
@@ -158,8 +159,8 @@
           v-if="isSaveButtonVisible"
           icon="save" 
           label="분석 결과 저장" 
-          color="positive"
-          @click="isSaveButtonVisible = false; showDestinationInput = true"
+          class="action-button action-button--positive"
+          @click="openSaveDialog"
           :disable="isSavingResults"
         />
       </transition>
@@ -198,10 +199,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, computed, nextTick, onBeforeUpdate } from 'vue'
+import { ref, onMounted, onUnmounted, computed, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import ClassificationToast from './ClassificationToast.vue'
+import SaveAnalysisToast from './SaveAnalysisToast.vue'
+import EditItemsModal from './EditItemsModal.vue'
 import { useAuth } from '~/composables/useAuth'
 
 const $q = useQuasar()
@@ -226,27 +229,15 @@ const showToast = ref(false)
 const toastTitle = ref('')
 const toastMessage = ref('')
 
-// --- Editor Modal State ---
+// --- 에디터 모달 상태 ---
 const showEditModal = ref(false)
-const itemsInEditor = ref([])
-const autocompleteSuggestions = ref([])
-const editorImageContainer = ref(null)
-const editorHoveredIndex = ref(null)
-const searchSelectRefs = ref([]);
 
-// --- BBox Drawing State ---
-const isDrawing = ref(false)
-const drawStartPoint = ref({ x: 0, y: 0 })
-const drawingRect = ref({ x: 0, y: 0, width: 0, height: 0 })
-const activeDrawIndex = ref(null)
-
-// --- Destination State ---
-const showDestinationInput = ref(false)
-const destination = ref('')
+// --- 저장 다이얼로그 상태 ---
+const showSaveDialog = ref(false)
 const isSaveButtonVisible = ref(true)
 
 
-// BBox 스타일 계산 로직을 공통 함수로 추출
+// 바운딩 박스 스타일 계산 로직을 공통 함수로 추출
 const calculateBoxStyleForMain = (bbox, containerEl) => {
   if (!bbox || !containerEl) return { display: 'none' };
 
@@ -352,7 +343,10 @@ const openEditModal = async () => {
 }
 
 
-const saveChanges = async () => {
+const handleEditItemsSave = async (itemsInEditor) => {
+    console.log('=== 저장 버튼 클릭됨 ===')
+    console.log('ClassificationResult handleEditItemsSave called', itemsInEditor)
+    console.log('현재 detectionResults:', detectionResults.value)
     if (isSaving.value) return;
 
     isSaving.value = true;
@@ -444,6 +438,7 @@ const saveChanges = async () => {
                 throw new Error(errorData.error || '수정 중 오류가 발생했습니다.');
             }
             currentResults = await response.json();
+            console.log('UPDATE API 응답:', currentResults);
         }
 
         // 2. 삭제 API 순차적 호출
@@ -463,6 +458,7 @@ const saveChanges = async () => {
                 throw new Error(errorData.error || '삭제 중 오류가 발생했습니다.');
             }
             currentResults = await response.json();
+            console.log('DELETE API 응답:', currentResults);
         }
 
         // 3. 추가 API 순차적 호출
@@ -493,9 +489,11 @@ const saveChanges = async () => {
                 throw new Error(errorData.error || '추가 중 오류가 발생했습니다.');
             }
             currentResults = await response.json();
+            console.log('ADD API 응답:', currentResults);
         }
 
         // 최종 결과로 UI 업데이트
+        console.log('API 응답 받은 데이터:', currentResults)
         detectionResults.value = currentResults.map(item => {
           if (item.bbox && originalImageSize.value.width > 1) {
             const [x_min, y_min, x_max, y_max] = item.bbox;
@@ -508,6 +506,7 @@ const saveChanges = async () => {
           return item;
         });
 
+        console.log('업데이트된 detectionResults:', detectionResults.value)
         $q.notify({ message: '성공적으로 저장되었습니다.', color: 'positive', icon: 'check' });
 
     } catch (error) {
@@ -615,14 +614,11 @@ let resizeTimeout;
 const handleResize = () => {
   clearTimeout(resizeTimeout);
   resizeTimeout = setTimeout(() => {
-    // 크기 조정 시 BBox 재계산
+    // 크기 조정 시 바운딩 박스 재계산
     // 필요시 향후 개선을 위한 플레이스홀더
   }, 150);
 }
 
-onBeforeUpdate(() => {
-  searchSelectRefs.value = [];
-});
 
 onMounted(() => {
   const resultsData = route.query.results ? JSON.parse(route.query.results) : null;
@@ -692,7 +688,7 @@ const cancelSaveDialog = () => {
 }
 
 // 분석 결과 저장 함수
-const saveAnalysisResults = async () => {
+const handleSaveAnalysis = async (analysisName) => {
   if (isSavingResults.value) return;
 
   isSavingResults.value = true;
@@ -727,7 +723,7 @@ const saveAnalysisResults = async () => {
       })),
       total_items: detectionResults.value.length,
       analysis_date: new Date().toISOString(),
-      destination: destination.value
+      destination: analysisName
     };
 
     const response = await fetch('http://' + window.location.hostname + ':5001/api/analysis/save', {
@@ -750,8 +746,7 @@ const saveAnalysisResults = async () => {
     toastMessage.value = `분석 결과가 성공적으로 저장되었습니다. (총 ${detectionResults.value.length}개 물품)`
     showToast.value = true
     
-    showDestinationInput.value = false;
-    destination.value = '';
+    showSaveDialog.value = false;
 
   } catch (error) {
     console.error('Error saving analysis results:', error);
@@ -834,7 +829,7 @@ onUnmounted(() => {
   color: #0288d1;
 }
 
-/* Action Button Styles in Modal */
+/* 모달 내부 액션 버튼 스타일 설정 */
 .action-btn {
   position: relative;
   overflow: hidden;
@@ -863,7 +858,7 @@ onUnmounted(() => {
   z-index: 2;
 }
 
-/* Edit & Location */
+/* 편집 및 위치 */
 .action-btn--edit, .action-btn--location {
   color: #1976d2;
 }
@@ -874,7 +869,7 @@ onUnmounted(() => {
   background: #1976d2;
 }
 
-/* Confirm */
+/* 확인 */
 .action-btn--confirm {
   color: #2e7d32;
 }
@@ -885,7 +880,7 @@ onUnmounted(() => {
   background: #2e7d32;
 }
 
-/* Cancel & Delete */
+/* 취소 및 삭제 */
 .action-btn--cancel, .action-btn--delete {
   color: #d32f2f;
 }
@@ -896,7 +891,7 @@ onUnmounted(() => {
   background: #d32f2f;
 }
 
-/* Undo */
+/* 실행 취소 */
 .action-btn--undo {
   color: #ed6c02;
 }
