@@ -104,10 +104,10 @@ const menu = [
   { label: '수하물 분류', path: '/classification' },
   { label: '수하물 무게 예측', path: '/weight' },
   { label: '수하물 패킹', path: '/packing' },
-  { label: '커뮤니티', path: '/community' },
-  { label: '여행 추천', path: '/recommend' },
+  { label: '수하물 공유', path: '/share' },
   { label: '여행 정보', path: '/info' },
-  { label: '공유', path: '/share' },
+  { label: '여행 추천', path: '/recommend' },
+  { label: '커뮤니티', path: '/community' }
 ]
 
 const route = useRoute()
