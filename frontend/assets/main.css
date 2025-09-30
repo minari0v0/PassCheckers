@@ -151,15 +151,15 @@ p {
   color: #fff !important;
 } 
 
-/* Custom styles for season buttons in weight.vue */
+/* weight.vue 페이지의 계절 버튼 커스텀 스타일 */
 .season-btn {
   border-radius: 16px !important;
   border: 1px solid #e0e0e0 !important;
   background: #fff !important;
 }
 
-/* --- HOVER STATE --- */
-/* Override the hover text color */
+/* --- 호버 상태 --- */
+/* 호버 시 텍스트 색상 오버라이드 */
 .season-btn.summer:hover {
   color: #D32F2F !important;
 }
@@ -170,19 +170,19 @@ p {
   color: #0288D1 !important;
 }
 
-/* Override the hover animation background (slightly darker pastels) */
+/* 호버 애니메이션 배경 오버라이드 (약간 더 진한 파스텔 색상) */
 .season-btn.summer::after {
-  background: #ffcdd2 !important; /* Darker pastel pink */
+  background: #ffcdd2 !important; /* 더 진한 파스텔 핑크 */
 }
 .season-btn.autumn::after {
-  background: #ffecb3 !important; /* Darker pastel yellow */
+  background: #ffecb3 !important; /* 더 진한 파스텔 옐로우 */
 }
 .season-btn.winter::after {
-  background: #b3e5fc !important; /* Darker pastel blue */
+  background: #b3e5fc !important; /* 더 진한 파스텔 블루 */
 }
 
-/* --- SELECTED STATE --- */
-/* Use the original, lighter pastel colors */
+/* --- 선택된 상태 --- */
+/* 원본의 더 밝은 파스텔 색상 사용 */
 .season-btn.summer.selected {
   background: #FFEBEE !important;
   border-color: #FFCDD2 !important;
@@ -199,7 +199,7 @@ p {
   color: #0288D1 !important;
 }
 
-/* Hide the animation for selected buttons to show the static background color */
+/* 선택된 버튼의 애니메이션을 숨겨서 정적 배경색을 표시 */
 .season-btn.selected::after {
   display: none !important;
 }
