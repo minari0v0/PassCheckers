@@ -331,7 +331,6 @@ const fetchHistory = async () => {
     isHistoryLoading.value = false;
   }
 };
-/*
 onMounted(async () => {
   // 클라이언트 측에서만 ApexCharts를 동적으로 import 합니다.
   const apexchartsModule = await import('vue3-apexcharts');
@@ -339,7 +338,6 @@ onMounted(async () => {
   
   fetchHistory();
 });
-*/
 const fetchWeightPrediction = async (analysisId: number) => {
   isWeightLoading.value = true;
   weightData.value = null;
