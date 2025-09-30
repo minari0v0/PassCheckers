@@ -377,22 +377,32 @@ const fetchWeightPrediction = async (analysisId: number) => {
 };
 
 const fetchCategories = async (items: WeightItem[]) => {
+  console.log('[카테고리] 카테고리 조회 시작:', items);
   isCategoryLoading.value = true;
   try {
     const item_names = items.map(item => item.item_name_ko);
+    console.log('[카테고리] 요청할 아이템 이름들:', item_names);
+    
     const response = await fetch(`${apiBaseUrl}/api/categorize`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ item_names })
     });
-    if (!response.ok) throw new Error('카테고리 정보를 가져오는데 실패했습니다.');
+    
+    console.log('[카테고리] API 응답 상태:', response.status);
     const data = await response.json();
+    console.log('[카테고리] API 응답 데이터:', data);
+    
+    if (!response.ok) throw new Error(data.error || '카테고리 정보를 가져오는데 실패했습니다.');
+    
     itemCategories.value = data.categories;
+    console.log('[카테고리] 저장된 카테고리:', itemCategories.value);
   } catch (error) {
-    console.error(error);
+    console.error('[카테고리] 오류:', error);
     $q.notify({ type: 'negative', message: '카테고리 정보를 불러오는 중 오류가 발생했습니다.' });
   } finally {
     isCategoryLoading.value = false;
+    console.log('[카테고리] 로딩 완료');
   }
 };
 
@@ -449,7 +459,14 @@ const adjustedWeightData = computed(() => {
 });
 
 const categoryChartData = computed(() => {
-  if (!adjustedWeightData.value || Object.keys(itemCategories.value).length === 0) return null;
+  console.log('[차트] categoryChartData 계산 시작');
+  console.log('[차트] adjustedWeightData:', adjustedWeightData.value);
+  console.log('[차트] itemCategories:', itemCategories.value);
+  
+  if (!adjustedWeightData.value || Object.keys(itemCategories.value).length === 0) {
+    console.log('[차트] 데이터 없음으로 null 반환');
+    return null;
+  }
 
   const categoryWeights = new Map<string, number>();
 
@@ -461,11 +478,13 @@ const categoryChartData = computed(() => {
         weightInGrams = item.predicted_weight_unit === 'kg' ? value * 1000 : value;
     }
     categoryWeights.set(category, (categoryWeights.get(category) || 0) + weightInGrams);
+    console.log(`[차트] ${item.item_name_ko} -> ${category}: ${weightInGrams}g`);
   }
 
   const labels = Array.from(categoryWeights.keys());
   const series = Array.from(categoryWeights.values());
 
+  console.log('[차트] 최종 차트 데이터:', { labels, series });
   return { labels, series };
 });
 
@@ -514,6 +533,20 @@ const formatWeight = (value: number, unit: string | null) => {
   if (unit === 'g') return `${Math.round(value)}g`;
   if (unit === 'kg') return `${parseFloat(value.toFixed(2))}kg`;
   return value;
+};
+
+// 이미지 로드 디버깅 함수들
+const onImageLoad = () => {
+  console.log('이미지 로드 성공');
+};
+
+const onImageError = (error: any) => {
+  console.error('이미지 로드 실패:', error);
+  console.log('API Base URL:', apiBaseUrl);
+  console.log('Selected History:', selectedHistory.value);
+  if (selectedHistory.value) {
+    console.log('Image URL:', `${apiBaseUrl}${selectedHistory.value.image_url}`);
+  }
 };
 
 </script>
