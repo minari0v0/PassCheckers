@@ -100,7 +100,7 @@ def get_image_details_by_id(image_id):
             cursor.execute("""
                 SELECT image_data, width, height
                 FROM images
-                                WHERE image_id = %s
+                                WHERE id = %s
                 LIMIT 1
             """, (image_id,))
             return cursor.fetchone()
