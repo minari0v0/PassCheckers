@@ -227,6 +227,7 @@ def get_and_update_categories(item_names: list) -> dict:
 def _get_categories_from_gemini(items_to_categorize: list) -> dict:
     """
     Gemini API를 사용하여 여러 물품의 카테고리를 JSON 형식으로 가져옵니다.
+    API 오류 시 기본 카테고리를 반환합니다.
     """
     api_key = get_gemini_api_key()
     if not items_to_categorize or not api_key:
@@ -245,7 +246,26 @@ def _get_categories_from_gemini(items_to_categorize: list) -> dict:
         return json.loads(response.text)
     except Exception as e:
         print(f"[Gemini Category Service] Failed to get categories: {e}")
-        return {}
+        print(f"[Gemini Category Service] Using fallback categories for {len(items_to_categorize)} items")
+        
+        # API 오류 시 기본 카테고리 반환
+        fallback_categories = {}
+        for item in items_to_categorize:
+            # 간단한 키워드 기반 카테고리 분류
+            if any(keyword in item.lower() for keyword in ['옷', '의류', '셔츠', '바지', '치마', '원피스', '코트', '자켓']):
+                fallback_categories[item] = '의류'
+            elif any(keyword in item.lower() for keyword in ['화장품', '향수', '크림', '로션', '립스틱']):
+                fallback_categories[item] = '화장품'
+            elif any(keyword in item.lower() for keyword in ['신발', '구두', '운동화', '부츠', '샌들']):
+                fallback_categories[item] = '신발'
+            elif any(keyword in item.lower() for keyword in ['가방', '백팩', '핸드백', '지갑']):
+                fallback_categories[item] = '가방/액세서리'
+            elif any(keyword in item.lower() for keyword in ['전자제품', '폰', '핸드폰', '노트북', '태블릿', '충전기']):
+                fallback_categories[item] = '전자제품'
+            else:
+                fallback_categories[item] = '기타'
+        
+        return fallback_categories
 
 def get_gemini_api_key():
     """Gemini API 키를 환경변수에서 가져옵니다."""
