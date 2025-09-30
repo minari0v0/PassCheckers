@@ -129,19 +129,27 @@ def get_image_by_id(image_id):
     """ID를 기반으로 원본 이미지 데이터를 반환합니다."""
     conn = None
     try:
+        print(f"[IMAGE API] 이미지 요청 받음: image_id={image_id}")
         conn = get_db_connection()
         with conn.cursor() as cursor:
-            cursor.execute("SELECT image_data FROM images WHERE image_id = %s", (image_id,))
+            cursor.execute("SELECT image_data FROM images WHERE id = %s", (image_id,))
             result = cursor.fetchone()
             
             if result and result['image_data']:
+                print(f"[IMAGE API] 이미지 데이터 발견: {len(result['image_data'])} bytes")
                 # image_data (BLOB)를 BytesIO로 감싸서 send_file로 보냅니다.
-                return send_file(
+                response = send_file(
                     io.BytesIO(result['image_data']),
                     mimetype='image/jpeg',  # 혹은 저장된 이미지 타입에 맞게 변경
                     as_attachment=False
                 )
+                # CORS 헤더 추가
+                response.headers['Access-Control-Allow-Origin'] = '*'
+                response.headers['Access-Control-Allow-Methods'] = 'GET'
+                response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+                return response
             else:
+                print(f"[IMAGE API] 이미지 데이터 없음: image_id={image_id}")
                 return jsonify({"error": "이미지를 찾을 수 없습니다."}), 404
     except Exception as e:
         print(f"[IMAGE API] Server error: {e}")
