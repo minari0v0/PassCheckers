@@ -38,7 +38,7 @@ def save_analysis_results():
                         analysis_date DATETIME NOT NULL,
                         destination VARCHAR(100),
                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                        FOREIGN KEY (image_id) REFERENCES images(image_id) ON DELETE CASCADE
+                        FOREIGN KEY (image_id) REFERENCES images(id) ON DELETE CASCADE
                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
                 """)
                 
