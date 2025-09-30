@@ -89,7 +89,7 @@ def get_item_info_from_gemini(item_name: str):
         )
         
         model = genai.GenerativeModel(
-            model_name='gemini-1.5-flash',
+            model_name='gemini-2.0-flash-exp',
             system_instruction=SYSTEM_PROMPT,
             generation_config=generation_config
         )
@@ -235,7 +235,7 @@ def _get_categories_from_gemini(items_to_categorize: list) -> dict:
     try:
         generation_config = genai.types.GenerationConfig(response_mime_type="application/json")
         model = genai.GenerativeModel(
-            model_name='gemini-1.5-flash',
+            model_name='gemini-2.0-flash-exp',
             system_instruction=CATEGORY_SYSTEM_PROMPT,
             generation_config=generation_config
         )
