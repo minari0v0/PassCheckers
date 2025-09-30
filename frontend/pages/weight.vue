@@ -67,12 +67,20 @@
             <p style="font-size: 1.2rem;">왼쪽에서 분석 기록을 선택하세요.</p>
           </div>
           <div v-else>
-            <!-- 이미지 -->
+            <!-- 분석 정보 -->
             <q-card flat bordered style="border-radius: 16px; margin-bottom: 24px;">
+              <!-- 이름과 날짜 정보 -->
+              <div style="padding: 16px; display:flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f0f0f0;">
+                <div style="font-weight: 600; font-size: 1.1rem;">{{ selectedHistory.destination || '알 수 없는 목적지' }}</div>
+                <div style="font-size: 0.9rem; color: #888;">{{ selectedHistory.analysis_date }}</div>
+              </div>
+              <!-- 이미지 -->
               <q-img 
                 :src="selectedHistory.image_url ? `${apiBaseUrl}${selectedHistory.image_url}` : ''" 
-                style="border-radius: 16px 16px 0 0; max-height: 400px; background-color: #f5f5f5;"
+                style="border-radius: 0 0 16px 16px; max-height: 400px; background-color: #f5f5f5;"
                 fit="contain"
+                @error="onImageError"
+                @load="onImageLoad"
               >
                 <template v-slot:error>
                   <div class="absolute-full flex flex-center bg-negative text-white">
@@ -80,10 +88,6 @@
                   </div>
                 </template>
               </q-img>
-              <div style="padding: 16px; display:flex; justify-content: space-between; align-items: center; border-top: 1px solid #f0f0f0;">
-                <div style="font-weight: 600; font-size: 1.1rem;">{{ selectedHistory.destination || '알 수 없는 목적지' }}</div>
-                <div style="font-size: 0.9rem; color: #888;">{{ selectedHistory.analysis_date }}</div>
-              </div>
             </q-card>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
@@ -253,9 +257,13 @@ const isCategoryLoading = ref(false);
 const itemCategories = ref<{ [key: string]: string }>({});
 const chartSeries = ref<number[]>([]);
 const chartOptions = ref<any>({
-  chart: { type: 'donut', toolbar: { show: true } },
+  chart: { 
+    type: 'donut', 
+    toolbar: { show: true },
+    fontFamily: 'Arial, sans-serif'
+  },
   labels: [],
-    legend: { position: 'bottom' },
+  legend: { position: 'bottom' },
   tooltip: {
     y: {
       formatter: (val: number) => {
@@ -288,6 +296,11 @@ const chartOptions = ref<any>({
             formatter: (w: any) => {
               const total = w.globals.seriesTotals.reduce((a: number, b: number) => a + b, 0);
               return `${(total / 1000).toFixed(1)} kg`;
+            },
+            style: {
+              fontSize: '18px',
+              fontWeight: 'bold',
+              color: '#333'
             }
           }
         }
