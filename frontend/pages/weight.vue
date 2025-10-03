@@ -333,7 +333,7 @@ const fetchHistory = async () => {
   }
   isHistoryLoading.value = true;
   try {
-    const response = await fetch(`${apiBaseUrl}/api/analysis/history/${currentUser.id}`);
+    const response = await fetch(getApiUrl(`/api/analysis/history/${currentUser.id}`));
     if (!response.ok) throw new Error('분석 기록을 가져오는데 실패했습니다.');
     const data = await response.json();
     classificationHistory.value = data.results;
@@ -357,7 +357,7 @@ const fetchWeightPrediction = async (analysisId: number) => {
   weightError.value = null;
   itemCategories.value = {}; // 카테고리 초기화
   try {
-    const response = await fetch(`${apiBaseUrl}/api/weight/predict/${analysisId}`);
+    const response = await fetch(getApiUrl(`/api/weight/predict/${analysisId}`));
     const resData = await response.json();
     if (!response.ok) throw new Error(resData.details || '무게 예측에 실패했습니다.');
     weightData.value = resData;
@@ -383,7 +383,7 @@ const fetchCategories = async (items: WeightItem[]) => {
     const item_names = items.map(item => item.item_name_ko);
     console.log('[카테고리] 요청할 아이템 이름들:', item_names);
     
-    const response = await fetch(`${apiBaseUrl}/api/categorize`, {
+    const response = await fetch(getApiUrl('/api/categorize'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ item_names })

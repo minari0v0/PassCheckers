@@ -119,7 +119,7 @@ const logoutToast = ref(null)
 const pageLoadingOverlay = ref(null)
 
 // useAuth composable 사용
-const { isAuthenticated, user, logout: authLogout } = useAuth()
+const { isAuthenticated, user, logout: authLogout, checkAuth } = useAuth()
 
 // 상태 변화 추적
 watch(isAuthenticated, (newValue) => {
@@ -128,6 +128,13 @@ watch(isAuthenticated, (newValue) => {
 
 watch(user, (newValue) => {
   console.log('default.vue - 사용자 정보 변화:', newValue)
+})
+
+// 클라이언트에서 마운트 시 인증 상태 재확인
+onMounted(() => {
+  if (process.client) {
+    checkAuth()
+  }
 })
 
 const profileMenu = ref(false)
@@ -193,7 +200,8 @@ async function logout() {
   try {
     const access_token = localStorage.getItem('access_token')
     if (access_token) {
-      await $fetch('http://' + window.location.hostname + ':5001/api/logout', {
+      const { getApiUrl } = useApiUrl()
+      await $fetch(getApiUrl('/api/logout'), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${access_token}`

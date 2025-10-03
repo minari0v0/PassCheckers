@@ -478,7 +478,8 @@ const handleEditItemsSave = async (itemsInEditor) => {
                     };
                 })
             };
-            const response = await fetch('http://' + window.location.hostname + ':5001/api/items/add', {
+            const { getApiUrl } = useApiUrl()
+            const response = await fetch(getApiUrl('/api/items/add'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(addPayload)

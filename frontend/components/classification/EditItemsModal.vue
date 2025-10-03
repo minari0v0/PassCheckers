@@ -462,7 +462,8 @@ const handleEnterKey = async (event, index) => {
 
   if (selectComponent && currentInputValue) {
     try {
-      const response = await fetch(`http://${window.location.hostname}:5001/api/items/autocomplete?q=${currentInputValue}`)
+      const { getApiUrl } = useApiUrl()
+      const response = await fetch(getApiUrl(`/api/items/autocomplete?q=${currentInputValue}`))
       if (!response.ok) throw new Error('Network response was not ok')
       
       const suggestions = await response.json()

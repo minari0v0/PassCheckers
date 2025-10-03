@@ -178,7 +178,8 @@ const processFile = async (file) => {
     formData.append('image', file)
 
     // 백엔드로 이미지 업로드 및 분류 요청
-    const response = await fetch('http://' + window.location.hostname + ':5001/classify', {
+    const { getApiUrl } = useApiUrl()
+    const response = await fetch(getApiUrl('/classify'), {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`
