@@ -119,7 +119,8 @@ async function onLogin() {
   }
   
   try {
-    const res = await $fetch('http://' + window.location.hostname + ':5001/api/login', {
+    const { getApiUrl } = useApiUrl()
+    const res = await $fetch(getApiUrl('/api/login'), {
       method: 'POST',
       body: {
         email: userId.value,

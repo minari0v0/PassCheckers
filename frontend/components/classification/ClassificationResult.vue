@@ -29,7 +29,7 @@
               원본 이미지
             </div>
             <q-card flat bordered class="image-card" style="text-align: center; height: 450px; display: flex; align-items: center; justify-content: center;">
-              <div ref="imageContainerRef" class="image-container" style="position: relative; display: inline-block;">
+              <div ref="imageContainerRef" class="image-container" style="position: relative; display: inline-block; width: 100%; height: 100%;">
                 <img 
                   :src="imageUrl" 
                   style="border-radius: 16px; max-width: 100%; max-height: 100%; object-fit: contain;" 
@@ -39,21 +39,25 @@
                 />
                 
 
-                <!-- Bounding Box 표시 시작 -->
+                <!-- 바운딩 박스 표시 시작 -->
                 <template v-if="isImageLoaded">
                   <div
                     v-for="(item, index) in detectionResults"
                     :key="item.item_id || item.name_ko"
                     :class="['bounding-box', { 'bounding-box--hovered': hoveredIndex === index }]"
-                    :style="calculateBoxStyle(item.bbox, imageContainerRef, originalImageSize)"
+                    :style="calculateBoxStyleForMain(item.bbox, imageContainerRef)"
                   >
                     <div class="box-label">{{ item.name_ko }}</div>
                   </div>
                 </template>
-                <!-- Bounding Box 표시 끝 -->
+                <!-- 바운딩 박스 표시 끝 -->
 
               </div>
             </q-card>
+
+
+            
+
           </div>
 
           <!-- 오른쪽: 탐지 결과 -->
@@ -73,7 +77,7 @@
               <div v-else class="column" style="height:100%;">
                 <q-card-section class="row items-center justify-between q-py-sm">
                   <div class="text-weight-bold">탐지된 물품 목록</div>
-                  <q-btn icon="edit" label="물품 수정/추가" flat dense @click="openEditModal" />
+                  <q-btn icon="edit" label="물품 수정/추가" flat dense class="edit-items-btn" @click="openEditModal" />
                 </q-card-section>
                 <q-separator />
                 <q-scroll-area style="height: 350px;" class="col">
@@ -136,158 +140,43 @@
       </div>
     </div>
 
-    <!-- 하단 액션 버튼들 -->
+                <!-- 하단 액션 버튼들 -->
     <div class="row justify-center q-mt-lg q-gutter-md">
       <q-btn 
         icon="photo_camera" 
         label="다른 이미지 선택" 
         color="primary" 
         outline
+        class="action-button action-button--primary"
         @click="selectNewImage"
       />
-      <q-btn 
-        icon="save" 
-        label="분석 결과 저장" 
-        color="positive"
-        @click.stop="saveAnalysisResults"
-        :loading="isSavingResults"
-        :disable="isSavingResults"
-      />
+      <transition
+        appear
+        enter-active-class="animated fadeIn"
+        leave-active-class="animated fadeOut"
+      >
+        <q-btn 
+          v-if="isSaveButtonVisible"
+          icon="save" 
+          label="분석 결과 저장" 
+          class="action-button action-button--positive"
+          @click="openSaveDialog"
+          :disable="isSavingResults"
+        />
+      </transition>
     </div>
 
-    <!-- 물품 수정/추가 팝업 -->
-    <q-dialog v-model="showEditModal" full-width full-height>
-      <q-card class="column no-wrap">
-        <q-card-section class="row no-wrap q-pa-none col">
-          <!-- 팝업 왼쪽 (70%) -->
-          <div class="col-7 q-pa-md">
-            <q-card flat bordered class="fit column no-wrap items-center justify-center">
-              <div style="font-weight:600; font-size:1.2rem; margin: 16px 0; text-align:center;">
-                원본 이미지 (BBox를 그려주세요)
-              </div>
-              <div ref="editorImageContainer" class="editor-image-container">
-                <q-img :src="imageUrl" fit="contain" class="fit"/>
-                <!-- BBox 그리기 오버레이 -->
-                <div 
-                  class="drawing-overlay"
-                  @mousedown="handleMouseDown"
-                  @mousemove="handleMouseMove"
-                  @mouseup="handleMouseUp"
-                  @mouseleave="handleMouseUp" 
-                >
-                  <!-- 현재 그리는 BBox -->
-                  <div v-if="isDrawing" class="drawing-rect" :style="drawingRectStyle"></div>
-                  <!-- 이미 추가된 BBox들 -->
-                  <div 
-                    v-for="(item, index) in itemsInEditor.filter(i => i.bbox && !i.isDeleted)"
-                    :key="`edit-box-${item.item_id || index}`"
-                    class="drawn-box"
-                    :style="getEditorBoxStyle(item.bbox)"
-                    :class="{ 'drawn-box--hovered': editorHoveredIndex === index }"
-                  >
-                    <div class="box-label">{{ item.name_ko }}</div>
-                  </div>
-                </div>
-              </div>
-            </q-card>
-          </div>
-          
-          <!-- 팝업 오른쪽 (30%) -->
-          <div class="col-5 q-pa-md column">
-            <q-card flat bordered class="fit column no-wrap">
-              <q-card-section class="row items-center justify-between q-py-sm">
-                <div class="text-weight-bold">물품 목록</div>
-                <q-btn icon="add" label="물품 추가" flat dense @click="addNewItem" />
-              </q-card-section>
-              <q-separator />
-              <q-list separator class="col q-pt-none">
-                <q-item 
-                  v-for="(item, index) in itemsInEditor" 
-                  :key="item.item_id || `new-${index}`" 
-                  :class="{ 'bg-grey-3': item.isDeleted, 'item-confirmed': item.isConfirmed }"
-                  @mouseenter="editorHoveredIndex = index"
-                  @mouseleave="editorHoveredIndex = null"
-                >
-                  <q-item-section>
-                    <q-select
-                      :ref="(el) => { if (el) searchSelectRefs[index] = el }"
-                      v-if="item.isNew && !item.isConfirmed"
-                      v-model="item.name_ko"
-                      label="물품명 입력 후 Enter로 검색"
-                      autofocus
-                      dense
-                      use-input
-                      fill-input
-                      hide-selected
-                      :options="autocompleteSuggestions"
-                      @new-value="handleNewValue"
-                      new-value-mode="add-unique"
-                      @keyup.enter="handleEnterKey($event, index)"
-                      @blur="onSelectBlur($event, item)"
-                      @input-value="(val) => item.name_ko = val"
-                      autocomplete="off"
-                    >
-                      <template v-slot:no-option>
-                        <q-item>
-                          <q-item-section class="text-grey">
-                            일치하는 항목이 없습니다.
-                          </q-item-section>
-                        </q-item>
-                      </template>
-                    </q-select>
-
-                    <div v-if="item.isNew && item.isConfirmed" class="confirmed-item row items-center no-wrap">
-                      <q-item-label class="col">{{ item.name_ko }}</q-item-label>
-                      <q-btn round dense flat icon="edit" @click="item.isConfirmed = false" class="q-ml-sm">
-                        <q-tooltip>이름 수정</q-tooltip>
-                      </q-btn>
-                    </div>
-
-                    <q-item-label v-else-if="!item.isNew" :class="{ 'text-grey-6': item.isDeleted, 'text-strike': item.isDeleted }">{{ item.name_ko }}</q-item-label>
-                  </q-item-section>
-
-                  <q-item-section side>
-                    <div class="row no-wrap items-center">
-                      <q-btn
-                        v-if="item.isNew && !item.isConfirmed"
-                        round dense flat icon="check"
-                        @click="resolveItem(item)"
-                        :disable="!item.name_ko"
-                      >
-                        <q-tooltip>항목 확정</q-tooltip>
-                      </q-btn>
-                      <q-btn 
-                        v-if="item.isNew && item.isConfirmed"
-                        :icon="item.bbox ? 'replay' : 'edit_location'"
-                        flat round dense
-                        @click="activateDrawing(index)"
-                        :color="item.bbox ? 'positive' : (activeDrawIndex === index ? 'primary' : 'grey')"
-                        :disable="item.isDeleted"
-                      >
-                        <q-tooltip>{{ item.bbox ? '위치 다시 지정' : '위치 지정' }}</q-tooltip>
-                      </q-btn>
-                      <q-btn
-                        :icon="item.isDeleted ? 'undo' : 'delete'"
-                        flat round dense
-                        @click="toggleDeleteItem(item)"
-                      >
-                        <q-tooltip>{{ item.isDeleted ? '복구' : '삭제' }}</q-tooltip>
-                      </q-btn>
-                    </div>
-                  </q-item-section>
-                </q-item>
-              </q-list>
-            </q-card>
-          </div>
-        </q-card-section>
-
-        <q-separator />
-        <q-card-actions align="right" class="q-pa-md">
-          <q-btn label="취소" color="grey-7" @click="showEditModal = false" />
-          <q-btn label="저장" color="primary" @click="saveChanges" :loading="isSaving" />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
+    <!-- 물품 수정/추가 모달 컴포넌트 -->
+    <EditItemsModal 
+      :show="showEditModal"
+      :items="detectionResults"
+      :image-url="imageUrl"
+      :original-image-size="originalImageSize"
+      :is-saving="isSaving"
+      @update:show="(value) => showEditModal = value"
+      @save="handleEditItemsSave"
+      @cancel="showEditModal = false"
+    />
 
     <!-- 분류 토스트 -->
     <ClassificationToast 
@@ -297,18 +186,31 @@
       redirect-to="/"
     />
 
+    <!-- 저장용 토스트 컴포넌트 -->
+    <SaveAnalysisToast 
+      :show="showSaveDialog"
+      :is-saving="isSavingResults"
+      @save="handleSaveAnalysis"
+      @cancel="cancelSaveDialog"
+      @update:show="(value) => showSaveDialog = value"
+    />
+
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, computed, nextTick, onBeforeUpdate } from 'vue'
+import { ref, onMounted, onUnmounted, computed, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import ClassificationToast from './ClassificationToast.vue'
+import SaveAnalysisToast from './SaveAnalysisToast.vue'
+import EditItemsModal from './EditItemsModal.vue'
+import { useAuth } from '~/composables/useAuth'
 
 const $q = useQuasar()
 const route = useRoute()
 const router = useRouter()
+const { user } = useAuth()
 
 const isLoading = ref(true)
 const isSaving = ref(false)
@@ -319,7 +221,7 @@ const detectionResults = ref([])
 const imageContainerRef = ref(null)
 const hoveredIndex = ref(null)
 const originalImageSize = ref({ width: 1, height: 1 });
-const expandedIndex = ref(null); // For accordion
+const expandedIndex = ref(null); // 아코디언용
 const isImageLoaded = ref(false);
 
 // 토스트 상태
@@ -327,38 +229,73 @@ const showToast = ref(false)
 const toastTitle = ref('')
 const toastMessage = ref('')
 
-// --- Editor Modal State ---
+// --- 에디터 모달 상태 ---
 const showEditModal = ref(false)
-const itemsInEditor = ref([])
-const autocompleteSuggestions = ref([])
-const editorImageContainer = ref(null)
-const editorHoveredIndex = ref(null)
-const searchSelectRefs = ref([]);
 
-// --- BBox Drawing State ---
-const isDrawing = ref(false)
-const drawStartPoint = ref({ x: 0, y: 0 })
-const drawingRect = ref({ x: 0, y: 0, width: 0, height: 0 })
-const activeDrawIndex = ref(null)
+// --- 저장 다이얼로그 상태 ---
+const showSaveDialog = ref(false)
+const isSaveButtonVisible = ref(true)
 
-// BBox 스타일 계산 로직을 공통 함수로 추출
-const calculateBoxStyle = (bbox, containerEl, imageSize) => {
-  if (!bbox || !containerEl) return {};
-  
-  const container = containerEl.getBoundingClientRect();
-  const containerRatio = container.width / container.height;
+
+// 바운딩 박스 스타일 계산 로직을 공통 함수로 추출
+const calculateBoxStyleForMain = (bbox, containerEl) => {
+  if (!bbox || !containerEl) return { display: 'none' };
+
+  const imgEl = containerEl.querySelector('img');
+  if (!imgEl) return { display: 'none' };
+
+  // 이미지의 렌더링된 크기 가져오기
+  const displayedWidth = imgEl.clientWidth;
+  const displayedHeight = imgEl.clientHeight;
+
+  // 뷰포트에 상대적인 이미지와 컨테이너의 위치 가져오기
+  const imgRect = imgEl.getBoundingClientRect();
+  const containerRect = containerEl.getBoundingClientRect();
+
+  // 컨테이너에 상대적인 이미지의 오프셋 계산
+  const offsetX = imgRect.left - containerRect.left;
+  const offsetY = imgRect.top - containerRect.top;
+
+  const [x_min_norm, y_min_norm, x_max_norm, y_max_norm] = bbox;
+
+  const left = offsetX + (x_min_norm * displayedWidth);
+  const top = offsetY + (y_min_norm * displayedHeight);
+  const width = (x_max_norm - x_min_norm) * displayedWidth;
+  const height = (y_max_norm - y_min_norm) * displayedHeight;
+
+  return {
+    position: 'absolute',
+    left: `${left}px`,
+    top: `${top}px`,
+    width: `${width}px`,
+    height: `${height}px`,
+  };
+};
+
+
+const calculateBoxStyleForModal = (bbox, containerEl, imageSize) => {
+  if (!bbox || !containerEl || !imageSize || imageSize.width === 1) return {};
+
+  const containerRect = containerEl.getBoundingClientRect();
+  if (containerRect.width === 0) return {};
+
   const imageRatio = imageSize.width / imageSize.height;
+  const containerRatio = containerRect.width / containerRect.height;
 
-  let scale = 1, offsetX = 0, offsetY = 0;
+  let scale = 1;
+  let offsetX = 0;
+  let offsetY = 0;
+
   if (imageRatio > containerRatio) {
-    scale = container.width / imageSize.width;
-    offsetY = (container.height - imageSize.height * scale) / 2;
+    scale = containerRect.width / imageSize.width;
+    offsetY = (containerRect.height - (imageSize.height * scale)) / 2;
   } else {
-    scale = container.height / imageSize.height;
-    offsetX = (container.width - imageSize.width * scale) / 2;
+    scale = containerRect.height / imageSize.height;
+    offsetX = (containerRect.width - (imageSize.width * scale)) / 2;
   }
 
   const [x_min, y_min, x_max, y_max] = bbox;
+
   return {
     position: 'absolute',
     left: `${(x_min * imageSize.width * scale) + offsetX}px`,
@@ -376,123 +313,135 @@ const drawingRectStyle = computed(() => ({
   height: `${drawingRect.value.height}px`,
 }))
 
-const openEditModal = () => {
-  itemsInEditor.value = JSON.parse(JSON.stringify(detectionResults.value)).map(item => ({ ...item, isDeleted: false }))
-  showEditModal.value = true
-}
+const openEditModal = async () => {
+  try {
+    const response = await fetch(`http://${window.location.hostname}:5001/api/items/results/${imageId.value}`);
+    if (!response.ok) {
+      throw new Error('최신 물품 정보를 불러오는 데 실패했습니다.');
+    }
+    const latestResultsWithAbsoluteBbox = await response.json();
 
-const addNewItem = () => {
-  if (itemsInEditor.value.some(item => item.isNew && !item.isConfirmed)) return;
-  itemsInEditor.value.unshift({ isNew: true, name_ko: '', bbox: null, isDeleted: false, isConfirmed: false });
-}
+    const normalizedResults = latestResultsWithAbsoluteBbox.map(item => {
+      if (item.bbox && originalImageSize.value.width > 1) {
+        const [x_min, y_min, x_max, y_max] = item.bbox;
+        const { width, height } = originalImageSize.value;
+        return {
+          ...item,
+          bbox: [x_min / width, y_min / height, x_max / width, y_max / height]
+        };
+      }
+      return item;
+    });
 
-const toggleDeleteItem = (item) => {
-  item.isDeleted = !item.isDeleted
-}
+    detectionResults.value = normalizedResults;
+    showEditModal.value = true;
 
-const activateDrawing = (index) => {
-  if (itemsInEditor.value[index].isDeleted) return
-  activeDrawIndex.value = index
-  $q.notify({ 
-    message: '이미지 위에서 드래그하여 물품의 위치를 지정하세요.',
-    color: 'info',
-    position: 'top',
-    icon: 'edit_location'
-  })
-}
-
-const handleMouseDown = (e) => {
-  if (activeDrawIndex.value === null) return
-  const rect = editorImageContainer.value.getBoundingClientRect()
-  isDrawing.value = true
-  drawStartPoint.value = { x: e.clientX - rect.left, y: e.clientY - rect.top }
-  drawingRect.value = { x: drawStartPoint.value.x, y: drawStartPoint.value.y, width: 0, height: 0 }
-}
-
-const handleMouseMove = (e) => {
-  if (!isDrawing.value) return
-  const rect = editorImageContainer.value.getBoundingClientRect()
-  const currentX = e.clientX - rect.left
-  const currentY = e.clientY - rect.top
-  const startX = drawStartPoint.value.x
-  const startY = drawStartPoint.value.y
-
-  drawingRect.value.x = Math.min(startX, currentX)
-  drawingRect.value.y = Math.min(startY, currentY)
-  drawingRect.value.width = Math.abs(currentX - startX)
-  drawingRect.value.height = Math.abs(currentY - startY)
-}
-
-// 그려진 BBox를 정규화된 좌표로 변환하는 함수
-const normalizeBbox = (drawnRect, containerEl, imageSize) => {
-  if (!drawnRect || !containerEl) return null;
-
-  const container = containerEl.getBoundingClientRect();
-  const containerRatio = container.width / container.height;
-  const imageRatio = imageSize.width / imageSize.height;
-
-  let scale = 1, offsetX = 0, offsetY = 0;
-  if (imageRatio > containerRatio) {
-    scale = container.width / imageSize.width;
-    offsetY = (container.height - imageSize.height * scale) / 2;
-  } else {
-    scale = container.height / imageSize.height;
-    offsetX = (container.width - imageSize.width * scale) / 2;
+  } catch (error) {
+    console.error('Error opening edit modal:', error);
+    $q.notify({ type: 'negative', message: error.message || '오류가 발생했습니다.' });
   }
-
-  const imgX = drawnRect.x - offsetX;
-  const imgY = drawnRect.y - offsetY;
-
-  const x_min = (imgX / scale) / imageSize.width;
-  const y_min = (imgY / scale) / imageSize.height;
-  const x_max = ((imgX + drawnRect.width) / scale) / imageSize.width;
-  const y_max = ((imgY + drawnRect.height) / scale) / imageSize.height;
-  
-  return [
-      Math.max(0, Math.min(1, x_min)),
-      Math.max(0, Math.min(1, y_min)),
-      Math.max(0, Math.min(1, x_max)),
-      Math.max(0, Math.min(1, y_max))
-  ];
 }
 
-// BBox 좌표 저장 로직 수정
-const handleMouseUp = () => {
-  if (!isDrawing.value || activeDrawIndex.value === null) return;
-  isDrawing.value = false;
-  
-  const item = itemsInEditor.value[activeDrawIndex.value];
-  
-  const normalized = normalizeBbox(drawingRect.value, editorImageContainer.value, originalImageSize.value);
-  if (normalized) {
-    item.bbox = normalized;
-  }
 
-  activeDrawIndex.value = null;
-  drawingRect.value = { x: 0, y: 0, width: 0, height: 0 };
-};
-
-// 수정: 공통 함수를 사용하도록 변경
-const getEditorBoxStyle = (bbox) => {
-  return calculateBoxStyle(bbox, editorImageContainer.value, originalImageSize.value);
-}
-
-const saveChanges = async () => {
+const handleEditItemsSave = async (itemsInEditor) => {
+    console.log('=== 저장 버튼 클릭됨 ===')
+    console.log('ClassificationResult handleEditItemsSave called', itemsInEditor)
+    console.log('현재 detectionResults:', detectionResults.value)
     if (isSaving.value) return;
 
     isSaving.value = true;
     try {
-        const itemsToAdd = itemsInEditor.value.filter(item => item.isNew && item.isConfirmed && !item.isDeleted && item.name_ko && item.bbox);
-        const itemsToDelete = itemsInEditor.value.filter(item => !item.isNew && item.isDeleted);
+        // 원본 탐지 결과와 현재 에디터 상태 비교
+        const originalItems = detectionResults.value
+        const currentItems = itemsInEditor.filter(item => !item.isDeleted) // 삭제되지 않은 아이템들만
+        
+        console.log('=== 비교 분석 ===')
+        console.log('원본 아이템 수:', originalItems.length)
+        console.log('현재 아이템 수:', currentItems.length)
+        
+        // 1. 추가된 아이템 찾기 (원본에 없고 현재에 있는 것)
+        const itemsToAdd = currentItems.filter(current => {
+          // item_id가 없으면 새로 추가된 아이템 (원본에 없음)
+          const isNewItem = !current.item_id && current.isConfirmed && current.name_ko && current.bbox
+          if (!current.item_id) {
+            console.log(`새 아이템 체크 - ${current.name_ko}:`, {
+              hasItemId: !!current.item_id,
+              isConfirmed: current.isConfirmed,
+              hasName: !!current.name_ko,
+              hasBbox: !!current.bbox,
+              결과: isNewItem
+            })
+          }
+          return isNewItem
+        })
+        
+        // 2. 삭제된 아이템 찾기 (원본에 있고 현재에 없는 것)
+        const itemsToDelete = originalItems.filter(original => 
+          !currentItems.some(current => current.item_id === original.item_id)
+        )
+        
+        // 3. 수정된 아이템 찾기 (원본에 있고 현재에도 있지만 내용이 다른 것)
+        const itemsToUpdate = []
+        originalItems.forEach(original => {
+          const current = currentItems.find(c => c.item_id === original.item_id)
+          console.log(`비교 중 - 원본: ${original.name_ko} (${original.item_id}), 현재: ${current?.name_ko || '없음'}`)
+          if (current) {
+            const nameChanged = current.name_ko !== original.name_ko
+            const bboxChanged = JSON.stringify(current.bbox) !== JSON.stringify(original.bbox)
+            console.log(`  이름 변경: ${nameChanged}, 위치 변경: ${bboxChanged}`)
+            if (nameChanged || bboxChanged) {
+              itemsToUpdate.push(current)
+              console.log(`  -> 수정 대상에 추가`)
+            }
+          }
+        })
 
-        if (itemsToAdd.length === 0 && itemsToDelete.length === 0) {
+        console.log('추가할 아이템:', itemsToAdd.length)
+        console.log('삭제할 아이템:', itemsToDelete.length) 
+        console.log('수정할 아이템:', itemsToUpdate.length)
+
+        if (itemsToAdd.length === 0 && itemsToDelete.length === 0 && itemsToUpdate.length === 0) {
             $q.notify({ message: '변경 사항이 없습니다.', color: 'info' });
             return;
         }
 
         let currentResults = [...detectionResults.value];
 
-        // 1. 삭제 API 순차적 호출
+        // 1. Update API 호출 (가장 먼저 처리)
+        if (itemsToUpdate.length > 0) {
+            const updatePayload = {
+                image_id: imageId.value,
+                items_to_update: itemsToUpdate.map(item => {
+                    const denormalizedBbox = item.bbox ? [
+                        item.bbox[0] * originalImageSize.value.width,
+                        item.bbox[1] * originalImageSize.value.height,
+                        item.bbox[2] * originalImageSize.value.width,
+                        item.bbox[3] * originalImageSize.value.height
+                    ] : null;
+
+                    return {
+                        item_id: item.item_id,
+                        name_ko: item.name_ko,
+                        bbox: denormalizedBbox
+                    };
+                })
+            };
+
+            const response = await fetch('http://' + window.location.hostname + ':5001/api/items/update', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatePayload)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.error || '수정 중 오류가 발생했습니다.');
+            }
+            currentResults = await response.json();
+            console.log('UPDATE API 응답:', currentResults);
+        }
+
+        // 2. 삭제 API 순차적 호출
         if (itemsToDelete.length > 0) {
             const deletePayload = {
                 image_id: imageId.value,
@@ -509,15 +458,28 @@ const saveChanges = async () => {
                 throw new Error(errorData.error || '삭제 중 오류가 발생했습니다.');
             }
             currentResults = await response.json();
+            console.log('DELETE API 응답:', currentResults);
         }
 
-        // 2. 추가 API 순차적 호출
+        // 3. 추가 API 순차적 호출
         if (itemsToAdd.length > 0) {
             const addPayload = {
                 image_id: imageId.value,
-                new_items: itemsToAdd.map(item => ({ name_ko: item.name_ko, bbox: item.bbox }))
+                new_items: itemsToAdd.map(item => {
+                    const denormalizedBbox = item.bbox ? [
+                        item.bbox[0] * originalImageSize.value.width,
+                        item.bbox[1] * originalImageSize.value.height,
+                        item.bbox[2] * originalImageSize.value.width,
+                        item.bbox[3] * originalImageSize.value.height
+                    ] : null;
+                    return {
+                        name_ko: item.name_ko,
+                        bbox: denormalizedBbox
+                    };
+                })
             };
-            const response = await fetch('http://' + window.location.hostname + ':5001/api/items/add', {
+            const { getApiUrl } = useApiUrl()
+            const response = await fetch(getApiUrl('/api/items/add'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(addPayload)
@@ -528,11 +490,24 @@ const saveChanges = async () => {
                 throw new Error(errorData.error || '추가 중 오류가 발생했습니다.');
             }
             currentResults = await response.json();
+            console.log('ADD API 응답:', currentResults);
         }
 
-        // 3. 최종 결과로 UI 업데이트
-        detectionResults.value = currentResults;
+        // 최종 결과로 UI 업데이트
+        console.log('API 응답 받은 데이터:', currentResults)
+        detectionResults.value = currentResults.map(item => {
+          if (item.bbox && originalImageSize.value.width > 1) {
+            const [x_min, y_min, x_max, y_max] = item.bbox;
+            const { width, height } = originalImageSize.value;
+            return {
+              ...item,
+              bbox: [x_min / width, y_min / height, x_max / width, y_max / height]
+            };
+          }
+          return item;
+        });
 
+        console.log('업데이트된 detectionResults:', detectionResults.value)
         $q.notify({ message: '성공적으로 저장되었습니다.', color: 'positive', icon: 'check' });
 
     } catch (error) {
@@ -544,57 +519,6 @@ const saveChanges = async () => {
     }
 };
 
-const handleNewValue = (inputValue, doneFn) => {
-  if (inputValue.length > 0) {
-    if (!autocompleteSuggestions.value.some(s => s.toLowerCase() === inputValue.toLowerCase())) {
-      doneFn(inputValue, 'add-unique');
-    }
-  }
-}
-
-const onSelectBlur = (evt, item) => {
-  if (evt.target && evt.target.value === '') {
-    item.name_ko = '';
-  }
-};
-
-const resolveItem = (item) => {
-  if (!item || !item.name_ko) {
-    $q.notify({ message: '물품명을 입력하거나 선택해주세요.', color: 'warning' });
-    return;
-  }
-  
-  item.isConfirmed = true;
-  
-  $q.notify({
-    message: `'${item.name_ko}'(으)로 확정되었습니다. 이제 위치를 지정해주세요.`,
-    color: 'info',
-    icon: 'edit_location',
-    timeout: 2000
-  });
-};
-
-const handleEnterKey = async (event, index) => {
-  const selectComponent = searchSelectRefs.value[index];
-  const currentInputValue = event.target.value;
-
-  if (selectComponent && currentInputValue) {
-    try {
-      const response = await fetch('http://' + window.location.hostname + ':5001/api/items/autocomplete?q=${currentInputValue}');
-      if (!response.ok) throw new Error('Network response was not ok');
-      
-      const suggestions = await response.json();
-      autocompleteSuggestions.value = suggestions;
-      
-      selectComponent.showPopup();
-
-    } catch (error) {
-      console.error('Error fetching autocomplete suggestions on enter:', error);
-      autocompleteSuggestions.value = [];
-      selectComponent.showPopup();
-    }
-  }
-};
 
 const onImageLoad = () => {
   isImageLoaded.value = true;
@@ -691,40 +615,30 @@ let resizeTimeout;
 const handleResize = () => {
   clearTimeout(resizeTimeout);
   resizeTimeout = setTimeout(() => {
-    // Re-calculate BBoxes on resize
-    // This is a placeholder for a potential future improvement if needed
+    // 크기 조정 시 바운딩 박스 재계산
+    // 필요시 향후 개선을 위한 플레이스홀더
   }, 150);
 }
 
-onBeforeUpdate(() => {
-  searchSelectRefs.value = [];
-});
 
 onMounted(() => {
-  if (route.query.results) {
-    try {
-      const resultData = JSON.parse(route.query.results);
-      detectionResults.value = resultData.results || [];
-      imageId.value = resultData.image_id;
-      originalImageSize.value = resultData.image_size || { width: 1, height: 1 };
-    } catch (e) {
-      console.error("Error parsing results JSON:", e);
-      detectionResults.value = [];
+  const resultsData = route.query.results ? JSON.parse(route.query.results) : null;
+
+  if (resultsData) {
+    detectionResults.value = resultsData.results || [];
+    imageId.value = resultsData.image_id;
+    originalImageSize.value = resultsData.image_size || { width: 1, height: 1 };
+    // 분류 결과에 포함된 실제 이미지 URL을 우선적으로 사용
+    if (resultsData.image_url) {
+      imageUrl.value = resultsData.image_url;
     }
   }
-  if (route.query.image) {
+
+  // 실제 이미지 URL이 없는 경우에만 blob URL을 사용 (폴백)
+  if (!imageUrl.value && route.query.image) {
     imageUrl.value = route.query.image;
-  } else if (route.query.results) {
-    // results 데이터에서 이미지 URL 추출 시도
-    try {
-      const resultData = JSON.parse(route.query.results);
-      if (resultData.image_url) {
-        imageUrl.value = resultData.image_url;
-      }
-    } catch (e) {
-      console.error("Error extracting image URL from results:", e);
-    }
   }
+
   isLoading.value = false;
 
   // 페이드 인 애니메이션
@@ -764,33 +678,38 @@ const selectNewImage = () => {
   }, 300) // 0.3초 후 이동
 }
 
+// 저장 다이얼로그 표시 함수
+const openSaveDialog = () => {
+  showSaveDialog.value = true;
+}
+
+// 저장 다이얼로그 취소 함수
+const cancelSaveDialog = () => {
+  showSaveDialog.value = false;
+}
+
 // 분석 결과 저장 함수
-const saveAnalysisResults = async (event) => {
-  console.log('=== 저장 함수 호출됨 ===');
-  console.log('이벤트:', event);
-  console.log('isSavingResults.value:', isSavingResults.value);
-  console.log('detectionResults.value:', detectionResults.value);
-  
-  // 이벤트 전파 중지
-  if (event) {
-    event.preventDefault();
-    event.stopPropagation();
-  }
-  
-  if (isSavingResults.value) {
-    console.log('이미 저장 중이므로 리턴');
-    return;
-  }
-  
+const handleSaveAnalysis = async (analysisName) => {
+  if (isSavingResults.value) return;
+
   isSavingResults.value = true;
-  console.log('저장 중...');
   
   try {
-    // 분석 결과 데이터 구성
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      throw new Error('인증 토큰을 찾을 수 없습니다. 다시 로그인해주세요.');
+    }
+
+    const storedUser = JSON.parse(localStorage.getItem('user'));
+    if (!storedUser || !storedUser.id) {
+        throw new Error('사용자 정보를 찾을 수 없습니다. 다시 로그인해주세요.');
+    }
+
+    const realImageUrl = JSON.parse(route.query.results)?.image_url || imageUrl.value;
+
     const analysisData = {
-      user_id: 'custom1', // 실제로는 인증된 사용자 ID 사용
+      user_id: storedUser.id,
       image_id: imageId.value,
-      image_url: imageUrl.value,
       image_size: originalImageSize.value,
       detected_items: detectionResults.value.map(item => ({
         name_ko: item.name_ko,
@@ -804,14 +723,15 @@ const saveAnalysisResults = async (event) => {
         bbox: item.bbox
       })),
       total_items: detectionResults.value.length,
-      analysis_date: new Date().toISOString()
+      analysis_date: new Date().toISOString(),
+      destination: analysisName
     };
 
-    // 백엔드에 저장 요청
     const response = await fetch('http://' + window.location.hostname + ':5001/api/analysis/save', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify(analysisData)
     });
@@ -822,18 +742,15 @@ const saveAnalysisResults = async (event) => {
     }
 
     const result = await response.json();
-    console.log('저장 성공 응답:', result);
     
-    // 저장 성공 토스트 표시
     toastTitle.value = '저장 완료'
     toastMessage.value = `분석 결과가 성공적으로 저장되었습니다. (총 ${detectionResults.value.length}개 물품)`
     showToast.value = true
     
-    console.log('토스트 메시지 표시 완료');
+    showSaveDialog.value = false;
 
   } catch (error) {
     console.error('Error saving analysis results:', error);
-    // 저장 실패 토스트 표시
     toastTitle.value = '저장 실패'
     toastMessage.value = `저장 중 오류가 발생했습니다: ${error.message}`
     showToast.value = true
@@ -894,5 +811,395 @@ onUnmounted(() => {
   font-size: 0.7rem;
   width: 35px;
   text-align: center;
+}
+
+.control-btn--confirm:hover {
+  background-color: rgba(46, 125, 50, 0.1);
+  color: #2e7d32;
+}
+.control-btn--edit:hover {
+  background-color: rgba(25, 118, 210, 0.1);
+  color: #1976d2;
+}
+.control-btn--delete:hover {
+  background-color: rgba(211, 47, 47, 0.1);
+  color: #d32f2f;
+}
+.control-btn--undo:hover {
+  background-color: rgba(2, 136, 209, 0.1);
+  color: #0288d1;
+}
+
+/* 모달 내부 액션 버튼 스타일 설정 */
+.action-btn {
+  position: relative;
+  overflow: hidden;
+  transition: color 0.3s;
+  padding: 6px 12px !important;
+  min-height: auto !important;
+  height: auto !important;
+  border-radius: 4px !important;
+}
+
+.action-btn::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; bottom: 0; top: 100%;
+  transition: top 0.2s cubic-bezier(0.4,0,0.2,1);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.action-btn:hover::after {
+  top: 0;
+}
+
+.action-btn .q-btn__content {
+  position: relative;
+  z-index: 2;
+}
+
+/* 편집 및 위치 */
+.action-btn--edit, .action-btn--location {
+  color: #1976d2;
+}
+.action-btn--edit:hover, .action-btn--location:hover {
+  color: white !important;
+}
+.action-btn--edit::after, .action-btn--location::after {
+  background: #1976d2;
+}
+
+/* 확인 */
+.action-btn--confirm {
+  color: #2e7d32;
+}
+.action-btn--confirm:hover {
+  color: white !important;
+}
+.action-btn--confirm::after {
+  background: #2e7d32;
+}
+
+/* 취소 및 삭제 */
+.action-btn--cancel, .action-btn--delete {
+  color: #d32f2f;
+}
+.action-btn--cancel:hover, .action-btn--delete:hover {
+  color: white !important;
+}
+.action-btn--cancel::after, .action-btn--delete::after {
+  background: #d32f2f;
+}
+
+/* 실행 취소 */
+.action-btn--undo {
+  color: #ed6c02;
+}
+.action-btn--undo:hover {
+  color: white !important;
+}
+.action-btn--undo::after {
+  background: #ed6c02;
+}
+
+/* 액션 버튼 스타일 */
+.action-button {
+  border-radius: 20px !important;
+  padding: 12px 24px !important;
+  font-weight: 600 !important;
+  transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease !important;
+  text-transform: none !important;
+  font-size: 14px !important;
+}
+
+/* 기본 버튼 스타일 - 최대 특이성을 가진 파란색 그라데이션 */
+.q-btn.action-button.action-button--primary,
+.q-btn.action-button--primary,
+button.q-btn.action-button--primary {
+  background: linear-gradient(135deg, #1976d2 0%, #42a5f5 50%, #1976d2 100%) !important;
+  background-color: #1976d2 !important;
+  background-image: linear-gradient(135deg, #1976d2 0%, #42a5f5 50%, #1976d2 100%) !important;
+  color: white !important;
+  border: 2px solid #1976d2 !important;
+  transition: background 0.3s ease, background-image 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease !important;
+}
+
+.q-btn.action-button.action-button--primary:hover,
+.q-btn.action-button--primary:hover,
+button.q-btn.action-button--primary:hover,
+.q-btn.action-button.action-button--primary.q-btn--hover,
+.q-btn.action-button--primary.q-btn--hover {
+  background: linear-gradient(135deg, #1565c0 0%, #1e88e5 50%, #1565c0 100%) !important;
+  background-color: #1565c0 !important;
+  background-image: linear-gradient(135deg, #1565c0 0%, #1e88e5 50%, #1565c0 100%) !important;
+  border-color: #1565c0 !important;
+  color: white !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3) !important;
+}
+
+/* 파란색 그라데이션으로 모든 Quasar 스타일 강제 오버라이드 */
+div .q-btn.action-button--primary,
+div button.q-btn.action-button--primary {
+  background: linear-gradient(135deg, #1976d2 0%, #42a5f5 50%, #1976d2 100%) !important;
+  background-color: #1976d2 !important;
+  background-image: linear-gradient(135deg, #1976d2 0%, #42a5f5 50%, #1976d2 100%) !important;
+}
+
+div .q-btn.action-button--primary:hover,
+div button.q-btn.action-button--primary:hover {
+  background: linear-gradient(135deg, #1565c0 0%, #1e88e5 50%, #1565c0 100%) !important;
+  background-color: #1565c0 !important;
+  background-image: linear-gradient(135deg, #1565c0 0%, #1e88e5 50%, #1565c0 100%) !important;
+}
+
+/* 모든 Quasar 기본 색상 그라데이션 오버라이드 */
+.q-btn.bg-primary,
+.q-btn[class*="bg-primary"],
+.q-btn[style*="gradient"],
+.q-btn[style*="background"] {
+  background: linear-gradient(135deg, #1976d2 0%, #42a5f5 50%, #1976d2 100%) !important;
+  background-color: #1976d2 !important;
+  background-image: linear-gradient(135deg, #1976d2 0%, #42a5f5 50%, #1976d2 100%) !important;
+}
+
+/* Quasar 프레임워크를 위한 추가 특이성 */
+.q-btn.action-button--primary.bg-primary,
+.q-btn.action-button--primary[data-color="primary"] {
+  background: linear-gradient(135deg, #1976d2 0%, #42a5f5 50%, #1976d2 100%) !important;
+  background-image: linear-gradient(135deg, #1976d2 0%, #42a5f5 50%, #1976d2 100%) !important;
+  transition: background 0.3s ease, background-image 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease !important;
+}
+
+/* 기본 버튼을 위한 전역 main.css 및 theme.css 스타일 오버라이드 */
+div .q-btn.action-button--primary {
+  background: linear-gradient(135deg, #1976d2 0%, #42a5f5 50%, #1976d2 100%) !important;
+  background-image: linear-gradient(135deg, #1976d2 0%, #42a5f5 50%, #1976d2 100%) !important;
+  opacity: 1 !important;
+  display: inline-flex !important;
+}
+
+/* 기본 버튼을 위한 전역 ::after 의사 요소 비활성화 */
+div .q-btn.action-button--primary::after,
+.q-btn.action-button--primary::after {
+  display: none !important;
+}
+
+div .q-btn.action-button--primary:hover::after,
+.q-btn.action-button--primary:hover::after {
+  display: none !important;
+}
+
+/* 기본 버튼을 위한 모든 전역 버튼 스타일 강제 오버라이드 */
+.q-btn.action-button--primary {
+  background: linear-gradient(135deg, #1976d2 0%, #42a5f5 50%, #1976d2 100%) !important;
+  background-image: linear-gradient(135deg, #1976d2 0%, #42a5f5 50%, #1976d2 100%) !important;
+  color: white !important;
+  border: 2px solid #1976d2 !important;
+  border-radius: 20px !important;
+  padding: 12px 24px !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  text-transform: none !important;
+  min-height: auto !important;
+  height: auto !important;
+  min-width: auto !important;
+  width: auto !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+  overflow: visible !important;
+}
+
+/* 최대 특이성을 가진 긍정적 버튼 스타일 - 초록색 그라데이션 */
+.q-btn.action-button.action-button--positive,
+.q-btn.action-button--positive,
+button.q-btn.action-button--positive {
+  background: linear-gradient(135deg, #4caf50 0%, #66bb6a 50%, #4caf50 100%) !important;
+  background-color: #4caf50 !important;
+  background-image: linear-gradient(135deg, #4caf50 0%, #66bb6a 50%, #4caf50 100%) !important;
+  color: white !important;
+  border: 2px solid #4caf50 !important;
+  transition: background 0.3s ease, background-image 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease !important;
+}
+
+.q-btn.action-button.action-button--positive:hover,
+.q-btn.action-button--positive:hover,
+button.q-btn.action-button--positive:hover,
+.q-btn.action-button.action-button--positive.q-btn--hover,
+.q-btn.action-button--positive.q-btn--hover {
+  background: linear-gradient(135deg, #45a049 0%, #5cb85c 50%, #45a049 100%) !important;
+  background-color: #45a049 !important;
+  background-image: linear-gradient(135deg, #45a049 0%, #5cb85c 50%, #45a049 100%) !important;
+  border-color: #45a049 !important;
+  color: white !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3) !important;
+}
+
+/* 초록색 그라데이션으로 모든 Quasar 스타일 강제 오버라이드 */
+div .q-btn.action-button--positive,
+div button.q-btn.action-button--positive {
+  background: linear-gradient(135deg, #4caf50 0%, #66bb6a 50%, #4caf50 100%) !important;
+  background-color: #4caf50 !important;
+  background-image: linear-gradient(135deg, #4caf50 0%, #66bb6a 50%, #4caf50 100%) !important;
+}
+
+div .q-btn.action-button--positive:hover,
+div button.q-btn.action-button--positive:hover {
+  background: linear-gradient(135deg, #45a049 0%, #5cb85c 50%, #45a049 100%) !important;
+  background-color: #45a049 !important;
+  background-image: linear-gradient(135deg, #45a049 0%, #5cb85c 50%, #45a049 100%) !important;
+}
+
+/* 우리의 초록색 그라데이션으로 모든 Quasar 긍정적 색상 그라데이션 오버라이드 */
+.q-btn.bg-positive,
+.q-btn[class*="bg-positive"],
+.q-btn[style*="gradient"],
+.q-btn[style*="background"] {
+  background: linear-gradient(135deg, #4caf50 0%, #66bb6a 50%, #4caf50 100%) !important;
+  background-color: #4caf50 !important;
+  background-image: linear-gradient(135deg, #4caf50 0%, #66bb6a 50%, #4caf50 100%) !important;
+}
+
+/* Quasar 프레임워크를 위한 추가 특이성 */
+.q-btn.action-button--positive.bg-positive,
+.q-btn.action-button--positive[data-color="positive"] {
+  background: linear-gradient(135deg, #4caf50 0%, #66bb6a 50%, #4caf50 100%) !important;
+  background-image: linear-gradient(135deg, #4caf50 0%, #66bb6a 50%, #4caf50 100%) !important;
+  transition: background 0.3s ease, background-image 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease !important;
+}
+
+/* Quasar의 기본 전환 효과 비활성화 및 전역 스타일 오버라이드 */
+.q-btn.action-button--positive,
+.q-btn.action-button--positive * {
+  transition: background 0.3s ease, background-image 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease !important;
+}
+
+.q-btn.action-button--positive .q-btn__content {
+  transition: none !important;
+}
+
+/* 전역 main.css 및 theme.css 스타일 오버라이드 */
+div .q-btn.action-button--positive {
+  background: linear-gradient(135deg, #4caf50 0%, #66bb6a 50%, #4caf50 100%) !important;
+  background-image: linear-gradient(135deg, #4caf50 0%, #66bb6a 50%, #4caf50 100%) !important;
+  opacity: 1 !important;
+  display: inline-flex !important;
+}
+
+/* 전역 ::after 의사 요소 비활성화 */
+div .q-btn.action-button--positive::after,
+.q-btn.action-button--positive::after {
+  display: none !important;
+}
+
+div .q-btn.action-button--positive:hover::after,
+.q-btn.action-button--positive:hover::after {
+  display: none !important;
+}
+
+/* 모든 전역 버튼 스타일 강제 오버라이드 */
+.q-btn.action-button--positive {
+  background: linear-gradient(135deg, #4caf50 0%, #66bb6a 50%, #4caf50 100%) !important;
+  background-image: linear-gradient(135deg, #4caf50 0%, #66bb6a 50%, #4caf50 100%) !important;
+  color: white !important;
+  border: 2px solid #4caf50 !important;
+  border-radius: 20px !important;
+  padding: 12px 24px !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  text-transform: none !important;
+  min-height: auto !important;
+  height: auto !important;
+  min-width: auto !important;
+  width: auto !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+  overflow: visible !important;
+}
+
+.q-btn.action-button--positive:disabled {
+  background-color: #a5d6a7 !important;
+  border-color: #a5d6a7 !important;
+  color: white !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* 아이템 편집 버튼 - 최대 특이성을 가진 둥근 스타일 */
+.q-btn.edit-items-btn,
+.q-btn.edit-items-btn.q-btn--flat,
+button.q-btn.edit-items-btn {
+  border-radius: 50px !important;
+  padding: 8px 16px !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  font-size: 13px !important;
+  background-color: #1976d2 !important;
+  color: white !important;
+  border: 2px solid #1976d2 !important;
+  transition: background-color 0.3s ease, border-color 0.3s ease !important;
+  min-height: auto !important;
+  height: auto !important;
+  min-width: auto !important;
+  width: auto !important;
+  box-sizing: border-box !important;
+  position: relative !important;
+  overflow: visible !important;
+}
+
+.q-btn.edit-items-btn:hover,
+.q-btn.edit-items-btn.q-btn--flat:hover,
+button.q-btn.edit-items-btn:hover,
+.q-btn.edit-items-btn.q-btn--hover,
+.q-btn.edit-items-btn.q-btn--flat.q-btn--hover {
+  background-color: #87ceeb !important;
+  border-color: #87ceeb !important;
+  color: white !important;
+}
+
+/* 모든 Quasar 스타일 강제 오버라이드 */
+div .q-btn.edit-items-btn,
+div button.q-btn.edit-items-btn {
+  background-color: #1976d2 !important;
+  border-color: #1976d2 !important;
+  color: white !important;
+}
+
+div .q-btn.edit-items-btn:hover,
+div button.q-btn.edit-items-btn:hover {
+  background-color: #87ceeb !important;
+  border-color: #87ceeb !important;
+  color: white !important;
+}
+
+/* 전역 main.css 및 theme.css 스타일 오버라이드 */
+div .q-btn.edit-items-btn {
+  background-color: #1976d2 !important;
+  opacity: 1 !important;
+  display: inline-flex !important;
+}
+
+/* 전역 ::after 의사 요소 비활성화 */
+div .q-btn.edit-items-btn::after,
+.q-btn.edit-items-btn::after {
+  display: none !important;
+}
+
+div .q-btn.edit-items-btn:hover::after,
+.q-btn.edit-items-btn:hover::after {
+  display: none !important;
+}
+
+/* 모든 Quasar 버튼 스타일 오버라이드 */
+.q-btn.edit-items-btn[class*="bg-"],
+.q-btn.edit-items-btn[style*="background"] {
+  background-color: #1976d2 !important;
+}
+
+.q-btn.edit-items-btn[class*="bg-"]:hover,
+.q-btn.edit-items-btn[style*="background"]:hover {
+  background-color: #87ceeb !important;
 }
 </style>

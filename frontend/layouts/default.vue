@@ -104,10 +104,10 @@ const menu = [
   { label: '수하물 분류', path: '/classification' },
   { label: '수하물 무게 예측', path: '/weight' },
   { label: '수하물 패킹', path: '/packing' },
-  { label: '커뮤니티', path: '/community' },
-  { label: '여행 추천', path: '/recommend' },
+  { label: '수하물 공유', path: '/share' },
   { label: '여행 정보', path: '/info' },
-  { label: '공유', path: '/share' },
+  { label: '여행 추천', path: '/recommend' },
+  { label: '커뮤니티', path: '/community' }
 ]
 
 const route = useRoute()
@@ -119,7 +119,7 @@ const logoutToast = ref(null)
 const pageLoadingOverlay = ref(null)
 
 // useAuth composable 사용
-const { isAuthenticated, user, logout: authLogout } = useAuth()
+const { isAuthenticated, user, logout: authLogout, checkAuth } = useAuth()
 
 // 상태 변화 추적
 watch(isAuthenticated, (newValue) => {
@@ -128,6 +128,13 @@ watch(isAuthenticated, (newValue) => {
 
 watch(user, (newValue) => {
   console.log('default.vue - 사용자 정보 변화:', newValue)
+})
+
+// 클라이언트에서 마운트 시 인증 상태 재확인
+onMounted(() => {
+  if (process.client) {
+    checkAuth()
+  }
 })
 
 const profileMenu = ref(false)
@@ -193,7 +200,8 @@ async function logout() {
   try {
     const access_token = localStorage.getItem('access_token')
     if (access_token) {
-      await $fetch('http://' + window.location.hostname + ':5001/api/logout', {
+      const { getApiUrl } = useApiUrl()
+      await $fetch(getApiUrl('/api/logout'), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${access_token}`
