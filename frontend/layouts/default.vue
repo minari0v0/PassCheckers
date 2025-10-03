@@ -98,6 +98,7 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useApiUrl } from '~/composables/useApiUrl'
 
 const drawer = ref(false)
 const menu = [

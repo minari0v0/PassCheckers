@@ -205,6 +205,7 @@
 <script setup lang="ts">
 import { ref, onMounted, watch, computed, shallowRef, type Component } from 'vue';
 import { useAuth } from '~/composables/useAuth';
+import { useApiUrl } from '~/composables/useApiUrl';
 import { useQuasar } from 'quasar';
 
 // ApexCharts는 클라이언트 측에서만 동적으로 import 합니다.

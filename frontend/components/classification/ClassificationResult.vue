@@ -206,6 +206,7 @@ import ClassificationToast from './ClassificationToast.vue'
 import SaveAnalysisToast from './SaveAnalysisToast.vue'
 import EditItemsModal from './EditItemsModal.vue'
 import { useAuth } from '~/composables/useAuth'
+import { useApiUrl } from '~/composables/useApiUrl'
 
 const $q = useQuasar()
 const route = useRoute()
