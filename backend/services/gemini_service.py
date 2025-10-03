@@ -266,7 +266,7 @@ def _get_categories_from_gemini(items_to_categorize: list) -> dict:
                 fallback_categories[item] = '기타'
         
         return fallback_categories
-
+    
 def get_gemini_api_key():
     """Gemini API 키를 환경변수에서 가져옵니다."""
     import os

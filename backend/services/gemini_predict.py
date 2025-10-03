@@ -56,7 +56,76 @@ Your task is to predict the final weight for a list of items provided in a JSON 
 """
 
 # --------------------------------------------------------------------------
-# 2. Gemini API를 직접 호출하는 내부 헬퍼 함수
+# 2. weights 테이블 기반 무게 계산 헬퍼 함수
+# --------------------------------------------------------------------------
+def _calculate_weight_from_weights_table(avg_weight_value, avg_weight_unit, weight_range, bbox_ratio):
+    """
+    weights 테이블의 기본 무게 데이터를 bbox_ratio에 따라 조정하여 예측 무게를 계산합니다.
+    
+    Args:
+        avg_weight_value: 평균 무게 값
+        avg_weight_unit: 평균 무게 단위 (g 또는 kg)
+        weight_range: 무게 범위 문자열 (예: "200-500g")
+        bbox_ratio: 이미지에서의 바운딩 박스 비율
+    
+    Returns:
+        dict: {"value": float, "unit": str} 또는 None
+    """
+    try:
+        # 무게 범위에서 최소값과 최대값 추출
+        weight_range_clean = weight_range.replace('g', '').replace('kg', '').strip()
+        if '-' in weight_range_clean:
+            min_weight_str, max_weight_str = weight_range_clean.split('-')
+            min_weight = float(min_weight_str.strip())
+            max_weight = float(max_weight_str.strip())
+        else:
+            # 범위가 명확하지 않은 경우 평균값 기준으로 ±30% 범위 설정
+            base_weight = float(avg_weight_value)
+            min_weight = base_weight * 0.7
+            max_weight = base_weight * 1.3
+        
+        # bbox_ratio에 따른 무게 조정
+        # bbox_ratio가 클수록 무게가 더 무거워지도록 조정
+        if bbox_ratio < 0.1:
+            # 매우 작은 비율: 최소값 근처
+            weight_multiplier = 0.7
+        elif bbox_ratio < 0.2:
+            # 작은 비율: 최소값과 평균값 사이
+            weight_multiplier = 0.85
+        elif bbox_ratio < 0.3:
+            # 중간 비율: 평균값 근처
+            weight_multiplier = 1.0
+        elif bbox_ratio < 0.4:
+            # 큰 비율: 평균값과 최대값 사이
+            weight_multiplier = 1.15
+        else:
+            # 매우 큰 비율: 최대값 근처
+            weight_multiplier = 1.3
+        
+        # 최종 무게 계산
+        predicted_weight = float(avg_weight_value) * weight_multiplier
+        
+        # 무게 범위 내로 제한
+        predicted_weight = max(min_weight, min(predicted_weight, max_weight))
+        
+        # 단위 결정 (1kg 이상이면 kg, 아니면 g)
+        if predicted_weight >= 1000 and avg_weight_unit == 'g':
+            return {
+                "value": round(predicted_weight / 1000, 2),
+                "unit": "kg"
+            }
+        else:
+            return {
+                "value": round(predicted_weight, 1),
+                "unit": avg_weight_unit
+            }
+            
+    except (ValueError, TypeError) as e:
+        print(f"[Weight Calculation] Error calculating weight from weights table: {e}")
+        return None
+
+# --------------------------------------------------------------------------
+# 3. Gemini API를 직접 호출하는 내부 헬퍼 함수
 # --------------------------------------------------------------------------
 def _call_gemini_for_weights(items_to_predict: list):
     """Gemini API에 무게 예측을 요청하고 결과를 파싱하여 반환합니다."""
@@ -89,13 +158,13 @@ def _call_gemini_for_weights(items_to_predict: list):
         return None
 
 # --------------------------------------------------------------------------
-# 3. 메인 서비스 함수 (수정 및 개선)
+# 4. 메인 서비스 함수 (수정 및 개선)
 # --------------------------------------------------------------------------
 def get_predicted_weights_for_analysis(analysis_id: int):
     """
     특정 분석 ID의 아이템 무게를 가져옵니다.
-    - DB에 저장된 예측치가 있으면 그것을 사용합니다.
-    - 예측치가 없는 아이템만 API를 통해 예측하고 결과를 DB에 업데이트합니다.
+    - weights 테이블에서 기본 무게 데이터를 먼저 조회합니다.
+    - weights 테이블에 없는 물품만 Gemini API를 통해 예측합니다.
     """
     conn = get_db_connection()
     if not conn:
@@ -103,7 +172,7 @@ def get_predicted_weights_for_analysis(analysis_id: int):
         
     try:
         with conn.cursor() as cursor:
-            # 1. 분석에 포함된 모든 아이템의 정보를 가져옵니다. (기존 예측치 포함)
+            # 1. 분석에 포함된 모든 아이템의 정보를 가져옵니다.
             sql = """
                 SELECT
                     ai.id, ai.item_name_ko,
@@ -121,15 +190,19 @@ def get_predicted_weights_for_analysis(analysis_id: int):
             all_items = cursor.fetchall()
 
             items_to_predict = []
-            already_predicted_items = []
+            items_with_weights = []
+            items_without_weights = []
 
-            # 2. 아이템을 '예측 필요'와 '예측 완료' 그룹으로 분리합니다.
+            # 2. 아이템을 'weights 테이블에 있음', 'weights 테이블에 없음', '이미 예측됨' 그룹으로 분리합니다.
             for item in all_items:
-                if item['predicted_weight_value'] is None:
-                    # 참조 무게 데이터가 없는 아이템은 예측 불가
-                    if not item.get('avg_weight_value') or not item.get('weight_range'):
-                        continue
-
+                # 이미 예측된 무게가 있는 경우
+                if item['predicted_weight_value'] is not None:
+                    items_with_weights.append(item)
+                    continue
+                
+                # weights 테이블에 기본 무게 데이터가 있는 경우
+                if item.get('avg_weight_value') and item.get('weight_range'):
+                    # bbox_ratio 계산
                     bbox_width = item['bbox_x_max'] - item['bbox_x_min']
                     bbox_height = item['bbox_y_max'] - item['bbox_y_min']
 
@@ -138,45 +211,92 @@ def get_predicted_weights_for_analysis(analysis_id: int):
                     else:
                         bbox_ratio = 0
                     
-                    avg_weight_str = f"{item['avg_weight_value']}{item['avg_weight_unit']}"
+                    # weights 테이블의 기본 무게를 bbox_ratio에 따라 조정
+                    predicted_weight = _calculate_weight_from_weights_table(
+                        item['avg_weight_value'], 
+                        item['avg_weight_unit'], 
+                        item['weight_range'], 
+                        bbox_ratio
+                    )
+                    
+                    if predicted_weight:
+                        # DB에 예측 결과 저장
+                        update_sql = """
+                            UPDATE analysis_items
+                            SET predicted_weight_value = %s, predicted_weight_unit = %s
+                            WHERE id = %s
+                        """
+                        cursor.execute(update_sql, (
+                            predicted_weight['value'], 
+                            predicted_weight['unit'], 
+                            item['id']
+                        ))
+                        
+                        # 결과에 추가
+                        item['predicted_weight_value'] = predicted_weight['value']
+                        item['predicted_weight_unit'] = predicted_weight['unit']
+                        items_with_weights.append(item)
+                    else:
+                        items_without_weights.append(item)
+                else:
+                    # weights 테이블에 데이터가 없는 경우
+                    items_without_weights.append(item)
+
+            # 3. weights 테이블에 없는 아이템들을 Gemini API로 예측
+            if items_without_weights:
+                print(f"[Gemini Service] Predicting weights for {len(items_without_weights)} items not in weights table for analysis_id: {analysis_id}")
+                
+                # Gemini API용 데이터 준비
+                for item in items_without_weights:
+                    bbox_width = item['bbox_x_max'] - item['bbox_x_min']
+                    bbox_height = item['bbox_y_max'] - item['bbox_y_min']
+
+                    if item['image_width'] and item['image_height'] and item['image_width'] > 0 and item['image_height'] > 0:
+                        bbox_ratio = (bbox_width * bbox_height) / (item['image_width'] * item['image_height'])
+                    else:
+                        bbox_ratio = 0
 
                     items_to_predict.append({
                         "id": item['id'],
                         "item_name": item['item_name_ko'],
-                        "avg_weight": avg_weight_str,
-                        "weight_range": item['weight_range'],
+                        "avg_weight": "500g",  # 기본값 (weights 테이블에 없으므로)
+                        "weight_range": "100-1000g",  # 기본값
                         "bbox_ratio": round(float(bbox_ratio), 4)
                     })
-                else:
-                    already_predicted_items.append(item)
 
-            # 3. 예측이 필요한 아이템이 있는 경우 API를 호출하고 DB를 업데이트합니다.
-            if items_to_predict:
-                print(f"[Gemini Service] Predicting weights for {len(items_to_predict)} items for analysis_id: {analysis_id}")
-                newly_predicted_weights = _call_gemini_for_weights(items_to_predict)
+                if items_to_predict:
+                    newly_predicted_weights = _call_gemini_for_weights(items_to_predict)
 
-                if newly_predicted_weights:
-                    # 4. API 결과를 DB에 업데이트합니다.
-                    update_sql = """
-                        UPDATE analysis_items
-                        SET predicted_weight_value = %s, predicted_weight_unit = %s
-                        WHERE id = %s
-                    """
-                    update_data = []
-                    for pred in newly_predicted_weights:
-                        update_data.append(
-                            (pred['predicted_weight_value'], pred['predicted_weight_unit'], pred['id'])
-                        )
-                    
-                    cursor.executemany(update_sql, update_data)
-                    conn.commit()
-                    print(f"[Gemini Service] Successfully updated weights for {len(update_data)} items.")
+                    if newly_predicted_weights:
+                        # API 결과를 DB에 업데이트
+                        update_sql = """
+                            UPDATE analysis_items
+                            SET predicted_weight_value = %s, predicted_weight_unit = %s
+                            WHERE id = %s
+                        """
+                        update_data = []
+                        for pred in newly_predicted_weights:
+                            update_data.append(
+                                (pred['predicted_weight_value'], pred['predicted_weight_unit'], pred['id'])
+                            )
+                        
+                        cursor.executemany(update_sql, update_data)
+                        print(f"[Gemini Service] Successfully updated weights for {len(update_data)} items using Gemini API.")
 
-                    # 5. 전체 결과를 다시 조회하여 최신 상태를 반환합니다.
-                    cursor.execute(sql, (analysis_id,))
-                    all_items = cursor.fetchall()
+                        # 업데이트된 아이템들을 결과에 추가
+                        for item in items_without_weights:
+                            for pred in newly_predicted_weights:
+                                if pred['id'] == item['id']:
+                                    item['predicted_weight_value'] = pred['predicted_weight_value']
+                                    item['predicted_weight_unit'] = pred['predicted_weight_unit']
+                                    items_with_weights.append(item)
+                                    break
 
-            return all_items
+            # 4. 변경사항 커밋
+            conn.commit()
+            
+            # 5. 최종 결과 반환
+            return items_with_weights
 
     except Exception as e:
         print(f"An error occurred in get_predicted_weights_for_analysis: {e}")
