@@ -383,4 +383,3 @@ def _get_categories_from_gemini(items_to_categorize: list) -> dict:
                 fallback_categories[item] = '기타'
         
         return fallback_categories
->>>>>>> page

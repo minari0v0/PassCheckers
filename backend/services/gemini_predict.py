@@ -305,8 +305,4 @@ def get_predicted_weights_for_analysis(analysis_id: int):
         return {"error": str(e)}
     finally:
         if conn:
-<<<<<<< HEAD
             conn.close()
-=======
-            conn.close()
->>>>>>> page
