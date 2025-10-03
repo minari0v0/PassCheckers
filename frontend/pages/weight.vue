@@ -238,7 +238,8 @@ interface WeightData {
 }
 
 const { user } = useAuth();
-const apiBaseUrl = 'http://' + window.location.hostname + ':5001';
+const { getApiBaseUrl, getApiUrl } = useApiUrl();
+const apiBaseUrl = getApiBaseUrl();
 const $q = useQuasar();
 
 const classificationHistory = ref<ClassificationHistory[]>([]);
@@ -250,7 +251,7 @@ const weightData = ref<WeightData | null>(null);
 const isWeightLoading = ref(false);
 const weightError = ref<string | null>(null);
 const animatedWeight = ref(0);
-let animationFrameId: number;
+let animationFrameId: number = 0;
 
 // --- 차트 상태 ---
 const isCategoryLoading = ref(false);
@@ -500,13 +501,17 @@ watch(categoryChartData, (newChartData) => {
   }
 }, { deep: true });
 
-watch(adjustedWeightData, (newData) => {
-  cancelAnimationFrame(animationFrameId);
-  if (!newData || newData.total_weight_kg === null) {
-    animatedWeight.value = 0;
+// 애니메이션 함수를 클라이언트 전용으로 분리
+const startWeightAnimation = (targetWeight: number) => {
+  if (!process.client || typeof requestAnimationFrame === 'undefined') {
+    animatedWeight.value = targetWeight;
     return;
   }
-  const targetWeight = newData.total_weight_kg;
+  
+  if (typeof cancelAnimationFrame !== 'undefined') {
+    cancelAnimationFrame(animationFrameId);
+  }
+  
   const duration = 1000;
   let start: number | null = null;
   const step = (timestamp: number) => {
@@ -520,6 +525,21 @@ watch(adjustedWeightData, (newData) => {
     }
   };
   animationFrameId = requestAnimationFrame(step);
+};
+
+watch(adjustedWeightData, (newData) => {
+  if (!newData || newData.total_weight_kg === null) {
+    animatedWeight.value = 0;
+    return;
+  }
+  
+  // 클라이언트에서만 애니메이션 실행
+  if (process.client) {
+    startWeightAnimation(newData.total_weight_kg);
+  } else {
+    // 서버사이드에서는 즉시 값 설정
+    animatedWeight.value = newData.total_weight_kg;
+  }
 }, { immediate: true });
 
 const recommendedCarrier = computed(() => {
