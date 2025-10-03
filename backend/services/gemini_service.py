@@ -2,6 +2,8 @@
 import json
 import os
 import google.generativeai as genai
+import re
+from db.database_utils import get_db_connection
 
 # API 키를 사용하여 Gemini 클라이언트를 설정합니다.
 try:
@@ -269,5 +271,116 @@ def _get_categories_from_gemini(items_to_categorize: list) -> dict:
     
 def get_gemini_api_key():
     """Gemini API 키를 환경변수에서 가져옵니다."""
-    import os
     return os.getenv('GEMINI_API_KEY')
+
+# --- 카테고리 분류를 위한 새로운 로직 ---
+
+CATEGORY_SYSTEM_PROMPT = """
+You are an intelligent packing assistant. Your task is to categorize a list of items into predefined categories.
+
+**CRITICAL RULES:**
+1. You MUST respond with a single, valid JSON object. Do not include any other text or markdown formatting like ```json.
+2. The JSON object should contain item names as keys and their corresponding category as values.
+3. You MUST use one of the following predefined categories: '의류', '전자기기', '세면도구', '신발', '액세서리', '의약품', '서류', '식품', '가방', '기타'.
+4. If an item does not clearly fit into any category, assign it to '기타'.
+
+**Example Request:**
+["노트북", "티셔츠", "여권", "두통약", "선글라스"]
+
+**Example JSON Response:**
+{
+  "노트북": "전자기기",
+  "티셔츠": "의류",
+  "여권": "서류",
+  "두통약": "의약품",
+  "선글라스": "액세서리"
+}
+"""
+
+def get_and_update_categories(item_names: list) -> dict:
+    """
+    아이템 목록을 받아 카테고리를 조회하고, 없는 경우 Gemini를 통해 얻어와 DB를 업데이트합니다.
+    """
+    if not item_names:
+        return {}
+
+    conn = get_db_connection()
+    try:
+        with conn.cursor() as cursor:
+            # 이미 카테고리가 있는 아이템 조회
+            format_strings = ','.join(['%s'] * len(item_names))
+            cursor.execute(f"SELECT item_name, category FROM items WHERE item_name IN ({format_strings})", tuple(item_names))
+            results = cursor.fetchall()
+            
+            categorized_items = {row['item_name']: row['category'] for row in results if row['category']}
+            items_to_categorize = [name for name in item_names if name not in categorized_items]
+
+            # 새로 분류가 필요한 아이템이 있다면 Gemini에 요청
+            if items_to_categorize:
+                new_categories = _get_categories_from_gemini(items_to_categorize)
+                if new_categories:
+                    # DB 업데이트
+                    update_data = []
+                    for name, category in new_categories.items():
+                        if name in items_to_categorize:
+                            update_data.append((category, name))
+                            categorized_items[name] = category
+                    
+                    if update_data:
+                        cursor.executemany("UPDATE items SET category = %s WHERE item_name = %s", update_data)
+                        conn.commit()
+                        print(f"[DB UPDATE] Categories updated for: {[d[1] for d in update_data]}")
+
+            return categorized_items
+
+    except Exception as e:
+        print(f"[Category Service] An error occurred: {e}")
+        # 오류 발생 시, 현재까지 분류된 것만이라도 반환
+        return categorized_items if 'categorized_items' in locals() else {}
+    finally:
+        if conn:
+            conn.close()
+
+def _get_categories_from_gemini(items_to_categorize: list) -> dict:
+    """
+    Gemini API를 사용하여 여러 물품의 카테고리를 JSON 형식으로 가져옵니다.
+    API 오류 시 기본 카테고리를 반환합니다.
+    """
+    api_key = get_gemini_api_key()
+    if not items_to_categorize or not api_key:
+        return {}
+
+    try:
+        generation_config = genai.types.GenerationConfig(response_mime_type="application/json")
+        model = genai.GenerativeModel(
+            model_name='gemini-2.0-flash-exp',
+            system_instruction=CATEGORY_SYSTEM_PROMPT,
+            generation_config=generation_config
+        )
+        # 리스트를 JSON 문자열로 변환하여 프롬프트에 포함
+        prompt = json.dumps(items_to_categorize, ensure_ascii=False)
+        response = model.generate_content(prompt)
+        return json.loads(response.text)
+    except Exception as e:
+        print(f"[Gemini Category Service] Failed to get categories: {e}")
+        print(f"[Gemini Category Service] Using fallback categories for {len(items_to_categorize)} items")
+        
+        # API 오류 시 기본 카테고리 반환
+        fallback_categories = {}
+        for item in items_to_categorize:
+            # 간단한 키워드 기반 카테고리 분류
+            if any(keyword in item.lower() for keyword in ['옷', '의류', '셔츠', '바지', '치마', '원피스', '코트', '자켓']):
+                fallback_categories[item] = '의류'
+            elif any(keyword in item.lower() for keyword in ['화장품', '향수', '크림', '로션', '립스틱']):
+                fallback_categories[item] = '화장품'
+            elif any(keyword in item.lower() for keyword in ['신발', '구두', '운동화', '부츠', '샌들']):
+                fallback_categories[item] = '신발'
+            elif any(keyword in item.lower() for keyword in ['가방', '백팩', '핸드백', '지갑']):
+                fallback_categories[item] = '가방/액세서리'
+            elif any(keyword in item.lower() for keyword in ['전자제품', '폰', '핸드폰', '노트북', '태블릿', '충전기']):
+                fallback_categories[item] = '전자제품'
+            else:
+                fallback_categories[item] = '기타'
+        
+        return fallback_categories
+>>>>>>> page
