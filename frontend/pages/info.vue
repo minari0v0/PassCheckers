@@ -16,7 +16,9 @@
       <!-- 왼쪽: 대륙/국가/도시 선택 패널 -->
       <aside class="left-panel">
         <div v-if="currentView === 'continents'">
-          <h2 class="panel-title">대륙 선택</h2>
+          <div class="panel-header">
+            <h2 class="panel-title">대륙 선택</h2>
+          </div>
           <div v-if="isLoadingContinents" class="loading-text">... 로딩 중 ...</div>
           <div v-else class="continent-buttons">
             <button v-for="continent in continents" :key="continent.continent_id"
@@ -31,7 +33,7 @@
 
         <div v-if="currentView === 'countries'">
           <div class="panel-header">
-            <button @click="goBack" class="back-btn">
+            <button @click="goBackFromCountries" class="back-btn">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><polyline points="12 19 5 12 12 5"/></svg>
             </button>
             <h2 class="panel-title">{{ selectedContinent.continent_ko }}</h2>
@@ -50,7 +52,7 @@
 
         <div v-if="currentView === 'cities'">
           <div class="panel-header">
-            <button @click="goBack" class="back-btn">
+            <button @click="goBackFromCities" class="back-btn">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><polyline points="12 19 5 12 12 5"/></svg>
             </button>
             <h2 class="panel-title">{{ selectedCountry.country_ko }}</h2>
@@ -72,6 +74,7 @@
             :continent-to-focus="selectedContinent?.continent_ko"
             :country-to-highlight="countryToHighlight"
             :continent-to-highlight="continentToHighlight"
+            :reset-map="resetMap"
           />
         </div>
         <div v-else class="details-view-wrapper">
@@ -151,7 +154,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import InteractiveMap from '~/components/InteractiveMap.vue';
+import InteractiveMap from '~/components/info/InteractiveMap.vue';
 import InfoDetailComponent from '~/components/info/DetailComponent.vue';
 import { useApiUrl } from '~/composables/useApiUrl';
 
@@ -166,6 +169,7 @@ const selectedCity = ref(null);
 const selectedLocationDetails = ref(null);
 const continentToHighlight = ref(null);
 const countryToHighlight = ref(null);
+const resetMap = ref(false);
 
 const isLoadingContinents = ref(false);
 const isLoadingCountries = ref(false);
@@ -254,16 +258,29 @@ const highlightCountry = (countryName) => {
   countryToHighlight.value = countryName;
 };
 
-const goBack = () => {
+// 도시 → 국가 뒤로가기
+const goBackFromCities = () => {
   selectedLocationDetails.value = null; // 상세 정보 닫기
-  if (currentView.value === 'cities') {
-    selectedCountry.value = null;
-    selectedCity.value = null;
-    currentView.value = 'countries';
-  } else if (currentView.value === 'countries') {
-    selectedContinent.value = null;
-    currentView.value = 'continents';
-  }
+  selectedCity.value = null;
+  currentView.value = 'countries';
+  // selectedCountry는 유지해서 지도가 국가 선택 상태를 유지
+};
+
+// 국가 → 대륙 뒤로가기
+const goBackFromCountries = () => {
+  console.log('goBackFromCountries 호출됨'); // 디버깅용
+  selectedLocationDetails.value = null; // 상세 정보 닫기
+  selectedContinent.value = null;
+  selectedCountry.value = null;
+  currentView.value = 'continents';
+  
+  // 지도를 초기 상태로 리셋
+  console.log('resetMap을 true로 설정'); // 디버깅용
+  resetMap.value = true;
+  setTimeout(() => {
+    console.log('resetMap을 false로 설정'); // 디버깅용
+    resetMap.value = false;
+  }, 100);
 };
 
 onMounted(fetchContinents);
@@ -277,15 +294,15 @@ onMounted(fetchContinents);
 .header-description { font-size: 1.125rem; color: #6c757d; margin-top: 0.5rem; }
 .main-content { display: flex; gap: 1.5rem; max-width: 1400px; margin: 0 auto; }
 
-.left-panel { flex: 1; max-width: 300px; background-color: white; border-radius: 0.75rem; padding: 1.5rem; border: 1px solid #dee2e6; box-shadow: 0 2px 8px rgba(0,0,0,0.06); height: fit-content; }
-.panel-header { display: flex; align-items: center; margin-bottom: 1.5rem; }
-.back-btn { background: none; border: none; cursor: pointer; padding: 0.5rem; margin-right: 0.75rem; border-radius: 9999px; display: flex; align-items: center; justify-content: center; transition: background-color 0.2s; }
-.back-btn:hover { background-color: #e9ecef; }
-.panel-title { font-size: 1.5rem; font-weight: 700; color: #343a40; }
+.left-panel { flex: 1; max-width: 300px; background-color: white; border-radius: 0.75rem; padding: 0rem 1.5rem 1.5rem 1.5rem; border: 1px solid #dee2e6; box-shadow: 0 2px 8px rgba(0,0,0,0.06); height: fit-content; }
+.left-panel .panel-header { display: flex; align-items: baseline; justify-content: flex-start; gap: 1rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 1px solid #e9ecef; }
+.back-btn { background: none; border: none; cursor: pointer; padding: 0.5rem; border-radius: 9999px; display: flex; align-items: center; justify-content: center; transition: background-color 0.2s; }
+.back-btn:hover { background-color: #e3f2fd; }
+.panel-title { font-size: 1.5rem; font-weight: 700; color: #343a40; margin-bottom: 0rem; }
 
 .continent-buttons, .country-buttons, .city-buttons { display: flex; flex-direction: column; gap: 0.75rem; max-height: 520px; overflow-y: auto; padding-right: 8px; }
 .continent-btn, .country-btn, .city-btn { display: flex; align-items: center; width: 100%; padding: 0.875rem 1.25rem; border-radius: 0.5rem; border: 1px solid #ced4da; background-color: #ffffff; text-align: left; font-size: 1rem; font-weight: 500; color: #495057; cursor: pointer; transition: all 0.2s ease-in-out; }
-.continent-btn:hover, .country-btn:hover, .city-btn:hover { background-color: #f1f3f5; border-color: #868e96; color: #212529; transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+.continent-btn:hover, .country-btn:hover, .city-btn:hover { background-color: #e3f2fd; border-color: #87CEEB; color: #1976d2; transform: translateY(-2px); box-shadow: 0 4px 6px rgba(135, 206, 235, 0.2); }
 .country-btn.active, .city-btn.active { background-color: #4c6ef5; border-color: #364fc7; color: #ffffff; font-weight: 600; }
 
 .right-panel { flex: 3; position: relative; }
@@ -331,7 +348,7 @@ onMounted(fetchContinents);
     cursor: pointer;
     transition: background-color 0.2s;
 }
-.detail-button:hover { background-color: #364fc7; }
+.detail-button:hover { background-color: #1976d2; }
 
 .detail-card, .no-data-card { background-color: white; border-radius: 0.75rem; padding: 1.5rem; border: 1px solid #dee2e6; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
 .card-title { font-size: 1.25rem; font-weight: 700; color: #343a40; margin-bottom: 1.5rem; }
@@ -415,6 +432,6 @@ onMounted(fetchContinents);
 }
 
 .modal-close:hover {
-  background-color: #f1f3f5;
+  background-color: #e3f2fd;
 }
 </style>
