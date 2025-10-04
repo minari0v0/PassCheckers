@@ -124,8 +124,8 @@ def main():
         conn = get_db_connection()
         cursor = conn.cursor()
 
-        # CSV 파일 경로 (프로젝트 루트 기준)
-        base_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..')
+        # CSV 파일 경로 (현재 디렉토리 기준)
+        base_path = os.path.dirname(os.path.abspath(__file__))
         locations_csv = os.path.join(base_path, '1_locations.csv')
         budgets_csv = os.path.join(base_path, '2_budgets.csv')
         cost_breakdowns_csv = os.path.join(base_path, '3_cost_breakdowns.csv')
