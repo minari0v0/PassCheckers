@@ -33,6 +33,7 @@
 
         <div v-if="currentView === 'countries'">
           <div class="panel-header">
+            <!-- 국가 → 대륙 뒤로가기: 지도 상태 유지하며 대륙 목록으로 돌아감 (도시 뒤로가기와 동일) -->
             <button @click="goBackFromCountries" class="back-btn">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><polyline points="12 19 5 12 12 5"/></svg>
             </button>
@@ -52,6 +53,7 @@
 
         <div v-if="currentView === 'cities'">
           <div class="panel-header">
+            <!-- 도시 → 국가 뒤로가기: 지도 상태 유지하며 국가 목록으로 돌아감 -->
             <button @click="goBackFromCities" class="back-btn">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><polyline points="12 19 5 12 12 5"/></svg>
             </button>
@@ -71,10 +73,12 @@
       <section class="right-panel">
         <div v-if="!selectedLocationDetails" class="map-wrapper">
           <InteractiveMap 
+            ref="interactiveMapRef"
             :continent-to-focus="selectedContinent?.continent_ko"
             :country-to-highlight="countryToHighlight"
             :continent-to-highlight="continentToHighlight"
             :reset-map="resetMap"
+            @country-selected="handleCountrySelected"
           />
         </div>
         <div v-else class="details-view-wrapper">
@@ -153,7 +157,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, nextTick } from 'vue';
 import InteractiveMap from '~/components/info/InteractiveMap.vue';
 import InfoDetailComponent from '~/components/info/DetailComponent.vue';
 import { useApiUrl } from '~/composables/useApiUrl';
@@ -170,6 +174,8 @@ const selectedLocationDetails = ref(null);
 const continentToHighlight = ref(null);
 const countryToHighlight = ref(null);
 const resetMap = ref(false);
+const interactiveMapRef = ref(null);
+const savedMapState = ref(null);
 
 const isLoadingContinents = ref(false);
 const isLoadingCountries = ref(false);
@@ -266,7 +272,7 @@ const goBackFromCities = () => {
   // selectedCountry는 유지해서 지도가 국가 선택 상태를 유지
 };
 
-// 국가 → 대륙 뒤로가기
+// 국가 → 대륙 뒤로가기 (첫 번째 뒤로가기: 초기 화면으로 완전 복귀)
 const goBackFromCountries = () => {
   console.log('goBackFromCountries 호출됨'); // 디버깅용
   selectedLocationDetails.value = null; // 상세 정보 닫기
@@ -300,9 +306,9 @@ onMounted(fetchContinents);
 .back-btn:hover { background-color: #e3f2fd; }
 .panel-title { font-size: 1.5rem; font-weight: 700; color: #343a40; margin-bottom: 0rem; }
 
-.continent-buttons, .country-buttons, .city-buttons { display: flex; flex-direction: column; gap: 0.75rem; max-height: 520px; overflow-y: auto; padding-right: 8px; }
-.continent-btn, .country-btn, .city-btn { display: flex; align-items: center; width: 100%; padding: 0.875rem 1.25rem; border-radius: 0.5rem; border: 1px solid #ced4da; background-color: #ffffff; text-align: left; font-size: 1rem; font-weight: 500; color: #495057; cursor: pointer; transition: all 0.2s ease-in-out; }
-.continent-btn:hover, .country-btn:hover, .city-btn:hover { background-color: #e3f2fd; border-color: #87CEEB; color: #1976d2; transform: translateY(-2px); box-shadow: 0 4px 6px rgba(135, 206, 235, 0.2); }
+.continent-buttons, .country-buttons, .city-buttons { display: flex; flex-direction: column; gap: 0.75rem; max-height: 520px; overflow-y: auto; overflow-x: visible; padding: 4px 8px 8px 0; }
+.continent-btn, .country-btn, .city-btn { display: flex; align-items: center; width: 100%; padding: 0.875rem 1.25rem; border-radius: 0.5rem; border: 1px solid #ced4da; background-color: #ffffff; text-align: left; font-size: 1rem; font-weight: 500; color: #495057; cursor: pointer; transition: all 0.2s ease-in-out; position: relative; z-index: 1; }
+.continent-btn:hover, .country-btn:hover, .city-btn:hover { background-color: #e3f2fd; border-color: #87CEEB; color: #1976d2; transform: translateY(-2px); box-shadow: 0 4px 6px rgba(135, 206, 235, 0.2); z-index: 2; }
 .country-btn.active, .city-btn.active { background-color: #4c6ef5; border-color: #364fc7; color: #ffffff; font-weight: 600; }
 
 .right-panel { flex: 3; position: relative; }
