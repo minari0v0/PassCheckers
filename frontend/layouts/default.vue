@@ -52,13 +52,19 @@
           </q-btn>
         </div>
         <div class="q-gutter-sm q-ml-md gt-sm" style="margin-right:32px; display:flex; align-items:center;">
+          <!-- 인증되지 않은 사용자 -->
           <template v-if="!isAuthenticated">
-            <q-btn flat dense no-caps class="profile-btn" label="로그인" @click="$router.push('/login')" />
-            <q-btn flat dense no-caps class="profile-btn signup-btn" label="회원가입" @click="$router.push('/signup')" />
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <q-btn flat dense no-caps class="profile-btn" label="로그인" @click="$router.push('/login')" />
+              <q-btn flat dense no-caps class="profile-btn signup-btn" label="회원가입" @click="$router.push('/signup')" />
+            </div>
           </template>
+          <!-- 인증된 사용자 -->
           <template v-else>
-            <q-btn round flat dense icon="account_circle" size="23px" @click="goToProfile" />
-            <q-btn flat dense no-caps class="profile-btn" label="로그아웃" @click="logout" />
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <q-btn round flat dense icon="account_circle" size="23px" @click="goToProfile" style="color: #2196f3 !important;" />
+              <q-btn flat dense no-caps class="profile-btn" label="로그아웃" @click="logout" />
+            </div>
           </template>
         </div>
         <q-btn flat dense round icon="menu" class="lt-md" @click="drawer = !drawer" />
@@ -120,7 +126,7 @@ const logoutToast = ref(null)
 const pageLoadingOverlay = ref(null)
 
 // useAuth composable 사용
-const { isAuthenticated, user, logout: authLogout, checkAuth } = useAuth()
+const { isAuthenticated, user, logout: authLogout, checkAuth, isInitialized } = useAuth()
 
 // 상태 변화 추적
 watch(isAuthenticated, (newValue) => {
@@ -131,10 +137,14 @@ watch(user, (newValue) => {
   console.log('default.vue - 사용자 정보 변화:', newValue)
 })
 
+watch(isInitialized, (newValue) => {
+  console.log('default.vue - 초기화 상태 변화:', newValue)
+})
+
 // 클라이언트에서 마운트 시 인증 상태 재확인
-onMounted(() => {
+onMounted(async () => {
   if (process.client) {
-    checkAuth()
+    await checkAuth()
   }
 })
 
@@ -248,5 +258,18 @@ function goToProfile() {
 .fade-scale-leave-from, .fade-scale-enter-to {
   opacity: 1;
   transform: scale(1);
+}
+
+/* 프로필 아이콘 스타일 고정 */
+.q-btn[icon="account_circle"] {
+  color: #2196f3 !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.q-btn[icon="account_circle"]:hover {
+  color: #1976d2 !important;
+  background-color: rgba(33, 150, 243, 0.1) !important;
 }
 </style>
