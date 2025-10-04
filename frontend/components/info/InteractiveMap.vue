@@ -16,6 +16,7 @@ const props = defineProps({
   continentToFocus: String,
   countryToHighlight: String,
   continentToHighlight: String,
+  resetMap: Boolean,
 });
 
 const chartdiv = ref(null);
@@ -24,6 +25,7 @@ const chartRef = shallowRef(null);
 const continentSeriesRef = shallowRef(null);
 const countrySeriesRef = shallowRef(null);
 const currentMap = ref('world');
+
 
 const emit = defineEmits(['country-selected']);
 
@@ -45,18 +47,37 @@ const continentNameMap = {
 
 const goHome = () => {
   if (chartRef.value) {
-    // 애니메이션 시작 전에 지도 위치를 먼저 중앙으로 설정합니다.
-    chartRef.value.set("panX", 0);
-    chartRef.value.set("panY", 0);
-    // goHome()을 호출하여 줌 레벨만 애니메이션으로 조정합니다.
-    chartRef.value.goHome();
-
-    // goHome 호출 시, 'scale' 이벤트가 안정적으로 발생하지 않을 수 있으므로 수동으로 시리즈 가시성을 재설정합니다.
+    console.log('goHome 호출됨'); // 디버깅용
+    
+    // 시리즈 가시성을 먼저 재설정
     if (currentMap.value !== 'world') {
         currentMap.value = 'world';
-        countrySeriesRef.value.hide();
-        continentSeriesRef.value.show();
+        if (countrySeriesRef.value) countrySeriesRef.value.hide();
+        if (continentSeriesRef.value) continentSeriesRef.value.show();
     }
+    
+    // 초기 로딩 시와 동일한 설정으로 복구
+    chartRef.value.set("panX", 0);
+    chartRef.value.set("panY", 0);
+    chartRef.value.set("rotationX", 0);
+    chartRef.value.set("rotationY", 0);
+    chartRef.value.set("zoomLevel", 1);
+    
+    // 지도 컨테이너 크기 강제 리셋
+    chartRef.value.set("width", "100%");
+    chartRef.value.set("height", "100%");
+    
+    // 초기 로딩 시와 동일한 homeGeoPoint와 homeZoomLevel 사용
+    chartRef.value.zoomToGeoPoint({ longitude: 0, latitude: 0 }, 1, true);
+    
+    // 지도 리렌더링 강제 실행
+    setTimeout(() => {
+      if (chartRef.value) {
+        chartRef.value.invalidateRawData();
+      }
+    }, 50);
+    
+    console.log('goHome 완료'); // 디버깅용
   }
 };
 
@@ -91,9 +112,8 @@ watch(() => props.continentToFocus, (newContinent) => {
             countrySeriesRef.value.show();
             currentMap.value = 'countries';
         }
-    } else {
-        goHome();
     }
+    // else 블록 제거: continentToFocus가 null이어도 자동으로 goHome() 호출하지 않음
 });
 
 watch(() => props.continentToHighlight, (newVal) => {
@@ -121,6 +141,14 @@ watch(() => props.countryToHighlight, (newVal) => {
     });
 });
 
+watch(() => props.resetMap, (shouldReset) => {
+    console.log('resetMap watcher:', shouldReset); // 디버깅용
+    if (shouldReset) {
+        goHome();
+    }
+});
+
+
 onMounted(async () => {
   try {
     const API_BASE_URL = 'http://' + window.location.hostname + ':5001';
@@ -135,19 +163,27 @@ onMounted(async () => {
   root.value = r;
   r.setThemes([am5themes_Animated.new(r)]);
 
-  let chart = r.container.children.push(am5map.MapChart.new(r, { panX: 'rotateX', panY: 'translateY', projection: am5map.geoMercator(), homeGeoPoint: { longitude: 0, latitude: 0 }, homeZoomLevel: 1 }));
+  let chart = r.container.children.push(am5map.MapChart.new(r, { 
+    panX: 'rotateX', 
+    panY: 'translateY', 
+    projection: am5map.geoMercator(), 
+    homeGeoPoint: { longitude: 0, latitude: 0 }, 
+    homeZoomLevel: 1,
+    maxZoomLevel: 2,
+    minZoomLevel: 0.5
+  }));
   chartRef.value = chart;
 
   let continentSeries = chart.series.push(am5map.MapPolygonSeries.new(r, { geoJSON: am5geodata_continentsLow, exclude: ['antarctica'] }));
   continentSeriesRef.value = continentSeries;
   continentSeries.mapPolygons.template.setAll({ tooltipText: '{name}', interactive: true, fill: am5.color(0xaaaaaa) });
-  continentSeries.mapPolygons.template.states.create('hover', { fill: am5.color(0x9EBC8A), stroke: am5.color(0x73946B), strokeWidth: 2 });
+  continentSeries.mapPolygons.template.states.create('hover', { fill: am5.color(0x87CEEB), stroke: am5.color(0x4682B4), strokeWidth: 2 });
   continentSeries.mapPolygons.template.states.create("default", { fill: am5.color(0xaaaaaa), stroke: am5.color(0x888888), strokeWidth: 1 });
 
   let countrySeries = chart.series.push(am5map.MapPolygonSeries.new(r, { geoJSON: am5geodata_worldLow, exclude: ['AQ'], visible: false }));
   countrySeriesRef.value = countrySeries;
   countrySeries.mapPolygons.template.setAll({ tooltipText: '{name}', interactive: true, fill: am5.color(0xcccccc) });
-  countrySeries.mapPolygons.template.states.create('hover', { fill: am5.color(0x9EBC8A), stroke: am5.color(0x73946B), strokeWidth: 2 });
+  countrySeries.mapPolygons.template.states.create('hover', { fill: am5.color(0x87CEEB), stroke: am5.color(0x4682B4), strokeWidth: 2 });
   countrySeries.mapPolygons.template.states.create("default", { fill: am5.color(0xcccccc), stroke: am5.color(0xaaaaaa), strokeWidth: 1 });
 
   countrySeries.mapPolygons.template.events.on('click', (ev) => {
@@ -176,6 +212,7 @@ onMounted(async () => {
       }
     }
   });
+
 });
 
 onUnmounted(() => {
