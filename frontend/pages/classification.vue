@@ -91,6 +91,7 @@ import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import ClassificationResult from '~/components/classification/ClassificationResult.vue'
+import { useApiUrl } from '~/composables/useApiUrl'
 
 definePageMeta({
   middleware: 'auth'

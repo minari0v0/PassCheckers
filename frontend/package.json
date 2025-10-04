@@ -13,6 +13,8 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "@amcharts/amcharts5": "^5.14.2",
+    "@amcharts/amcharts5-geodata": "^5.1.5",
     "@quasar/extras": "^1.16.17",
     "apexcharts": "^5.3.5",
     "nuxt": "^3.17.2",
@@ -22,7 +24,6 @@
     "vue-router": "^4.5.1",
     "vue3-apexcharts": "^1.8.0"
   },
-  "devDependencies": {},
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=8.0.0"

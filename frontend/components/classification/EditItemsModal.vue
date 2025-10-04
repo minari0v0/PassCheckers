@@ -196,6 +196,7 @@
 <script setup>
 import { ref, watch, computed, nextTick, onBeforeUpdate } from 'vue'
 import { useQuasar } from 'quasar'
+import { useApiUrl } from '~/composables/useApiUrl'
 
 const props = defineProps({
   show: {

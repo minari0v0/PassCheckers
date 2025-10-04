@@ -58,7 +58,7 @@ Your task is to predict the final weight for a list of items provided in a JSON 
 # --------------------------------------------------------------------------
 # 2. weights 테이블 기반 무게 계산 헬퍼 함수
 # --------------------------------------------------------------------------
-def _calculate_weight_from_weights_table(avg_weight_value, avg_weight_unit, weight_range, bbox_ratio):
+def _calculate_weight_from_weights_table(avg_weight_value, avg_weight_unit, weight_range, bbox_ratio, item_name=None):
     """
     weights 테이블의 기본 무게 데이터를 bbox_ratio에 따라 조정하여 예측 무게를 계산합니다.
     
@@ -67,6 +67,7 @@ def _calculate_weight_from_weights_table(avg_weight_value, avg_weight_unit, weig
         avg_weight_unit: 평균 무게 단위 (g 또는 kg)
         weight_range: 무게 범위 문자열 (예: "200-500g")
         bbox_ratio: 이미지에서의 바운딩 박스 비율
+        item_name: 아이템 이름 (선택적, 특별한 조정을 위해)
     
     Returns:
         dict: {"value": float, "unit": str} 또는 None
@@ -84,26 +85,54 @@ def _calculate_weight_from_weights_table(avg_weight_value, avg_weight_unit, weig
             min_weight = base_weight * 0.7
             max_weight = base_weight * 1.3
         
-        # bbox_ratio에 따른 무게 조정
+        # bbox_ratio에 따른 무게 조정 (더 세밀한 조정)
         # bbox_ratio가 클수록 무게가 더 무거워지도록 조정
-        if bbox_ratio < 0.1:
+        if bbox_ratio < 0.05:
+            # 극도로 작은 비율: 최소값 근처
+            weight_multiplier = 0.6
+        elif bbox_ratio < 0.1:
             # 매우 작은 비율: 최소값 근처
-            weight_multiplier = 0.7
-        elif bbox_ratio < 0.2:
+            weight_multiplier = 0.75
+        elif bbox_ratio < 0.15:
             # 작은 비율: 최소값과 평균값 사이
             weight_multiplier = 0.85
-        elif bbox_ratio < 0.3:
-            # 중간 비율: 평균값 근처
+        elif bbox_ratio < 0.25:
+            # 중간-작은 비율: 평균값 근처
+            weight_multiplier = 0.95
+        elif bbox_ratio < 0.35:
+            # 중간 비율: 평균값
             weight_multiplier = 1.0
-        elif bbox_ratio < 0.4:
-            # 큰 비율: 평균값과 최대값 사이
-            weight_multiplier = 1.15
+        elif bbox_ratio < 0.45:
+            # 중간-큰 비율: 평균값과 최대값 사이
+            weight_multiplier = 1.1
+        elif bbox_ratio < 0.6:
+            # 큰 비율: 최대값 근처
+            weight_multiplier = 1.2
         else:
-            # 매우 큰 비율: 최대값 근처
+            # 매우 큰 비율: 최대값
             weight_multiplier = 1.3
         
+        # 아이템별 특성에 따른 추가 조정
+        item_adjustment = 1.0
+        if item_name:
+            item_name_lower = item_name.lower()
+            # 가방류는 보수적으로 처리
+            if any(keyword in item_name_lower for keyword in ['가방', '백', 'bag', 'backpack']):
+                if bbox_ratio > 0.3:
+                    item_adjustment = 1.1  # 큰 가방은 조금 더 무겁게
+                else:
+                    item_adjustment = 0.9  # 작은 가방은 조금 더 가볍게
+            
+            # 전자제품은 크기에 민감하게 반응
+            elif any(keyword in item_name_lower for keyword in ['노트북', 'laptop', '태블릿', 'tablet', '폰', 'phone']):
+                item_adjustment = 1.0  # 전자제품은 기본 조정 유지
+            
+            # 의류는 크기 변화가 무게에 덜 영향
+            elif any(keyword in item_name_lower for keyword in ['티셔츠', 'shirt', '바지', 'pants', '옷', 'clothes']):
+                item_adjustment = 0.95  # 의류는 조금 더 보수적으로
+        
         # 최종 무게 계산
-        predicted_weight = float(avg_weight_value) * weight_multiplier
+        predicted_weight = float(avg_weight_value) * weight_multiplier * item_adjustment
         
         # 무게 범위 내로 제한
         predicted_weight = max(min_weight, min(predicted_weight, max_weight))
@@ -125,7 +154,79 @@ def _calculate_weight_from_weights_table(avg_weight_value, avg_weight_unit, weig
         return None
 
 # --------------------------------------------------------------------------
-# 3. Gemini API를 직접 호출하는 내부 헬퍼 함수
+# 3. 아이템별 기본 무게 설정 헬퍼 함수
+# --------------------------------------------------------------------------
+def _get_default_weight_for_item(item_name):
+    """
+    weights 테이블에 없는 아이템에 대한 기본 무게와 범위를 반환합니다.
+    
+    Args:
+        item_name: 아이템 이름
+    
+    Returns:
+        tuple: (기본_무게_문자열, 무게_범위_문자열)
+    """
+    if not item_name:
+        return "500g", "100-1000g"
+    
+    item_name_lower = item_name.lower()
+    
+    # 전자제품
+    if any(keyword in item_name_lower for keyword in ['노트북', 'laptop']):
+        return "1.5kg", "1-3kg"
+    elif any(keyword in item_name_lower for keyword in ['태블릿', 'tablet']):
+        return "600g", "400-800g"
+    elif any(keyword in item_name_lower for keyword in ['폰', 'phone', '스마트폰']):
+        return "200g", "150-250g"
+    elif any(keyword in item_name_lower for keyword in ['충전기', 'charger']):
+        return "150g", "100-200g"
+    
+    # 가방류
+    elif any(keyword in item_name_lower for keyword in ['가방', '백', 'bag']):
+        return "800g", "300-1500g"
+    elif any(keyword in item_name_lower for keyword in ['백팩', 'backpack']):
+        return "1kg", "500-2000g"
+    elif any(keyword in item_name_lower for keyword in ['핸드백', 'handbag']):
+        return "500g", "200-800g"
+    
+    # 의류
+    elif any(keyword in item_name_lower for keyword in ['티셔츠', 'shirt', '상의']):
+        return "200g", "150-300g"
+    elif any(keyword in item_name_lower for keyword in ['바지', 'pants', '하의']):
+        return "300g", "200-500g"
+    elif any(keyword in item_name_lower for keyword in ['드레스', 'dress']):
+        return "400g", "250-600g"
+    elif any(keyword in item_name_lower for keyword in ['재킷', 'jacket']):
+        return "600g", "400-800g"
+    
+    # 신발
+    elif any(keyword in item_name_lower for keyword in ['신발', 'shoes', '구두']):
+        return "800g", "500-1200g"
+    elif any(keyword in item_name_lower for keyword in ['운동화', 'sneakers']):
+        return "700g", "400-1000g"
+    
+    # 화장품/개인용품
+    elif any(keyword in item_name_lower for keyword in ['화장품', 'cosmetics', '립스틱']):
+        return "50g", "20-100g"
+    elif any(keyword in item_name_lower for keyword in ['샴푸', 'shampoo']):
+        return "300g", "200-500g"
+    elif any(keyword in item_name_lower for keyword in ['치약', 'toothpaste']):
+        return "100g", "50-150g"
+    
+    # 기타 일반적인 물품
+    elif any(keyword in item_name_lower for keyword in ['책', 'book']):
+        return "300g", "200-500g"
+    elif any(keyword in item_name_lower for keyword in ['우산', 'umbrella']):
+        return "400g", "200-600g"
+    elif any(keyword in item_name_lower for keyword in ['물병', 'bottle', '병']):
+        return "200g", "100-400g"
+    
+    # 기본값
+    else:
+        return "500g", "100-1000g"
+
+# --------------------------------------------------------------------------
+# 4. Gemini API를 직접 호출하는 내부 헬퍼 함수
 # --------------------------------------------------------------------------
 def _call_gemini_for_weights(items_to_predict: list):
     """Gemini API에 무게 예측을 요청하고 결과를 파싱하여 반환합니다."""
@@ -158,7 +259,7 @@ def _call_gemini_for_weights(items_to_predict: list):
         return None
 
 # --------------------------------------------------------------------------
-# 4. 메인 서비스 함수 (수정 및 개선)
+# 5. 메인 서비스 함수 (수정 및 개선)
 # --------------------------------------------------------------------------
 def get_predicted_weights_for_analysis(analysis_id: int):
     """
@@ -216,7 +317,8 @@ def get_predicted_weights_for_analysis(analysis_id: int):
                         item['avg_weight_value'], 
                         item['avg_weight_unit'], 
                         item['weight_range'], 
-                        bbox_ratio
+                        bbox_ratio,
+                        item['item_name_ko']
                     )
                     
                     if predicted_weight:
@@ -236,6 +338,7 @@ def get_predicted_weights_for_analysis(analysis_id: int):
                         item['predicted_weight_value'] = predicted_weight['value']
                         item['predicted_weight_unit'] = predicted_weight['unit']
                         items_with_weights.append(item)
+                        print(f"[Weight Calculation] Calculated weight for {item['item_name_ko']}: {predicted_weight['value']}{predicted_weight['unit']} (bbox_ratio: {bbox_ratio:.4f})")
                     else:
                         items_without_weights.append(item)
                 else:
@@ -245,6 +348,7 @@ def get_predicted_weights_for_analysis(analysis_id: int):
             # 3. weights 테이블에 없는 아이템들을 Gemini API로 예측
             if items_without_weights:
                 print(f"[Gemini Service] Predicting weights for {len(items_without_weights)} items not in weights table for analysis_id: {analysis_id}")
+                print(f"[Gemini Service] Items to predict: {[item['item_name_ko'] for item in items_without_weights]}")
                 
                 # Gemini API용 데이터 준비
                 for item in items_without_weights:
@@ -256,11 +360,14 @@ def get_predicted_weights_for_analysis(analysis_id: int):
                     else:
                         bbox_ratio = 0
 
+                    # 아이템별 기본 무게 설정
+                    default_weight, default_range = _get_default_weight_for_item(item['item_name_ko'])
+                    
                     items_to_predict.append({
                         "id": item['id'],
                         "item_name": item['item_name_ko'],
-                        "avg_weight": "500g",  # 기본값 (weights 테이블에 없으므로)
-                        "weight_range": "100-1000g",  # 기본값
+                        "avg_weight": default_weight,
+                        "weight_range": default_range,
                         "bbox_ratio": round(float(bbox_ratio), 4)
                     })
 
@@ -282,6 +389,10 @@ def get_predicted_weights_for_analysis(analysis_id: int):
                         
                         cursor.executemany(update_sql, update_data)
                         print(f"[Gemini Service] Successfully updated weights for {len(update_data)} items using Gemini API.")
+                        
+                        # 예측된 무게 로깅
+                        for pred in newly_predicted_weights:
+                            print(f"[Gemini Service] Predicted weight for item {pred['id']}: {pred['predicted_weight_value']}{pred['predicted_weight_unit']}")
 
                         # 업데이트된 아이템들을 결과에 추가
                         for item in items_without_weights:
@@ -296,6 +407,11 @@ def get_predicted_weights_for_analysis(analysis_id: int):
             conn.commit()
             
             # 5. 최종 결과 반환
+            total_items = len(items_with_weights)
+            weights_table_items = len([item for item in items_with_weights if item.get('avg_weight_value')])
+            gemini_items = total_items - weights_table_items
+            
+            print(f"[Weight Prediction] Analysis {analysis_id} completed: {total_items} total items ({weights_table_items} from weights table, {gemini_items} from Gemini API)")
             return items_with_weights
 
     except Exception as e:

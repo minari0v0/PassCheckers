@@ -28,6 +28,7 @@ const getInitialAuthState = () => {
 const initialState = getInitialAuthState()
 const isAuthenticated = ref(initialState.isAuthenticated)
 const user = ref<User | null>(initialState.user)
+const isInitialized = ref(process.server ? true : false) // 서버에서는 즉시 초기화 완료
 
 export const useAuth = () => {
 
@@ -98,6 +99,9 @@ export const useAuth = () => {
         isAuthenticated.value = false
         user.value = null
       }
+      
+      // 클라이언트에서 인증 확인 완료
+      isInitialized.value = true
     }
   }
 
@@ -122,6 +126,7 @@ export const useAuth = () => {
   return {
     isAuthenticated: readonly(isAuthenticated),
     user: readonly(user),
+    isInitialized: readonly(isInitialized),
     login,
     logout,
     checkAuth,

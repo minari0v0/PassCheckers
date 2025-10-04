@@ -89,6 +89,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useApiUrl } from '~/composables/useApiUrl'
 
 const userId = ref('')
 const password = ref('')

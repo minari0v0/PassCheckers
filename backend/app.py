@@ -14,6 +14,7 @@ from service.user_service import UserService, UserExistsException, InvalidCreden
 from routes.classify import classify_bp
 from routes.items import items_bp
 from routes.analysis import analysis_bp
+from routes.locations import locations_bp
 from routes.weight import weight_bp
 from routes.category import category_bp
 
@@ -30,6 +31,7 @@ CORS(app, origins=Config.CORS_ORIGINS, supports_credentials=True)
 app.register_blueprint(classify_bp)
 app.register_blueprint(items_bp)
 app.register_blueprint(analysis_bp)
+app.register_blueprint(locations_bp)
 app.register_blueprint(weight_bp)
 app.register_blueprint(category_bp)
 
@@ -130,6 +132,79 @@ def init_db():
             packing_info VARCHAR(50) DEFAULT 'none',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (image_id) REFERENCES images(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    """)
+
+    # 스키마 마이그레이션: items 테이블에 category 컬럼이 없는 경우 추가
+    db_name = conn.db.decode() if isinstance(conn.db, bytes) else conn.db
+    cursor.execute("""
+        SELECT COUNT(*) as cnt
+        FROM information_schema.COLUMNS
+        WHERE TABLE_SCHEMA = %s
+        AND TABLE_NAME = 'items'
+        AND COLUMN_NAME = 'category'
+    """, (db_name,))
+    if cursor.fetchone()['cnt'] == 0:
+        cursor.execute("ALTER TABLE items ADD COLUMN category VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL")
+        print("[DB MIGRATION] 'category' column added to 'items' table.")
+    
+    # locations 테이블 생성
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS locations (
+            location_id INT AUTO_INCREMENT PRIMARY KEY,
+            continent VARCHAR(50),
+            continent_ko VARCHAR(50),
+            country VARCHAR(100),
+            country_ko VARCHAR(100),
+            city VARCHAR(100),
+            city_ko VARCHAR(100),
+            location_type VARCHAR(10) NOT NULL,
+            geonameid INT,
+            UNIQUE KEY uk_geonameid_type (geonameid, location_type) 
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    """)
+
+    # budgets 테이블 생성
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS budgets (
+            location_id INT PRIMARY KEY,
+            budget_daily INT,
+            budget_weekly INT,
+            budget_monthly INT,
+            midrange_daily INT,
+            midrange_weekly INT,
+            midrange_monthly INT,
+            luxury_daily INT,
+            luxury_weekly INT,
+            luxury_monthly INT,
+            FOREIGN KEY (location_id) REFERENCES locations(location_id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    """)
+
+    # cost_breakdowns 테이블 생성
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS cost_breakdowns (
+            breakdown_id INT AUTO_INCREMENT PRIMARY KEY,
+            location_id INT,
+            table_title VARCHAR(255),
+            table_title_ko VARCHAR(255),
+            category VARCHAR(100),
+            category_ko VARCHAR(100),
+            budget VARCHAR(50),
+            mid_range VARCHAR(50),
+            luxury VARCHAR(50),
+            FOREIGN KEY (location_id) REFERENCES locations(location_id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    """)
+
+    # location_content 테이블 생성
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS location_content (
+            content_id INT AUTO_INCREMENT PRIMARY KEY,
+            location_id INT,
+            title_ko VARCHAR(255),
+            content_ko TEXT,
+            FOREIGN KEY (location_id) REFERENCES locations(location_id) ON DELETE CASCADE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     """)
 
