@@ -240,6 +240,15 @@ const selectContinent = (continent) => {
   selectedCity.value = null;
   selectedLocationDetails.value = null;
   currentView.value = 'countries';
+  
+  // 대륙 선택 후 지도 상태 저장 (국가 시리즈가 표시된 상태)
+  setTimeout(() => {
+    if (interactiveMapRef.value && interactiveMapRef.value.saveMapState) {
+      savedMapState.value = interactiveMapRef.value.saveMapState();
+      console.log('대륙 선택 후 지도 상태 저장:', savedMapState.value);
+    }
+  }, 100); // 지도 렌더링 완료 후 저장
+  
   fetchCountries(continent.continent_id);
 };
 
@@ -247,6 +256,10 @@ const selectCountry = (country) => {
   selectedCountry.value = country;
   selectedCity.value = null;
   currentView.value = 'cities';
+  
+  // 지도에서 해당 국가 하이라이트
+  countryToHighlight.value = country.country;
+  
   fetchCities(country.country_ko);
   fetchLocationDetails(country.location_id);
 };
@@ -264,29 +277,78 @@ const highlightCountry = (countryName) => {
   countryToHighlight.value = countryName;
 };
 
+// 지도에서 국가 클릭 시 처리
+const handleCountrySelected = (data) => {
+  console.log('지도에서 국가 선택됨:', data);
+  // 필요시 국가 선택 로직 추가
+};
+
 // 도시 → 국가 뒤로가기
-const goBackFromCities = () => {
+const goBackFromCities = async () => {
+  console.log('goBackFromCities 호출됨'); // 디버깅용
   selectedLocationDetails.value = null; // 상세 정보 닫기
   selectedCity.value = null;
   currentView.value = 'countries';
+  
+  // DOM이 업데이트될 때까지 기다림
+  await nextTick();
+  
+  console.log('interactiveMapRef 상태:', {
+    exists: !!interactiveMapRef.value,
+    interactiveMapRefValue: interactiveMapRef.value,
+    hasRestoreMapState: !!(interactiveMapRef.value && interactiveMapRef.value.restoreMapState),
+    hasSavedMapState: !!savedMapState.value,
+    currentView: currentView.value,
+    selectedLocationDetails: selectedLocationDetails.value
+  });
+  
+  // 저장된 지도 상태 복원 (국가 선택했을 때의 지도 상태로)
+  if (interactiveMapRef.value && interactiveMapRef.value.restoreMapState && savedMapState.value) {
+    console.log('저장된 지도 상태 복원 시작:', savedMapState.value);
+    try {
+      interactiveMapRef.value.restoreMapState(savedMapState.value);
+      console.log('지도 상태 복원 함수 호출 완료');
+    } catch (error) {
+      console.error('지도 상태 복원 중 에러:', error);
+    }
+  } else {
+    console.warn('지도 상태 복원 불가능:', {
+      interactiveMapRef: !!interactiveMapRef.value,
+      restoreMapState: !!(interactiveMapRef.value && interactiveMapRef.value.restoreMapState),
+      savedMapState: !!savedMapState.value
+    });
+    
+    // interactiveMapRef가 준비되지 않은 경우 잠시 기다린 후 재시도
+    if (!interactiveMapRef.value && savedMapState.value) {
+      console.log('interactiveMapRef 대기 중...');
+      setTimeout(() => {
+        goBackFromCities();
+      }, 500); // 500ms로 증가
+    }
+  }
+  
   // selectedCountry는 유지해서 지도가 국가 선택 상태를 유지
+  // countryToHighlight도 유지하여 지도에서 해당 국가가 계속 하이라이트되도록 함
+  if (selectedCountry.value) {
+    countryToHighlight.value = selectedCountry.value.country;
+    console.log('지도에서 국가 하이라이트 유지:', selectedCountry.value.country);
+  }
+  
+  console.log('도시에서 국가로 돌아감 - 지도 상태 복원 완료');
 };
 
 // 국가 → 대륙 뒤로가기 (첫 번째 뒤로가기: 초기 화면으로 완전 복귀)
 const goBackFromCountries = () => {
-  console.log('goBackFromCountries 호출됨'); // 디버깅용
+  console.log('goBackFromCountries 호출됨 - 초기 화면으로 복귀'); // 디버깅용
   selectedLocationDetails.value = null; // 상세 정보 닫기
   selectedContinent.value = null;
   selectedCountry.value = null;
   currentView.value = 'continents';
   
-  // 지도를 초기 상태로 리셋
-  console.log('resetMap을 true로 설정'); // 디버깅용
-  resetMap.value = true;
-  setTimeout(() => {
-    console.log('resetMap을 false로 설정'); // 디버깅용
-    resetMap.value = false;
-  }, 100);
+  // 지도를 직접 초기 상태로 리셋 (resetMap prop 사용하지 않음)
+  if (interactiveMapRef.value && interactiveMapRef.value.goHome) {
+    interactiveMapRef.value.goHome();
+  }
 };
 
 onMounted(fetchContinents);
