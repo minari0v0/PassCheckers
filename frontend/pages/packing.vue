@@ -20,6 +20,8 @@
 
     <!-- 2. 패킹 진행 화면 -->
     <div v-else-if="packingData" class="packing-workspace">
+      <p class="instruction-text">이미지 또는 리스트의 물품을 오른쪽 수하물 영역으로 드래그하여 패킹을 시작하세요! 👇</p>
+
       <!-- Left Panel: Image & Notepad -->
       <div 
         class="left-column" 
@@ -80,7 +82,6 @@
             item-key="item_id"
             class="luggage-list carry-on-list"
             :move="handleMove"
-            @add="(event) => onItemAdded(event, 'carry-on')"
             @drop.prevent="(event) => handleDropOnLuggage(event, 'carry-on')"
           >
             <template #item="{ element }">
@@ -90,12 +91,13 @@
                   content: element.notes,
                   theme: 'passcheckers-tooltip',
                   shown: temporaryTooltipItemId === element.item_id,
-                  triggers: ['hover'],
+                  triggers: ['hover']
                 }"
                 class="packed-item carry-on-item is-conditional"
                 @dragstart="onDragStart(element)"
               >
                 <span>{{ element.item_name }}</span>
+                <i class="info-icon-indicator">ⓘ</i>
               </div>
               <div v-else class="packed-item carry-on-item" @dragstart="onDragStart(element)">
                 <span>{{ element.item_name }}</span>
@@ -122,7 +124,6 @@
             item-key="item_id"
             class="luggage-list checked-list"
             :move="handleMove"
-            @add="(event) => onItemAdded(event, 'checked')"
             @drop.prevent="(event) => handleDropOnLuggage(event, 'checked')"
           >
             <template #item="{ element }">
@@ -132,12 +133,13 @@
                   content: element.notes,
                   theme: 'passcheckers-tooltip',
                   shown: temporaryTooltipItemId === element.item_id,
-                  triggers: ['hover'],
+                  triggers: ['hover']
                 }"
                 class="packed-item checked-item is-conditional"
                 @dragstart="onDragStart(element)"
               >
                 <span>{{ element.item_name }}</span>
+                <i class="info-icon-indicator">ⓘ</i>
               </div>
               <div v-else class="packed-item checked-item" @dragstart="onDragStart(element)">
                 <span>{{ element.item_name }}</span>
@@ -168,7 +170,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, onUnmounted } from 'vue';
+import { ref, onMounted, computed, onUnmounted, nextTick, watch } from 'vue';
 import { useAuth } from '~/composables/useAuth';
 import { useApiUrl } from '~/composables/useApiUrl';
 import draggable from 'vuedraggable';
@@ -264,63 +266,56 @@ const handleUnpack = () => {
 
   const itemToUnpack = draggedItem.value;
   
-  // 기내용 가방 목록에서 제거
   const carryOnIndex = carryOnItems.value.findIndex(i => i.item_id === itemToUnpack.item_id);
   if (carryOnIndex > -1) {
     carryOnItems.value.splice(carryOnIndex, 1);
   }
 
-  // 위탁용 캐리어 목록에서 제거
   const checkedIndex = checkedItems.value.findIndex(i => i.item_id === itemToUnpack.item_id);
   if (checkedIndex > -1) {
     checkedItems.value.splice(checkedIndex, 1);
   }
 
-  // allItems에는 이미 아이템이 있으므로, unpackedItems는 computed 속성에 의해 자동으로 업데이트됨
-
-  draggedItem.value = null; // 드롭 후 추적 아이템 초기화
+  draggedItem.value = null;
 };
 
 const handleDropOnLuggage = (event, targetListType) => {
   const itemId = event.dataTransfer.getData('text/plain');
-  if (!itemId) return; // 네이티브 드래그가 아니면 종료
+  if (!itemId) return;
 
   const item = allItems.value.find(i => i.item_id == itemId);
   if (!item) return;
 
-  // vuedraggable에 의해 이미 추가되었는지 확인하여 중복 방지
   const alreadyExists = (targetListType === 'carry-on' && carryOnItems.value.some(i => i.item_id === item.item_id)) ||
                         (targetListType === 'checked' && checkedItems.value.some(i => i.item_id === item.item_id));
 
   if (alreadyExists) return;
 
-  if (checkRules(item, targetListType)) {
-    if (targetListType === 'carry-on') {
-      carryOnItems.value.push(item);
-      if (isConditional(item, 'carry-on')) {
-        showTemporaryTooltip(item.item_id);
+    if (checkRules(item, targetListType)) {
+      if (targetListType === 'carry-on') {
+        carryOnItems.value.push(item);
+        if (isConditional(item, 'carry-on')) {
+          showTemporaryTooltip(item.item_id);
+        }
+      } else {
+        checkedItems.value.push(item);
+        if (isConditional(item, 'checked')) {
+          showTemporaryTooltip(item.item_id);
+        }
       }
     } else {
-      checkedItems.value.push(item);
-      if (isConditional(item, 'checked')) {
-        showTemporaryTooltip(item.item_id);
-      }
-    }
-  } else {
-    showProhibitedWarning(item, targetListType);
-  }
-};
+      showProhibitedWarning(item, targetListType);
+    }};
 
 const handleMove = (evt) => {
   const item = evt.draggedContext.element;
   const fromListEl = evt.from;
-  const targetListEl = evt.to;
 
-  // 노트패드에서 이미 패킹된 아이템을 다시 드래그하는 것을 방지
   if (fromListEl.classList.contains('notepad-list') && isItemPacked(item.item_id)) {
     return false;
   }
 
+  const targetListEl = evt.to;
   let targetListType = 'unpacked';
   if (targetListEl.classList.contains('carry-on-list')) {
     targetListType = 'carry-on';
@@ -331,19 +326,10 @@ const handleMove = (evt) => {
   if (targetListType !== 'unpacked') {
     if (!checkRules(item, targetListType)) {
       showProhibitedWarning(item, targetListType);
-      return false; // 이동 취소
+      return false;
     }
   }
-  return true; // 이동 허용
-};
-
-const onItemAdded = (event, luggageType) => {
-  const addedItemId = event.element.item_id;
-  const originalItem = allItems.value.find(i => i.item_id === addedItemId);
-
-  if (originalItem && isConditional(originalItem, luggageType)) {
-    showTemporaryTooltip(originalItem.item_id);
-  }
+  return true;
 };
 
 const checkRules = (item, targetListType) => {
@@ -358,7 +344,7 @@ const checkRules = (item, targetListType) => {
 
 const closeWarningModal = () => {
   showWarningModal.value = false;
-  isWarningActive.value = false; // 애니메이션 상태 리셋
+  isWarningActive.value = false;
 }
 
 const showProhibitedWarning = (item, targetListType) => {
@@ -372,12 +358,14 @@ const showProhibitedWarning = (item, targetListType) => {
 }
 
 const showTemporaryTooltip = (itemId) => {
-  temporaryTooltipItemId.value = itemId;
-  setTimeout(() => {
-    if (temporaryTooltipItemId.value === itemId) {
-      temporaryTooltipItemId.value = null;
-    }
-  }, 1500);
+  nextTick(() => {
+    temporaryTooltipItemId.value = itemId;
+    setTimeout(() => {
+      if (temporaryTooltipItemId.value === itemId) {
+        temporaryTooltipItemId.value = null;
+      }
+    }, 1500);
+  });
 };
 
 const isConditional = (item, luggageType) => {
@@ -395,6 +383,24 @@ const isItemPacked = (itemId) => {
   return carryOnItems.value.some(i => i.item_id === itemId) || checkedItems.value.some(i => i.item_id === itemId);
 };
 
+watch(carryOnItems, (newItems, oldItems) => {
+  if (newItems.length > oldItems.length) {
+    const newItem = newItems.find(item => !oldItems.some(oldItem => oldItem.item_id === item.item_id));
+    if (newItem && isConditional(newItem, 'carry-on')) {
+      showTemporaryTooltip(newItem.item_id);
+    }
+  }
+}, { deep: true });
+
+watch(checkedItems, (newItems, oldItems) => {
+  if (newItems.length > oldItems.length) {
+    const newItem = newItems.find(item => !oldItems.some(oldItem => oldItem.item_id === item.item_id));
+    if (newItem && isConditional(newItem, 'checked')) {
+      showTemporaryTooltip(newItem.item_id);
+    }
+  }
+}, { deep: true });
+
 onMounted(() => {
   fetchHistory();
   window.addEventListener('resize', updateImageSize);
@@ -403,7 +409,6 @@ onMounted(() => {
 onUnmounted(() => {
   window.removeEventListener('resize', updateImageSize);
 });
-
 </script>
 
 <style scoped>
@@ -443,7 +448,25 @@ onUnmounted(() => {
 .history-item-count { background-color: #e9ecef; color: #495057; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.9rem; }
 
 /* --- Packing Workspace --- */
-.packing-workspace { display: grid; grid-template-columns: 450px 1fr; gap: 2rem; max-width: 1800px; margin: 0 auto; }
+.packing-workspace { 
+  display: grid; 
+  grid-template-columns: 450px 1fr; 
+  gap: 1.5rem 2rem; 
+  max-width: 1800px; 
+  margin: 0 auto; 
+}
+
+.instruction-text {
+  grid-column: 1 / -1; /* Span across all columns */
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #576a7e;
+  background-color: rgba(255, 255, 255, 0.7);
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid var(--light-gray);
+}
 
 .left-column { display: flex; flex-direction: column; gap: 1.5rem; }
 
@@ -486,7 +509,7 @@ onUnmounted(() => {
   color: #594a41;
   position: relative;
   z-index: 1;
-  font-family: var(--title-font);
+  font-family: 'HSYujiche', 'Nanum Pen Script', cursive !important;
 }
 .notepad-list { position: relative; z-index: 1; height: 400px; overflow-y: auto; }
 .notepad-item {
@@ -497,7 +520,7 @@ onUnmounted(() => {
   cursor: grab;
   font-size: 1.6rem;
   transition: color 0.3s, text-decoration 0.3s;
-  font-family: var(--title-font);
+  font-family: 'HSYujiche', 'Nanum Pen Script', cursive !important;
   color: #5a5a5a;
 }
 .notepad-item.is-packed {
@@ -632,6 +655,14 @@ onUnmounted(() => {
 .packed-item span {
   font-size: 0.95rem;
   font-weight: 500;
+}
+
+.info-icon-indicator {
+  font-style: normal;
+  margin-left: 8px;
+  font-size: 14px;
+  color: inherit;
+  opacity: 0.6;
 }
 
 .carry-on-item { 
