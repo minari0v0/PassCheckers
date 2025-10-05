@@ -22,5 +22,5 @@ class Config:
     CORS_ORIGINS = [
         "http://localhost:3000",
         "http://passcheckers.kro.kr",
-        "http://172.30.1.90"
+        "http://172.30.1.85" #임시 개발용 IP
     ] 

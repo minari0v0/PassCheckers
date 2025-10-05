@@ -122,12 +122,12 @@
 
     <!-- 경고 모달 -->
     <transition name="fade">
-      <div v-if="showWarningModal" class="modal-overlay" @click="showWarningModal = false">
-          <div class="modal-content" @click.stop>
+      <div v-if="showWarningModal" class="modal-overlay" @click="closeWarningModal">
+          <div class="modal-content" :class="{ 'shake': isWarningActive }" @click.stop>
               <h3 class="modal-title">⚠️ 반입 불가 물품</h3>
               <p>{{ warningMessage }}</p>
               <p v-if="warningDetails" class="modal-details">{{ warningDetails }}</p>
-              <button @click="showWarningModal = false" class="modal-close-btn">확인</button>
+              <button @click="closeWarningModal" class="modal-close-btn">확인</button>
           </div>
       </div>
     </transition>
@@ -136,7 +136,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, onUnmounted } from 'vue';
 import { useAuth } from '~/composables/useAuth';
 import { useApiUrl } from '~/composables/useApiUrl';
 import draggable from 'vuedraggable';
@@ -161,6 +161,7 @@ const checkedItems = ref([]);
 const showWarningModal = ref(false);
 const warningMessage = ref('');
 const warningDetails = ref('');
+const isWarningActive = ref(false);
 
 const analysisImageRef = ref(null);
 const imageSize = ref({ width: 0, height: 0 });
@@ -234,11 +235,6 @@ const handleMove = (evt) => {
   if (targetListType !== 'unpacked') {
     if (!checkRules(item, targetListType)) {
       showProhibitedWarning(item, targetListType);
-      // Shake the target luggage area
-      targetListEl.parentElement.classList.add('shake');
-      setTimeout(() => {
-        targetListEl.parentElement.classList.remove('shake');
-      }, 500);
       return false; // Cancel move
     }
   }
@@ -263,11 +259,6 @@ const handleDropOnLuggage = (event, targetListType) => {
     }
   } else {
     showProhibitedWarning(item, targetListType);
-    // Shake the target luggage area
-    event.currentTarget.classList.add('shake');
-    setTimeout(() => {
-      event.currentTarget.classList.remove('shake');
-    }, 500);
   }
 };
 
@@ -281,10 +272,19 @@ const checkRules = (item, targetListType) => {
     return true;
 };
 
+const closeWarningModal = () => {
+  showWarningModal.value = false;
+  isWarningActive.value = false; // Reset animation state
+}
+
 const showProhibitedWarning = (item, targetListType) => {
   warningMessage.value = `'${item.item_name}'은(는) ${targetListType === 'carry-on' ? '기내' : '위탁'} 수하물 반입이 금지된 품목입니다.`
   warningDetails.value = item.notes || '';
   showWarningModal.value = true;
+  isWarningActive.value = true;
+  setTimeout(() => {
+    isWarningActive.value = false;
+  }, 500);
 }
 
 const isConditional = (item, luggageType) => {
