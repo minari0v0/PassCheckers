@@ -16,7 +16,7 @@ class Config:
     REDIS_URL = os.environ.get('REDIS_URL') or 'redis://localhost:6379/0'
     
     # MySQL 설정
-    DATABASE_URL = os.environ.get('DATABASE_URL') or 'mysql+pymysql://username:password@localhost:3306/passcheckers'
+    DATABASE_URL = os.environ.get('DATABASE_URL') or 'mysql+pymysql://root:5429@localhost:3306/passcheckers'
     
     # CORS 설정
     CORS_ORIGINS = [
