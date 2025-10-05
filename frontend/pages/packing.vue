@@ -21,7 +21,11 @@
     <!-- 2. 패킹 진행 화면 -->
     <div v-else-if="packingData" class="packing-workspace">
       <!-- Left Panel: Image & Notepad -->
-      <div class="left-column">
+      <div 
+        class="left-column" 
+        @drop.prevent="handleUnpack"
+        @dragover.prevent
+      >
         <div class="image-container">
           <img 
             ref="analysisImageRef"
@@ -41,8 +45,8 @@
           <div class="notepad-lines"></div>
           <h2 class="notepad-title">📝 패킹 리스트</h2>
           <draggable
-            v-model="unpackedItems"
-            group="packing"
+            v-model="allItems"
+            :group="{ name: 'packing', pull: 'clone', put: false }"
             item-key="item_id"
             class="notepad-list"
             :move="handleMove"
@@ -51,9 +55,9 @@
               <div 
                 class="notepad-item"
                 :class="{ 'is-packed': isItemPacked(element.item_id) }"
+                @dragstart="onDragStart(element)"
               >
                 <span>{{ element.item_name }}</span>
-                <small v-if="getConditionalNote(element)" class="conditional-note">{{ getConditionalNote(element) }}</small>
               </div>
             </template>
           </draggable>
@@ -65,7 +69,6 @@
         <div 
           class="luggage carry-on"
           @dragover.prevent
-          @drop="(event) => handleDropOnLuggage(event, 'carry-on')"
         >
           <div class="luggage-bg-icon">
             <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20h0a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h0"/><path d="M8 18V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v14"/><path d="M10 20h4"/></svg>
@@ -73,27 +76,34 @@
           <h2 class="luggage-title">🎒 기내용 가방</h2>
           <draggable
             v-model="carryOnItems"
-            group="packing"
+            :group="{ name: 'packing', pull: true, put: true }"
             item-key="item_id"
             class="luggage-list carry-on-list"
             :move="handleMove"
+            @add="(event) => onItemAdded(event, 'carry-on')"
+            @drop.prevent="(event) => handleDropOnLuggage(event, 'carry-on')"
           >
             <template #item="{ element }">
-              <div class="packed-item carry-on-item">
+              <div 
+                class="packed-item carry-on-item" 
+                :class="{ 'is-conditional': isConditional(element, 'carry-on') }" 
+                @dragstart="onDragStart(element)"
+                @mouseover="onItemHover(element, 'carry-on')"
+                @mouseleave="onItemLeave"
+              >
                 <span>{{ element.item_name }}</span>
-                <div v-if="isConditional(element, 'carry-on')" class="tooltip-container">
-                  <span class="info-icon">ⓘ</span>
-                  <div class="tooltip-content">{{ element.notes }}</div>
-                </div>
               </div>
             </template>
           </draggable>
+          <!-- Area Tooltip -->
+          <div v-if="activeCarryOnTooltipText" class="area-tooltip">
+            {{ activeCarryOnTooltipText }}
+          </div>
         </div>
         <!-- Checked Luggage -->
         <div 
           class="luggage checked"
           @dragover.prevent
-          @drop="(event) => handleDropOnLuggage(event, 'checked')"
         >
           <div class="luggage-bg-icon">
             <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.5" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M12 2v20"/><path d="M6 8h12"/><path d="M6 16h12"/></svg>
@@ -101,21 +111,29 @@
           <h2 class="luggage-title">🧳 위탁용 캐리어</h2>
           <draggable
             v-model="checkedItems"
-            group="packing"
+            :group="{ name: 'packing', pull: true, put: true }"
             item-key="item_id"
             class="luggage-list checked-list"
             :move="handleMove"
+            @add="(event) => onItemAdded(event, 'checked')"
+            @drop.prevent="(event) => handleDropOnLuggage(event, 'checked')"
           >
             <template #item="{ element }">
-              <div class="packed-item checked-item">
+              <div 
+                class="packed-item checked-item" 
+                :class="{ 'is-conditional': isConditional(element, 'checked') }" 
+                @dragstart="onDragStart(element)"
+                @mouseover="onItemHover(element, 'checked')"
+                @mouseleave="onItemLeave"
+              >
                 <span>{{ element.item_name }}</span>
-                <div v-if="isConditional(element, 'checked')" class="tooltip-container">
-                  <span class="info-icon">ⓘ</span>
-                  <div class="tooltip-content">{{ element.notes }}</div>
-                </div>
               </div>
             </template>
           </draggable>
+          <!-- Area Tooltip -->
+          <div v-if="activeCheckedTooltipText" class="area-tooltip">
+            {{ activeCheckedTooltipText }}
+          </div>
         </div>
       </div>
     </div>
@@ -154,7 +172,8 @@ const isHistoryLoading = ref(true);
 const selectedAnalysisId = ref(null);
 const packingData = ref(null);
 
-const unpackedItems = ref([]);
+const allItems = ref([]); // 전체 아이템 원본 리스트
+const unpackedItems = computed(() => allItems.value.filter(i => !isItemPacked(i.item_id)));
 const carryOnItems = ref([]);
 const checkedItems = ref([]);
 
@@ -162,9 +181,13 @@ const showWarningModal = ref(false);
 const warningMessage = ref('');
 const warningDetails = ref('');
 const isWarningActive = ref(false);
+const activeCarryOnTooltipText = ref('');
+const activeCheckedTooltipText = ref('');
+let tooltipTimer = null;
 
 const analysisImageRef = ref(null);
 const imageSize = ref({ width: 0, height: 0 });
+const draggedItem = ref(null); // 드래그 중인 아이템 추적
 
 const fullImageUrl = computed(() => {
   if (packingData.value && packingData.value.image_url) {
@@ -198,7 +221,7 @@ const fetchPackingData = async (id) => {
     if (!response.ok) throw new Error('패킹 데이터를 가져오는데 실패했습니다.');
     const data = await response.json();
     packingData.value = data;
-    unpackedItems.value = data.items;
+    allItems.value = data.items; // allItems에 원본 데이터 저장
   } catch (error) {
     console.error(error);
   }
@@ -220,10 +243,71 @@ const updateImageSize = () => {
 };
 
 // --- Drag and Drop Logic ---
+const onDragStart = (item) => {
+  draggedItem.value = item;
+};
+
+const handleUnpack = () => {
+  if (!draggedItem.value) return;
+
+  const itemToUnpack = draggedItem.value;
+  
+  // 기내용 가방 목록에서 제거
+  const carryOnIndex = carryOnItems.value.findIndex(i => i.item_id === itemToUnpack.item_id);
+  if (carryOnIndex > -1) {
+    carryOnItems.value.splice(carryOnIndex, 1);
+  }
+
+  // 위탁용 캐리어 목록에서 제거
+  const checkedIndex = checkedItems.value.findIndex(i => i.item_id === itemToUnpack.item_id);
+  if (checkedIndex > -1) {
+    checkedItems.value.splice(checkedIndex, 1);
+  }
+
+  // allItems에는 이미 아이템이 있으므로, unpackedItems는 computed 속성에 의해 자동으로 업데이트됨
+
+  draggedItem.value = null; // 드롭 후 추적 아이템 초기화
+};
+
+const handleDropOnLuggage = (event, targetListType) => {
+  const itemId = event.dataTransfer.getData('text/plain');
+  if (!itemId) return; // 네이티브 드래그가 아니면 종료
+
+  const item = allItems.value.find(i => i.item_id == itemId);
+  if (!item) return;
+
+  // vuedraggable에 의해 이미 추가되었는지 확인하여 중복 방지
+  const alreadyExists = (targetListType === 'carry-on' && carryOnItems.value.some(i => i.item_id === item.item_id)) ||
+                        (targetListType === 'checked' && checkedItems.value.some(i => i.item_id === item.item_id));
+
+  if (alreadyExists) return;
+
+  if (checkRules(item, targetListType)) {
+    if (targetListType === 'carry-on') {
+      carryOnItems.value.push(item);
+      if (isConditional(item, 'carry-on')) {
+        showTemporaryTooltip(item.item_id);
+      }
+    } else {
+      checkedItems.value.push(item);
+      if (isConditional(item, 'checked')) {
+        showTemporaryTooltip(item.item_id);
+      }
+    }
+  } else {
+    showProhibitedWarning(item, targetListType);
+  }
+};
 
 const handleMove = (evt) => {
   const item = evt.draggedContext.element;
+  const fromListEl = evt.from;
   const targetListEl = evt.to;
+
+  // 노트패드에서 이미 패킹된 아이템을 다시 드래그하는 것을 방지
+  if (fromListEl.classList.contains('notepad-list') && isItemPacked(item.item_id)) {
+    return false;
+  }
 
   let targetListType = 'unpacked';
   if (targetListEl.classList.contains('carry-on-list')) {
@@ -235,31 +319,37 @@ const handleMove = (evt) => {
   if (targetListType !== 'unpacked') {
     if (!checkRules(item, targetListType)) {
       showProhibitedWarning(item, targetListType);
-      return false; // Cancel move
+      return false; // 이동 취소
     }
   }
-  return true; // Allow move
+  return true; // 이동 허용
 };
 
-const handleDropOnLuggage = (event, targetListType) => {
-  const itemId = event.dataTransfer.getData('text/plain');
-  if (!itemId) return;
+const onItemAdded = (event, luggageType) => {
+  const addedItemId = event.element.item_id;
+  const originalItem = allItems.value.find(i => i.item_id === addedItemId);
 
-  const itemIndex = unpackedItems.value.findIndex(i => i.item_id == itemId);
-  if (itemIndex === -1) return;
-
-  const item = unpackedItems.value[itemIndex];
-
-  if (checkRules(item, targetListType)) {
-    unpackedItems.value.splice(itemIndex, 1);
-    if (targetListType === 'carry-on') {
-      carryOnItems.value.push(item);
-    } else {
-      checkedItems.value.push(item);
-    }
-  } else {
-    showProhibitedWarning(item, targetListType);
+  if (originalItem && isConditional(originalItem, luggageType)) {
+    showTemporaryTooltip(originalItem, luggageType);
   }
+};
+
+const onItemHover = (item, luggageType) => {
+  if (isConditional(item, luggageType)) {
+    clearTimeout(tooltipTimer);
+    if (luggageType === 'carry-on') {
+      activeCarryOnTooltipText.value = item.notes;
+    } else {
+      activeCheckedTooltipText.value = item.notes;
+    }
+  }
+};
+
+const onItemLeave = () => {
+  tooltipTimer = setTimeout(() => {
+    activeCarryOnTooltipText.value = '';
+    activeCheckedTooltipText.value = '';
+  }, 300);
 };
 
 const checkRules = (item, targetListType) => {
@@ -274,7 +364,7 @@ const checkRules = (item, targetListType) => {
 
 const closeWarningModal = () => {
   showWarningModal.value = false;
-  isWarningActive.value = false; // Reset animation state
+  isWarningActive.value = false; // 애니메이션 상태 리셋
 }
 
 const showProhibitedWarning = (item, targetListType) => {
@@ -287,9 +377,23 @@ const showProhibitedWarning = (item, targetListType) => {
   }, 500);
 }
 
+const showTemporaryTooltip = (item, luggageType) => {
+  clearTimeout(tooltipTimer);
+  if (luggageType === 'carry-on') {
+    activeCarryOnTooltipText.value = item.notes;
+    tooltipTimer = setTimeout(() => {
+      activeCarryOnTooltipText.value = '';
+    }, 1500);
+  } else {
+    activeCheckedTooltipText.value = item.notes;
+    tooltipTimer = setTimeout(() => {
+      activeCheckedTooltipText.value = '';
+    }, 1500);
+  }
+};
+
 const isConditional = (item, luggageType) => {
   if (luggageType === 'carry-on') {
-    // '예'도 아니고 '아니요'도 아니면 조건부로 간주
     return item.carry_on_allowed !== '예' && item.carry_on_allowed !== '아니요';
   }
   if (luggageType === 'checked') {
@@ -302,19 +406,6 @@ const isConditional = (item, luggageType) => {
 const isItemPacked = (itemId) => {
   return carryOnItems.value.some(i => i.item_id === itemId) || checkedItems.value.some(i => i.item_id === itemId);
 };
-
-const getConditionalNote = (item) => {
-    const isPackedInCarryOn = carryOnItems.value.some(i => i.item_id === item.item_id);
-    if (isPackedInCarryOn && item.carry_on_allowed !== '예') {
-        return item.notes || '';
-    }
-    
-    const isPackedInChecked = checkedItems.value.some(i => i.item_id === item.item_id);
-    if (isPackedInChecked && item.checked_baggage_allowed !== '예') {
-        return item.notes || '';
-    }
-    return '';
-}
 
 onMounted(() => {
   fetchHistory();
@@ -329,16 +420,33 @@ onUnmounted(() => {
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap');
 
-.packing-page-container { padding: 2rem; font-family: 'Pretendard', sans-serif; background-color: #eef2f5; min-height: 100vh; }
+:root {
+  --base-font: 'IBM Plex Sans KR', sans-serif;
+  --title-font: 'HSYujiche', 'Nanum Pen Script', cursive;
+  --bg-color: #f0f4f8;
+  --container-bg: #ffffff;
+  --primary-color: #3498db;
+  --secondary-color: #9b59b6;
+  --text-color: #34495e;
+  --light-gray: #dce4ec;
+}
+
+.packing-page-container { 
+  padding: 2rem; 
+  font-family: var(--base-font); 
+  background-color: var(--bg-color); 
+  min-height: 100vh; 
+}
 
 /* --- History Selection --- */
 .analysis-selector { max-width: 900px; margin: 0 auto; }
-.page-title { font-size: 2.2rem; font-weight: 800; text-align: center; color: #333; }
+.page-title { font-size: 2.2rem; font-weight: 800; text-align: center; color: var(--text-color); }
 .page-description { text-align: center; color: #666; margin-bottom: 2.5rem; }
-.loading-indicator, .no-history { text-align: center; padding: 3rem; font-size: 1.2rem; color: #777; background: #fff; border-radius: 1rem; }
+.loading-indicator, .no-history { text-align: center; padding: 3rem; font-size: 1.2rem; color: #777; background: var(--container-bg); border-radius: 1rem; }
 .history-list { list-style: none; padding: 0; }
-.history-list li { background: white; margin-bottom: 1rem; padding: 1.25rem 1.75rem; border-radius: 0.75rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; border: 1px solid #e0e0e0; }
+.history-list li { background: var(--container-bg); margin-bottom: 1rem; padding: 1.25rem 1.75rem; border-radius: 0.75rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; border: 1px solid #e0e0e0; }
 .history-list li:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
 .history-item-content { display: flex; align-items: center; gap: 1rem; font-size: 1.1rem; }
 .history-item-icon { font-size: 1.5rem; }
@@ -351,7 +459,14 @@ onUnmounted(() => {
 
 .left-column { display: flex; flex-direction: column; gap: 1.5rem; }
 
-.image-container { width: 100%; border-radius: 1rem; overflow: hidden; border: 1px solid #dcdcdc; box-shadow: 0 4px 12px rgba(0,0,0,0.08); position: relative; }
+.image-container { 
+  width: 100%; 
+  border-radius: 1rem; 
+  overflow: hidden; 
+  border: 1px solid var(--light-gray); 
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
+  position: relative; 
+}
 .analysis-image { width: 100%; display: block; }
 
 /* --- Notepad --- */
@@ -383,7 +498,7 @@ onUnmounted(() => {
   color: #594a41;
   position: relative;
   z-index: 1;
-  font-family: 'HSYujiche', 'Nanum Pen Script', cursive;
+  font-family: var(--title-font);
 }
 .notepad-list { position: relative; z-index: 1; height: 400px; overflow-y: auto; }
 .notepad-item {
@@ -394,100 +509,174 @@ onUnmounted(() => {
   cursor: grab;
   font-size: 1.6rem;
   transition: color 0.3s, text-decoration 0.3s;
-  font-family: 'HSYujiche', 'Nanum Pen Script', cursive;
+  font-family: var(--title-font);
   color: #5a5a5a;
 }
-.notepad-item.is-packed { color: #c5c5c5; text-decoration: line-through; }
+.notepad-item.is-packed {
+  color: #b8b8b8; 
+  cursor: not-allowed;
+  position: relative;
+}
+
+.notepad-item.is-packed span {
+  text-decoration: line-through;
+  text-decoration-color: #9a9a9a;
+}
+
+/* 연필 체크 모양 */
+.notepad-item.is-packed::before {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 24px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a3a3a3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6L9 17l-5-5'/%3E%3C/svg%3E");
+    background-size: contain;
+    opacity: 0.6;
+}
+
+/* 연필로 그은듯한 취소선 */
+.notepad-item.is-packed::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 90%;
+    height: 100%;
+    transform: translateY(-50%);
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="8"><defs><filter id="pencilTexture"><feTurbulence type="fractalNoise" baseFrequency="0.2" numOctaves="2" result="turbulence"/><feDisplacementMap in="SourceGraphic" in2="turbulence" scale="1.5"/></filter></defs><path d="M0,4 Q25,2, 50,4 T100,4" stroke="%239a9a9a" stroke-width="1.5" fill="none" stroke-linecap="round" filter="url(%23pencilTexture)"/></svg>');
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    opacity: 0.8;
+    pointer-events: none; /* 이벤트 방해하지 않도록 */
+}
+
+.notepad-item.is-packed span {
+    text-decoration: none; /* 기본 취소선 제거 */
+}
+
 .conditional-note { display: block; font-size: 0.8rem; color: #e67e22; margin-top: 4px; }
 
-/* --- Luggage --- */
+/* --- Luggage (Request 1) --- */
 .luggage-area { display: flex; flex-direction: column; gap: 2rem; }
 .luggage {
-  background: #f5f7fa;
-  border: 2px dashed #d0d9e6;
+  background-color: transparent;
+  border: 2px dashed #c5d2e0; /* 더 진한 회색으로 변경 */
   border-radius: 1rem;
   display: flex;
   flex-direction: column;
   position: relative;
-  overflow: hidden;
   transition: background-color 0.3s ease;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  min-height: 400px; /* 최소 높이 확보 */
 }
-.luggage-bg-icon {
+
+.luggage.carry-on {
+  /* background-image 속성 제거 */
+}
+
+.luggage.checked {
+  /* background-image 속성 제거 */
+}
+
+.luggage-bg-icon { 
+  display: block; /* 아이콘 다시 표시 */
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  color: #e4e9f0;
-  z-index: 0;
-}
-.luggage-title { padding: 1.5rem; margin: 0; font-size: 1.5rem; font-weight: 700; border-bottom: 1px solid #e0e0e0; position: relative; z-index: 1; background: #f5f7fa; }
-.luggage-list { min-height: 25vh; padding: 1rem; flex-grow: 1; border-radius: 1rem; position: relative; z-index: 1; }
-.packed-item {
-  padding: 0.6rem 1rem;
-  margin-bottom: 0.5rem;
-  border-radius: 8px;
-  color: white;
-  font-weight: 500;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.carry-on-item { background-color: #3498db; }
-.checked-item { background-color: #9b59b6; }
-
-.tooltip-container {
-  position: relative;
+  color: #eaf1f8; /* 더 연한 색으로 변경 */
+  z-index: 0; /* 내용물 뒤로 보내기 */
+  font-size: 250px; /* 아이콘 크기 대폭 증가 */
+  width: 1em;
+  height: 1em;
 }
 
-.info-icon {
-  cursor: help;
-  font-weight: bold;
-  color: #fff;
-  background-color: rgba(0,0,0,0.2);
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  display: inline-flex;
+.luggage-bg-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.luggage-title { 
+  padding: 1.5rem; 
+  margin: 0; 
+  font-size: 1.5rem; 
+  font-weight: 700; 
+  position: relative; 
+  z-index: 1; 
+  text-align: center;
+  color: var(--text-color);
+}
+.luggage-list { 
+  padding: 3rem 2rem; /* 패딩 늘려서 아이콘과 여백 확보 */
+  flex-grow: 1; 
+  border-radius: 1rem; 
+  position: relative; 
+  z-index: 1; 
+  display: flex; /* Grid 대신 Flex 사용 */
+  flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-  font-size: 13px;
-  margin-left: 8px;
+  gap: 0.75rem;
+  align-content: start;
 }
 
-.tooltip-content {
-  visibility: hidden;
-  width: 280px;
-  background-color: #333;
-  color: #fff;
-  text-align: left;
-  border-radius: 6px;
-  padding: 10px;
+/* --- Packed Items (Request 2) --- */
+.packed-item {
+  padding: 0.5rem 1.25rem;
+  margin-bottom: 0;
+  border-radius: 50px; /* 둥근 모서리 */
+  font-weight: 500;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  display: flex;
+  justify-content: center; /* 가운데 정렬 */
+  align-items: center;
+  border: 2px dotted transparent;
+  transition: all 0.2s ease-in-out;
+  cursor: grab;
+  text-align: center;
+  min-height: 40px; /* 최소 높이 */
+}
+
+.packed-item span {
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.carry-on-item { 
+  background-color: rgba(52, 152, 219, 0.15);
+  border-color: rgba(52, 152, 219, 0.4);
+  color: #1a5276;
+}
+
+.checked-item { 
+  background-color: rgba(155, 89, 182, 0.15);
+  border-color: rgba(155, 89, 182, 0.4);
+  color: #5b2c6f;
+}
+
+/* --- Tooltip Styles --- */
+.area-tooltip {
   position: absolute;
-  z-index: 10;
-  bottom: 140%;
+  top: 50%;
   left: 50%;
-  transform: translateX(-95%);
-  opacity: 0;
-  transition: opacity 0.3s;
-  font-size: 0.9rem;
-  font-weight: normal;
-  font-family: 'Pretendard', sans-serif;
-}
-
-.tooltip-content::after {
-  content: "";
-  position: absolute;
-  top: 100%;
-  right: 20px;
-  border-width: 5px;
-  border-style: solid;
-  border-color: #333 transparent transparent transparent;
-}
-
-.tooltip-container:hover .tooltip-content {
-  visibility: visible;
-  opacity: 1;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 400px;
+  background-color: rgba(44, 62, 80, 0.95);
+  color: #fff;
+  text-align: center;
+  border-radius: 8px;
+  padding: 1rem;
+  z-index: 10;
+  font-size: 1rem;
+  font-weight: 500;
+  pointer-events: none; /* 툴팁이 마우스 이벤트를 방해하지 않도록 */
+  transition: opacity 0.3s ease;
 }
 
 /* --- Modal --- */
