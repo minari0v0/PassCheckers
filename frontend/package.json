@@ -17,6 +17,7 @@
     "@amcharts/amcharts5-geodata": "^5.1.5",
     "@quasar/extras": "^1.16.17",
     "apexcharts": "^5.3.5",
+    "floating-vue": "^5.2.2",
     "nuxt": "^3.17.2",
     "nuxt-quasar-ui": "^2.1.12",
     "quasar": "^2.18.1",

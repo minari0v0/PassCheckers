@@ -85,12 +85,19 @@
           >
             <template #item="{ element }">
               <div 
-                class="packed-item carry-on-item" 
-                :class="{ 'is-conditional': isConditional(element, 'carry-on') }" 
+                v-if="isConditional(element, 'carry-on')"
+                v-tooltip="{
+                  content: element.notes,
+                  theme: 'passcheckers-tooltip',
+                  shown: temporaryTooltipItemId === element.item_id,
+                  triggers: ['hover'],
+                }"
+                class="packed-item carry-on-item is-conditional"
                 @dragstart="onDragStart(element)"
-                @mouseover="onItemHover(element, 'carry-on')"
-                @mouseleave="onItemLeave"
               >
+                <span>{{ element.item_name }}</span>
+              </div>
+              <div v-else class="packed-item carry-on-item" @dragstart="onDragStart(element)">
                 <span>{{ element.item_name }}</span>
               </div>
             </template>
@@ -120,12 +127,19 @@
           >
             <template #item="{ element }">
               <div 
-                class="packed-item checked-item" 
-                :class="{ 'is-conditional': isConditional(element, 'checked') }" 
+                v-if="isConditional(element, 'checked')"
+                v-tooltip="{
+                  content: element.notes,
+                  theme: 'passcheckers-tooltip',
+                  shown: temporaryTooltipItemId === element.item_id,
+                  triggers: ['hover'],
+                }"
+                class="packed-item checked-item is-conditional"
                 @dragstart="onDragStart(element)"
-                @mouseover="onItemHover(element, 'checked')"
-                @mouseleave="onItemLeave"
               >
+                <span>{{ element.item_name }}</span>
+              </div>
+              <div v-else class="packed-item checked-item" @dragstart="onDragStart(element)">
                 <span>{{ element.item_name }}</span>
               </div>
             </template>
@@ -181,9 +195,7 @@ const showWarningModal = ref(false);
 const warningMessage = ref('');
 const warningDetails = ref('');
 const isWarningActive = ref(false);
-const activeCarryOnTooltipText = ref('');
-const activeCheckedTooltipText = ref('');
-let tooltipTimer = null;
+const temporaryTooltipItemId = ref(null); // 툴팁을 프로그래매틱하게 제어하기 위한 ID
 
 const analysisImageRef = ref(null);
 const imageSize = ref({ width: 0, height: 0 });
@@ -330,26 +342,8 @@ const onItemAdded = (event, luggageType) => {
   const originalItem = allItems.value.find(i => i.item_id === addedItemId);
 
   if (originalItem && isConditional(originalItem, luggageType)) {
-    showTemporaryTooltip(originalItem, luggageType);
+    showTemporaryTooltip(originalItem.item_id);
   }
-};
-
-const onItemHover = (item, luggageType) => {
-  if (isConditional(item, luggageType)) {
-    clearTimeout(tooltipTimer);
-    if (luggageType === 'carry-on') {
-      activeCarryOnTooltipText.value = item.notes;
-    } else {
-      activeCheckedTooltipText.value = item.notes;
-    }
-  }
-};
-
-const onItemLeave = () => {
-  tooltipTimer = setTimeout(() => {
-    activeCarryOnTooltipText.value = '';
-    activeCheckedTooltipText.value = '';
-  }, 300);
 };
 
 const checkRules = (item, targetListType) => {
@@ -377,19 +371,13 @@ const showProhibitedWarning = (item, targetListType) => {
   }, 500);
 }
 
-const showTemporaryTooltip = (item, luggageType) => {
-  clearTimeout(tooltipTimer);
-  if (luggageType === 'carry-on') {
-    activeCarryOnTooltipText.value = item.notes;
-    tooltipTimer = setTimeout(() => {
-      activeCarryOnTooltipText.value = '';
-    }, 1500);
-  } else {
-    activeCheckedTooltipText.value = item.notes;
-    tooltipTimer = setTimeout(() => {
-      activeCheckedTooltipText.value = '';
-    }, 1500);
-  }
+const showTemporaryTooltip = (itemId) => {
+  temporaryTooltipItemId.value = itemId;
+  setTimeout(() => {
+    if (temporaryTooltipItemId.value === itemId) {
+      temporaryTooltipItemId.value = null;
+    }
+  }, 1500);
 };
 
 const isConditional = (item, luggageType) => {
@@ -542,15 +530,14 @@ onUnmounted(() => {
     content: '';
     position: absolute;
     left: 0;
-    top: 50%;
+    top: 45%;
     width: 90%;
-    height: 100%;
-    transform: translateY(-50%);
-    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="8"><defs><filter id="pencilTexture"><feTurbulence type="fractalNoise" baseFrequency="0.2" numOctaves="2" result="turbulence"/><feDisplacementMap in="SourceGraphic" in2="turbulence" scale="1.5"/></filter></defs><path d="M0,4 Q25,2, 50,4 T100,4" stroke="%239a9a9a" stroke-width="1.5" fill="none" stroke-linecap="round" filter="url(%23pencilTexture)"/></svg>');
-    background-repeat: no-repeat;
-    background-size: 100% 100%;
-    opacity: 0.8;
-    pointer-events: none; /* 이벤트 방해하지 않도록 */
+    height: 5px;
+    background-image: url('data:image/svg+xml;utf8,<svg width="20" height="5" xmlns="http://www.w3.org/2000/svg"><path d="M0 2.5 C 5 1.5, 15 3.5, 20 2.5" stroke="%23a0a0a0" stroke-width="1" fill="none"/></svg>');
+    background-size: 20px 5px;
+    background-repeat: repeat-x;
+    opacity: 0.7;
+    pointer-events: none;
 }
 
 .notepad-item.is-packed span {
@@ -657,26 +644,6 @@ onUnmounted(() => {
   background-color: rgba(155, 89, 182, 0.15);
   border-color: rgba(155, 89, 182, 0.4);
   color: #5b2c6f;
-}
-
-/* --- Tooltip Styles --- */
-.area-tooltip {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 90%;
-  max-width: 400px;
-  background-color: rgba(44, 62, 80, 0.95);
-  color: #fff;
-  text-align: center;
-  border-radius: 8px;
-  padding: 1rem;
-  z-index: 10;
-  font-size: 1rem;
-  font-weight: 500;
-  pointer-events: none; /* 툴팁이 마우스 이벤트를 방해하지 않도록 */
-  transition: opacity 0.3s ease;
 }
 
 /* --- Modal --- */
