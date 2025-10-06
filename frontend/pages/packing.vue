@@ -22,7 +22,7 @@
     <div v-else-if="packingData" class="packing-workspace">
       <p class="instruction-text">이미지 또는 리스트의 물품을 오른쪽 수하물 영역으로 드래그하여 패킹을 시작하세요! 👇</p>
 
-      <!-- Left Panel: Image & Notepad -->
+      <!-- 좌측 패널: 분석이미지 & 노트패드 -->
       <div 
         class="left-column" 
         @drop.prevent="handleUnpack"
@@ -72,7 +72,7 @@
         </div>
       </div>
 
-      <!-- Right Panel: Luggage -->
+      <!-- 우측 패널: 패킹 영역 -->
       <div class="luggage-area">
         <div 
           class="luggage carry-on"
@@ -110,7 +110,7 @@
               </div>
             </template>
           </draggable>
-          <!-- Area Tooltip -->
+          <!-- Area 툴팁 -->
           <div v-if="activeCarryOnTooltipText" class="area-tooltip">
             {{ activeCarryOnTooltipText }}
           </div>
@@ -248,7 +248,7 @@ const fetchPackingData = async (id) => {
   }
 };
 
-// --- Methods ---
+// --- 메소드 ---
 const selectAnalysis = (id) => {
   selectedAnalysisId.value = id;
   fetchPackingData(id);
@@ -263,7 +263,7 @@ const updateImageSize = () => {
   }
 };
 
-// --- Drag and Drop Logic ---
+// --- 드래그 앤 드랍 로직 ---
 const onDragStart = (item) => {
   draggedItem.value = item;
 };
@@ -457,7 +457,7 @@ onUnmounted(() => {
   min-height: 100vh; 
 }
 
-/* --- History Selection --- */
+/* --- 분류 기록 섹션 --- */
 .analysis-selector { max-width: 900px; margin: 0 auto; }
 .page-title { font-size: 2.2rem; font-weight: 800; text-align: center; color: var(--text-color); }
 .page-description { text-align: center; color: #666; margin-bottom: 2.5rem; }
@@ -471,7 +471,6 @@ onUnmounted(() => {
 .history-item-date { color: #888; }
 .history-item-count { background-color: #e9ecef; color: #495057; padding: 0.25rem 0.75rem; border-radius: 1rem; font-size: 0.9rem; }
 
-/* --- Packing Workspace --- */
 .packing-workspace { 
   display: grid; 
   grid-template-columns: 450px 1fr; 
@@ -481,7 +480,7 @@ onUnmounted(() => {
 }
 
 .instruction-text {
-  grid-column: 1 / -1; /* Span across all columns */
+  grid-column: 1 / -1;
   text-align: center;
   font-size: 1.1rem;
   font-weight: 500;
@@ -504,7 +503,7 @@ onUnmounted(() => {
 }
 .analysis-image { width: 100%; display: block; }
 
-/* --- Notepad --- */
+/* --- 패킹 리스트 메모장 --- */
 .notepad-container { 
   background: #fdfdf6; 
   border: 1px solid #e0e0cc;
@@ -573,7 +572,7 @@ onUnmounted(() => {
   transition: color 0.3s, text-decoration 0.3s;
   font-family: 'HSYujiche', 'Nanum Pen Script', cursive !important;
   color: #5a5a5a;
-  position: relative; /* For pseudo-elements */
+  position: relative;
 }
 .notepad-item.is-packed {
   color: #b8b8b8; 
@@ -704,7 +703,7 @@ onUnmounted(() => {
   align-content: start;
 }
 
-/* --- Packed Items --- */
+/* --- 패킹된 아이템 --- */
 .packed-item {
   padding: 0.5rem 1.25rem;
   margin-bottom: 0;
@@ -719,7 +718,7 @@ onUnmounted(() => {
   cursor: grab;
   text-align: center;
   min-height: 40px;
-  position: relative; /* For tooltip positioning */
+  position: relative;
 }
 
 .packed-item span {
