@@ -20,6 +20,18 @@
 
     <!-- 2. 패킹 진행 화면 -->
     <div v-else-if="packingData" class="packing-workspace">
+      <!-- SVG Clip-path 정의 -->
+      <svg width="0" height="0" style="position: absolute;">
+        <defs>
+          <clipPath id="backpack-shape" clipPathUnits="objectBoundingBox">
+            <path d="M0.21,1 C0.14,1 0.07,0.96,0.07,0.88 L0.07,0.28 C0.07,0.14 0.21,0.05 0.43,0.05 H0.57 C0.79,0.05 0.93,0.14 0.93,0.28 L0.93,0.88 C0.93,0.96 0.86,1 0.79,1 H0.21 Z M0.36,0.05 C0.39,0.01,0.5,0,0.5,0 C0.5,0,0.61,0.01,0.64,0.05"></path>
+          </clipPath>
+          <clipPath id="suitcase-shape" clipPathUnits="objectBoundingBox">
+            <path d="M0.14,0.95 C0.11,0.95 0.07,0.93,0.07,0.9 L0.07,0.18 C0.07,0.1 0.14,0.05 0.25,0.05 H0.75 C0.86,0.05 0.93,0.1 0.93,0.18 L0.93,0.9 C0.93,0.93 0.89,0.95 0.86,0.95 H0.14 Z M0.39,0.05 V0.02 M0.61,0.05 V0.02 M0.43,0.02 H0.57"></path>
+          </clipPath>
+        </defs>
+      </svg>
+
       <p class="instruction-text">이미지 또는 리스트의 물품을 오른쪽 수하물 영역으로 드래그하여 패킹을 시작하세요! 👇</p>
 
       <!-- 좌측 패널: 분석이미지 & 노트패드 -->
@@ -72,90 +84,52 @@
         </div>
       </div>
 
-      <!-- 우측 패널: 패킹 영역 -->
+      <!-- 우측 패널: 새로운 패킹 영역 (clip-path 적용) -->
       <div class="luggage-area">
-        <div 
-          class="luggage carry-on"
-          @dragover.prevent
-        >
-          <div class="luggage-bg-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20h0a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h0"/><path d="M8 18V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v14"/><path d="M10 20h4"/></svg>
-          </div>
+        <div class="clipped-container carry-on-bg">
           <h2 class="luggage-title">🎒 기내용 가방</h2>
           <draggable
             v-model="carryOnItems"
-            :group="{ name: 'packing', pull: true, put: true }"
+            group="packing"
             item-key="item_id"
-            class="luggage-list carry-on-list"
+            class="luggage-list-stack"
             :move="handleMove"
             @drop.prevent="(event) => handleDropOnLuggage(event, 'carry-on')"
           >
             <template #item="{ element }">
-              <div 
-                v-if="isConditional(element, 'carry-on')"
-                v-tooltip="{
-                  content: element.notes,
-                  theme: 'passcheckers-tooltip',
-                  shown: temporaryTooltipItemId === element.item_id,
-                  triggers: ['hover']
-                }"
-                class="packed-item carry-on-item is-conditional"
+              <PackedItemStack 
+                :key="`packed-carry-${element.item_id}`"
+                :item="element"
+                :height="carryOnItemHeight"
+                :is-tooltip-shown="temporaryTooltipItemId === element.item_id"
+                luggage-type="carry-on"
                 @dragstart="onDragStart(element)"
-              >
-                <span>{{ element.item_name }}</span>
-                <i class="info-icon-indicator">ⓘ</i>
-              </div>
-              <div v-else class="packed-item carry-on-item" @dragstart="onDragStart(element)">
-                <span>{{ element.item_name }}</span>
-              </div>
+              />
             </template>
           </draggable>
-          <!-- Area 툴팁 -->
-          <div v-if="activeCarryOnTooltipText" class="area-tooltip">
-            {{ activeCarryOnTooltipText }}
-          </div>
         </div>
-        <!-- Checked Luggage -->
-        <div 
-          class="luggage checked"
-          @dragover.prevent
-        >
-          <div class="luggage-bg-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.5" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M12 2v20"/><path d="M6 8h12"/><path d="M6 16h12"/></svg>
-          </div>
+
+        <div class="clipped-container checked-bg">
           <h2 class="luggage-title">🧳 위탁용 캐리어</h2>
           <draggable
             v-model="checkedItems"
-            :group="{ name: 'packing', pull: true, put: true }"
+            group="packing"
             item-key="item_id"
-            class="luggage-list checked-list"
+            class="luggage-list-stack"
             :move="handleMove"
             @drop.prevent="(event) => handleDropOnLuggage(event, 'checked')"
           >
             <template #item="{ element }">
-              <div 
-                v-if="isConditional(element, 'checked')"
-                v-tooltip="{
-                  content: element.notes,
-                  theme: 'passcheckers-tooltip',
-                  shown: temporaryTooltipItemId === element.item_id,
-                  triggers: ['hover']
-                }"
-                class="packed-item checked-item is-conditional"
+              <PackedItemStack 
+                :key="`packed-checked-${element.item_id}`"
+                :item="element"
+                :height="checkedItemHeight"
+                :is-tooltip-shown="temporaryTooltipItemId === element.item_id"
+                luggage-type="checked"
                 @dragstart="onDragStart(element)"
-              >
-                <span>{{ element.item_name }}</span>
-                <i class="info-icon-indicator">ⓘ</i>
-              </div>
-              <div v-else class="packed-item checked-item" @dragstart="onDragStart(element)">
-                <span>{{ element.item_name }}</span>
-              </div>
+              />
             </template>
           </draggable>
-          <!-- Area Tooltip -->
-          <div v-if="activeCheckedTooltipText" class="area-tooltip">
-            {{ activeCheckedTooltipText }}
-          </div>
         </div>
       </div>
     </div>
@@ -181,6 +155,7 @@ import { useAuth } from '~/composables/useAuth';
 import { useApiUrl } from '~/composables/useApiUrl';
 import draggable from 'vuedraggable';
 import ImageItem from '~/components/packing/ImageItem.vue';
+import PackedItemStack from '~/components/packing/PackedItemStack.vue';
 
 definePageMeta({ middleware: 'auth' });
 
@@ -218,6 +193,18 @@ const fullImageUrl = computed(() => {
     return `${API_BASE_URL}${packingData.value.image_url}`;
   }
   return '';
+});
+
+// --- 새로운 스태킹 UI를 위한 Computed 속성 ---
+const carryOnItemHeight = computed(() => {
+  const count = carryOnItems.value.length;
+  if (count === 0) return 0;
+  return 100 / count;
+});
+const checkedItemHeight = computed(() => {
+  const count = checkedItems.value.length;
+  if (count === 0) return 0;
+  return 100 / count;
 });
 
 // --- Data Fetching ---
@@ -324,9 +311,10 @@ const handleMove = (evt) => {
 
   const targetListEl = evt.to;
   let targetListType = 'unpacked';
-  if (targetListEl.classList.contains('carry-on-list')) {
+  const parentEl = targetListEl.parentElement;
+  if (parentEl.classList.contains('carry-on-bg')) {
     targetListType = 'carry-on';
-  } else if (targetListEl.classList.contains('checked-list')) {
+  } else if (parentEl.classList.contains('checked-bg')) {
     targetListType = 'checked';
   }
 
@@ -648,102 +636,53 @@ onUnmounted(() => {
     opacity: 0.6;
 }
 
-/* --- Luggage --- */
-.luggage-area { display: flex; flex-direction: column; gap: 2rem; }
-.luggage {
-  background-color: transparent;
-  border: 2px dashed #c5d2e0; /* 더 진한 회색으로 변경 */
-  border-radius: 1rem;
+/* --- Luggage (New Clip-path) --- */
+.luggage-area { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 2rem; 
+}
+
+.clipped-container {
+  position: relative;
+  min-height: 450px;
+  width: 100%;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
   display: flex;
   flex-direction: column;
-  position: relative;
-  transition: background-color 0.3s ease;
-  min-height: 400px; /* 최소 높이 확보 */
+  align-items: center;
+  padding: 1.5rem;
+  box-sizing: border-box;
 }
 
-.luggage-bg-icon { 
-  display: block;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  color: #eaf1f8;
-  z-index: 0;
-  font-size: 250px;
-  width: 1em;
-  height: 1em;
+.carry-on-bg {
+  background-color: #e3f2fd;
+  clip-path: url(#backpack-shape);
 }
 
-.luggage-bg-icon svg {
-  width: 100%;
-  height: 100%;
+.checked-bg {
+  background-color: #ede7f6;
+  clip-path: url(#suitcase-shape);
 }
 
 .luggage-title { 
-  padding: 1.5rem; 
+  padding-bottom: 1rem;
   margin: 0; 
   font-size: 1.5rem; 
   font-weight: 700; 
-  position: relative; 
-  z-index: 1; 
-  text-align: center;
   color: var(--text-color);
-}
-.luggage-list { 
-  padding: 3rem 2rem;
-  flex-grow: 1; 
-  border-radius: 1rem; 
-  position: relative; 
-  z-index: 1; 
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  gap: 0.75rem;
-  align-content: start;
-}
-
-/* --- 패킹된 아이템 --- */
-.packed-item {
-  padding: 0.5rem 1.25rem;
-  margin-bottom: 0;
-  border-radius: 50px;
-  font-weight: 500;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  border: 2px dotted transparent;
-  transition: all 0.2s ease-in-out;
-  cursor: grab;
   text-align: center;
-  min-height: 40px;
-  position: relative;
 }
 
-.packed-item span {
-  font-size: 0.95rem;
-  font-weight: 500;
-}
-
-.info-icon-indicator {
-  font-style: normal;
-  margin-left: 8px;
-  font-size: 14px;
-  color: inherit;
-  opacity: 0.6;
-}
-
-.carry-on-item { 
-  background-color: rgba(52, 152, 219, 0.15);
-  border-color: rgba(52, 152, 219, 0.4);
-  color: #1a5276;
-}
-
-.checked-item { 
-  background-color: rgba(155, 89, 182, 0.15);
-  border-color: rgba(155, 89, 182, 0.4);
-  color: #5b2c6f;
+.luggage-list-stack { 
+  width: 100%;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: flex-start;
+  overflow: hidden; /* Prevent items from spilling out */
 }
 
 /* --- Modal --- */
