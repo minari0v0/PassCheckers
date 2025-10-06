@@ -21,5 +21,6 @@ class Config:
     # CORS 설정
     CORS_ORIGINS = [
         "http://localhost:3000",
-        "http://passcheckers.kro.kr"
+        "http://passcheckers.kro.kr",
+        "http://localhost"
     ] 
