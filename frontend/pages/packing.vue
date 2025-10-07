@@ -32,7 +32,9 @@
         </defs>
       </svg>
 
-      <p class="instruction-text">이미지 또는 리스트의 물품을 오른쪽 수하물 영역으로 드래그하여 패킹을 시작하세요! 👇</p>
+      <p class="instruction-text" :style="progressBarStyle">
+        {{ instructionTextContent }}
+      </p>
 
       <!-- 좌측 패널: 분석이미지 & 노트패드 -->
       <div 
@@ -172,6 +174,9 @@
       </div>
     </transition>
 
+    <!-- 패킹 완료 축하 애니메이션 -->
+    <CelebrationAnimation v-if="isPackingComplete" />
+
   </div>
 </template>
 
@@ -182,6 +187,7 @@ import { useApiUrl } from '~/composables/useApiUrl';
 import draggable from 'vuedraggable';
 import ImageItem from '~/components/packing/ImageItem.vue';
 import PackedItemStack from '~/components/packing/PackedItemStack.vue';
+import CelebrationAnimation from '~/components/CelebrationAnimation.vue';
 
 definePageMeta({ middleware: 'auth' });
 
@@ -276,7 +282,6 @@ const updateImageSize = () => {
       height: analysisImageRef.value.clientHeight,
     };
   }
-  calculateAvailableHeight(); // Also recalculate on image load
 };
 
 // --- 드래그 앤 드랍 로직 ---
@@ -436,6 +441,36 @@ const isItemPacked = (itemId) => {
   return carryOnItems.value.some(i => i.item_id === itemId) || checkedItems.value.some(i => i.item_id === itemId);
 };
 
+const packingProgress = computed(() => {
+  const packableItems = allItems.value.filter(item => {
+    const isBannedFromCarryOn = item.carry_on_allowed === '아니요';
+    const isBannedFromChecked = item.checked_baggage_allowed === '아니요';
+    return !(isBannedFromCarryOn && isBannedFromChecked);
+  });
+
+  if (packableItems.length === 0) return 0;
+
+  const packedCount = packableItems.filter(item => isItemPacked(item.item_id)).length;
+  return (packedCount / packableItems.length) * 100;
+});
+
+const progressBarStyle = computed(() => {
+  return {
+    '--progress-width': `${packingProgress.value}%`
+  };
+});
+
+const instructionTextContent = computed(() => {
+  if (packingProgress.value === 100) {
+    return '이제 모든 짐이 준비됐어요 👏';
+  }
+  return '이미지 또는 리스트의 물품을 오른쪽 수하물 영역으로 드래그하여 패킹을 시작하세요! 👇';
+});
+
+const isPackingComplete = computed(() => {
+  return packingProgress.value === 100;
+});
+
 watch(carryOnItems, (newItems, oldItems) => {
   if (newItems.length > oldItems.length) {
     const newItem = newItems.find(item => !oldItems.some(oldItem => oldItem.item_id === item.item_id));
@@ -513,11 +548,25 @@ onUnmounted(() => {
   text-align: center;
   font-size: 1.1rem;
   font-weight: 500;
-  color: #576a7e;
-  background-color: rgba(255, 255, 255, 0.7);
+  color: #3c4a5a;
+  background-color: #f0f4f8;
   padding: 1rem;
   border-radius: 12px;
   border: 1px solid var(--light-gray);
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.instruction-text::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; height: 100%;
+  width: var(--progress-width, 0%);
+  background-color: #a8e6cf;
+  border-radius: 12px;
+  transition: width 0.8s cubic-bezier(0.25, 0.8, 0.25, 1);
+  z-index: -1;
 }
 
 .left-column { display: flex; flex-direction: column; gap: 1.5rem; }
