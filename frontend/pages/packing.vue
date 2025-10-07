@@ -274,6 +274,7 @@ const updateImageSize = () => {
       height: analysisImageRef.value.clientHeight,
     };
   }
+  calculateAvailableHeight(); // Also recalculate on image load
 };
 
 // --- 드래그 앤 드랍 로직 ---

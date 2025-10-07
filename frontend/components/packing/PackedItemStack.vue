@@ -8,8 +8,8 @@
       theme: 'passcheckers-tooltip',
       triggers: ['hover'],
       placement: 'top',
-      // Only enable tooltip on root if not conditional but has notes
-      disabled: isConditional || !item.notes
+      disabled: isConditional || !item.notes,
+      delay: { show: 1500, hide: 100 } // Sync with animation
     }"
     @dragstart="onDragStart"
     draggable="true"
@@ -22,7 +22,8 @@
         content: item.notes,
         theme: 'passcheckers-tooltip',
         triggers: ['hover'],
-        placement: 'top'
+        placement: 'top',
+        shown: isTooltipShown
       }"
     >ⓘ</i>
   </div>
@@ -34,7 +35,7 @@ import { computed } from 'vue';
 const props = defineProps({
   item: { type: Object, required: true },
   height: { type: Number, required: true },
-  isTooltipShown: { type: Boolean, default: false }, // This is now unused but harmless
+  isTooltipShown: { type: Boolean, default: false },
   luggageType: { type: String, required: true },
   itemCount: { type: Number, default: 1 }
 });
@@ -44,7 +45,6 @@ const emit = defineEmits(['dragstart']);
 const itemClass = computed(() => ({
   'carry-on-item': props.luggageType === 'carry-on',
   'checked-item': props.luggageType === 'checked',
-  // Add a class to change cursor if it has notes but isn't conditional
   'has-notes': !isConditional.value && props.item.notes,
 }));
 
@@ -76,9 +76,6 @@ const itemStyle = computed(() => {
   return styles;
 });
 
-// This function is no longer needed as we directly bind item.notes
-// const getConditionText = () => ...
-
 const onDragStart = (event) => {
   emit('dragstart', event);
 };
@@ -93,16 +90,48 @@ const onDragStart = (event) => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 25px; 
+  padding: 0 35px; 
   overflow: hidden;
-  transition: all 0.3s ease;
   font-weight: 500;
   cursor: grab;
+  position: relative; 
+  /* Restored: Transition for the color change */
+  transition: background-color 1s ease-out;
 }
 
-/* New class to indicate hoverability for notes */
 .has-notes {
   cursor: help;
+}
+
+/* This triggers the delayed bounce animation */
+.packed-item-stack.has-notes:hover {
+  animation: bounce-effect 0.5s ease-out 1s;
+}
+
+/* Prevent animation during click/drag */
+.packed-item-stack.has-notes:active {
+  animation: none;
+  transition: background-color 0s;
+}
+
+/* Set the hover/end color for the transition (darker) */
+.carry-on-item.has-notes:hover {
+  background-color: rgba(52, 152, 219, 0.5);
+}
+.carry-on-item.has-notes:active {
+  background-color: rgba(52, 152, 219, 0.15);
+}
+
+.checked-item.has-notes:hover {
+  background-color: rgba(155, 89, 182, 0.5);
+}
+.checked-item.has-notes:active {
+  background-color: rgba(155, 89, 182, 0.15);
+}
+
+@keyframes bounce-effect {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.03); }
 }
 
 .carry-on-item {
@@ -115,11 +144,9 @@ const onDragStart = (event) => {
   color: #5b2c6f;
 }
 
-.item-name {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  flex-grow: 1;
+.item-name, .info-icon {
+  position: relative;
+  z-index: 1;
 }
 
 .info-icon {
