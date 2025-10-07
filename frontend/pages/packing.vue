@@ -346,21 +346,24 @@ const handleMove = (evt) => {
   }
 
   const targetListEl = evt.to;
-  let targetListType = 'unpacked';
-  const parentEl = targetListEl.parentElement;
-  if (parentEl.classList.contains('carry-on-bg')) {
+  let targetListType = null; // 기본값 null
+
+  // .closest()를 사용하여 상위 컨테이너를 안정적으로 찾음
+  if (targetListEl.closest('.carry-on-container')) {
     targetListType = 'carry-on';
-  } else if (parentEl.classList.contains('checked-bg')) {
+  } else if (targetListEl.closest('.checked-container')) {
     targetListType = 'checked';
   }
 
-  if (targetListType !== 'unpacked') {
+  // 유효한 수하물 영역으로 이동하는 경우 규칙 검사
+  if (targetListType) {
     if (!checkRules(item, targetListType)) {
       showProhibitedWarning(item, targetListType);
-      return false;
+      return false; // 금지된 경우 이동 취소
     }
   }
-  return true;
+
+  return true; // 그 외의 경우 이동 허용
 };
 
 const checkRules = (item, targetListType) => {
@@ -702,6 +705,17 @@ onUnmounted(() => {
   flex-grow: 1;
   position: relative;
   min-height: 500px;
+  border-radius: 30px; /* 둥근 모서리 */
+  overflow: hidden; /* 내용물이 모서리를 넘지 않도록 */
+  background-color: #e9eef2; /* 기본 배경색 */
+}
+
+.carry-on-container .luggage-body {
+  background: radial-gradient(circle, rgba(232, 243, 251, 0.8) 0%, rgba(221, 235, 247, 0.5) 100%);
+}
+
+.checked-container .luggage-body {
+  background: radial-gradient(circle, rgba(244, 237, 248, 0.8) 0%, rgba(235, 225, 241, 0.5) 100%);
 }
 
 .decorative-outline-svg {
@@ -735,12 +749,12 @@ onUnmounted(() => {
 /* Apply the specific clip-path and padding */
 .carry-on-container .luggage-list {
   clip-path: url(#backpack-shape);
-  padding: 4rem; /* Increased inset */
+  padding: 12% 15%; /* rem to % for responsive inset */
 }
 
 .checked-container .luggage-list {
   clip-path: url(#suitcase-shape);
-  padding: 3.5rem; /* Increased inset */
+  padding: 15% 12%; /* rem to % for responsive inset */
 }
 
 /* --- Modal --- */
