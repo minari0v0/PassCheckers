@@ -24,10 +24,10 @@
       <svg width="0" height="0" style="position: absolute;">
         <defs>
           <clipPath id="backpack-shape" clipPathUnits="objectBoundingBox">
-            <path d="M0.21,1 C0.14,1 0.07,0.96,0.07,0.88 L0.07,0.28 C0.07,0.14 0.21,0.05 0.43,0.05 H0.57 C0.79,0.05 0.93,0.14 0.93,0.28 L0.93,0.88 C0.93,0.96 0.86,1 0.79,1 H0.21 Z M0.36,0.05 C0.39,0.01,0.5,0,0.5,0 C0.5,0,0.61,0.01,0.64,0.05"></path>
+            <path d="M0.13,0.3 C0.08,0.038 0.92,0.038 0.87,0.3 L0.87,0.8 A 0.10,0.10 0 0 1 0.77,0.9 L0.23,0.9 A 0.10,0.10 0 0 1 0.13,0.8 L0.13,0.3 Z"></path>
           </clipPath>
           <clipPath id="suitcase-shape" clipPathUnits="objectBoundingBox">
-            <path d="M0.14,0.95 C0.11,0.95 0.07,0.93,0.07,0.9 L0.07,0.18 C0.07,0.1 0.14,0.05 0.25,0.05 H0.75 C0.86,0.05 0.93,0.1 0.93,0.18 L0.93,0.9 C0.93,0.93 0.89,0.95 0.86,0.95 H0.14 Z M0.39,0.05 V0.02 M0.61,0.05 V0.02 M0.43,0.02 H0.57"></path>
+            <path d="M0.13,0.84 C0.10,0.84 0.09,0.82,0.09,0.8 L0.09,0.23 C0.09,0.15 0.13,0.11 0.23,0.11 H0.77 C0.87,0.12 0.91,0.15 0.91,0.23 L0.91,0.8 C0.91,0.82 0.90,0.84 0.87,0.84 H0.13 Z"></path>
           </clipPath>
         </defs>
       </svg>
@@ -84,53 +84,77 @@
         </div>
       </div>
 
-      <!-- 우측 패널: 새로운 패킹 영역 (clip-path 적용) -->
+      <!-- 우측 패널: 최종 Clip-Path 디자인 -->
       <div class="luggage-area">
-        <div class="clipped-container carry-on-bg">
+
+        <!-- 기내용 가방 -->
+        <div class="luggage-container carry-on-container">
           <h2 class="luggage-title">🎒 기내용 가방</h2>
-          <draggable
-            v-model="carryOnItems"
-            group="packing"
-            item-key="item_id"
-            class="luggage-list-stack"
-            :move="handleMove"
+          <div 
+            class="luggage-body"
+            @dragover.prevent
             @drop.prevent="(event) => handleDropOnLuggage(event, 'carry-on')"
           >
-            <template #item="{ element }">
-              <PackedItemStack 
-                :key="`packed-carry-${element.item_id}`"
-                :item="element"
-                :height="carryOnItemHeight"
-                :is-tooltip-shown="temporaryTooltipItemId === element.item_id"
-                luggage-type="carry-on"
-                @dragstart="onDragStart(element)"
-              />
-            </template>
-          </draggable>
+            <svg class="decorative-outline-svg" preserveAspectRatio="xMidYMid meet" viewBox="-5 -15 110 135">
+              <path d="M21,110 C14,110 7,105.2 7,95.6 L7,23.6 C7,6.8 21,-4 43,-4 H57 C79,-4 93,6.8 93,23.6 L93,95.6 C93,105.2 86,110 79,110 H21 Z M36,-4 C39,-8.8 50,-10 50,-10 C50,-10 61,-8.8 64,-4" fill="transparent" stroke="#d0d9e0" stroke-width="4"/>
+            </svg>
+            <draggable
+              v-model="carryOnItems"
+              group="packing"
+              item-key="item_id"
+              class="luggage-list"
+              :move="handleMove"
+              @add="(event) => onItemAdded(event, 'carry-on')"
+            >
+              <template #item="{ element }">
+                <PackedItemStack 
+                  :key="`packed-carry-${element.item_id}`"
+                  :item="element"
+                  :height="carryOnItemHeight"
+                  :is-tooltip-shown="temporaryTooltipItemId === element.item_id"
+                  luggage-type="carry-on"
+                  :item-count="carryOnItems.length"
+                  @dragstart="onDragStart(element)"
+                />
+              </template>
+            </draggable>
+          </div>
         </div>
 
-        <div class="clipped-container checked-bg">
+        <!-- 위탁용 캐리어 -->
+        <div class="luggage-container checked-container">
           <h2 class="luggage-title">🧳 위탁용 캐리어</h2>
-          <draggable
-            v-model="checkedItems"
-            group="packing"
-            item-key="item_id"
-            class="luggage-list-stack"
-            :move="handleMove"
+          <div 
+            class="luggage-body"
+            @dragover.prevent
             @drop.prevent="(event) => handleDropOnLuggage(event, 'checked')"
           >
-            <template #item="{ element }">
-              <PackedItemStack 
-                :key="`packed-checked-${element.item_id}`"
-                :item="element"
-                :height="checkedItemHeight"
-                :is-tooltip-shown="temporaryTooltipItemId === element.item_id"
-                luggage-type="checked"
-                @dragstart="onDragStart(element)"
-              />
-            </template>
-          </draggable>
+            <svg class="decorative-outline-svg" preserveAspectRatio="xMidYMid meet" viewBox="0 0 100 112">
+              <path d="M14,100 C11,100 7,98 7,95 L7,18 C7,10 14,5 25,5 H75 C86,5 93,10 93,18 L93,95 C93,98 89,100 86,100 H14 Z M39,5 V2 M61,5 V2 M43,2 H57 M5,103 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0 M85,103 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0" fill="transparent" stroke="#d0d9e0" stroke-width="4"/>
+            </svg>
+            <draggable
+              v-model="checkedItems"
+              group="packing"
+              item-key="item_id"
+              class="luggage-list"
+              :move="handleMove"
+              @add="(event) => onItemAdded(event, 'checked')"
+            >
+              <template #item="{ element }">
+                <PackedItemStack 
+                  :key="`packed-checked-${element.item_id}`"
+                  :item="element"
+                  :height="checkedItemHeight"
+                  :is-tooltip-shown="temporaryTooltipItemId === element.item_id"
+                  luggage-type="checked"
+                  :item-count="checkedItems.length"
+                  @dragstart="onDragStart(element)"
+                />
+              </template>
+            </draggable>
+          </div>
         </div>
+
       </div>
     </div>
 
@@ -194,6 +218,8 @@ const fullImageUrl = computed(() => {
   }
   return '';
 });
+
+
 
 // --- 새로운 스태킹 UI를 위한 Computed 속성 ---
 const carryOnItemHeight = computed(() => {
@@ -300,6 +326,15 @@ const handleDropOnLuggage = (event, targetListType) => {
     } else {
       showProhibitedWarning(item, targetListType);
     }};
+
+const onItemAdded = (event, luggageType) => {
+  const item = event.added?.element;
+  if (!item) return;
+
+  if (isConditional(item, luggageType)) {
+    showTemporaryTooltip(item.item_id);
+  }
+};
 
 const handleMove = (evt) => {
   const item = evt.draggedContext.element;
@@ -636,35 +671,19 @@ onUnmounted(() => {
     opacity: 0.6;
 }
 
-/* --- Luggage (New Clip-path) --- */
-.luggage-area { 
-  display: flex; 
-  flex-direction: column; 
-  gap: 2rem; 
+/* --- Luggage (Final Clip-Path Design) --- */
+.luggage-area {
+  display: flex;
+  flex-direction: row;
+  gap: 2rem;
+  align-items: stretch;
 }
 
-.clipped-container {
-  position: relative;
-  min-height: 450px;
-  width: 100%;
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: contain;
+.luggage-container {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 1.5rem;
-  box-sizing: border-box;
-}
-
-.carry-on-bg {
-  background-color: #e3f2fd;
-  clip-path: url(#backpack-shape);
-}
-
-.checked-bg {
-  background-color: #ede7f6;
-  clip-path: url(#suitcase-shape);
+  min-width: 0;
 }
 
 .luggage-title { 
@@ -674,15 +693,53 @@ onUnmounted(() => {
   font-weight: 700; 
   color: var(--text-color);
   text-align: center;
+  position: relative;
+  z-index: 2;
 }
 
-.luggage-list-stack { 
-  width: 100%;
+.luggage-body {
   flex-grow: 1;
+  position: relative;
+  min-height: 500px;
+}
+
+.decorative-outline-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.luggage-list {
+  /* This is now the clipped packing area */
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  padding: 2.5rem; /* Default inset from the outline */
+  box-sizing: border-box;
+  
+  /* Stacking styles remain */
   display: flex;
   flex-direction: column-reverse;
   justify-content: flex-start;
-  overflow: hidden; /* Prevent items from spilling out */
+  overflow: hidden;
+}
+
+/* Apply the specific clip-path and padding */
+.carry-on-container .luggage-list {
+  clip-path: url(#backpack-shape);
+  padding: 4rem; /* Increased inset */
+}
+
+.checked-container .luggage-list {
+  clip-path: url(#suitcase-shape);
+  padding: 3.5rem; /* Increased inset */
 }
 
 /* --- Modal --- */
