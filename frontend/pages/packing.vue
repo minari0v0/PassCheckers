@@ -49,10 +49,12 @@
             @load="updateImageSize"
           />
           <ImageItem 
-            v-for="item in unpackedItems" 
+            v-for="item in allItems" 
             :key="`img-${item.item_id}`"
             :item="item"
             :image-size="imageSize"
+            :is-packed="isItemPacked(item.item_id)"
+            :is-fully-prohibited="isFullyProhibited(item)"
           />
         </div>
         <div class="notepad-container">
