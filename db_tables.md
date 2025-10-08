@@ -99,3 +99,23 @@
 | `weight_range` | VARCHAR(255) | | 무게 범위 (예: "100-200g") |
 | `avg_weight_value`| DECIMAL(10, 2)| | 평균 무게 값 (숫자) |
 | `avg_weight_unit` | VARCHAR(10) | | 평균 무게 단위 ('g' 또는 'kg') |
+
+### 10. `location_details` (여행지 상세 정보)
+컬럼명	타입	제약조건	설명
+location_id	INT	PRIMARY KEY, FOREIGN KEY	locations.location_id와 연결
+latitude	DECIMAL(9, 6)	NOT NULL	날씨 API 호출용 위도
+longitude	DECIMAL(9, 6)	NOT NULL	날씨 API 호출용 경도
+airport_code	VARCHAR(10)		Amadeus API 호출용 공항 코드
+power_outlet_type	VARCHAR(50)		'안심 팁'용 현지 전압/콘센트
+tipping_culture	VARCHAR(100)		'안심 팁'용 팁 문화 정보
+rainy_season_start	INT		건기/우기 추천용 우기 시작 월
+rainy_season_end	INT		건기/우기 추천용 우기 종료 월
+
+### 11. `location_weather` (여행지 월별 기후 데이터)
+컬럼명	타입	제약조건	설명
+id	INT	AUTO_INCREMENT, PRIMARY KEY	고유 ID
+location_id	INT	NOT NULL, FOREIGN KEY	locations.location_id와 연결
+month	INT	NOT NULL	해당 월 (1~12)
+avg_min_temp	DECIMAL(4, 1)		월 평균 최저 기온
+avg_max_temp	DECIMAL(4, 1)		월 평균 최고 기온
+monthly_precipitation_mm	DECIMAL(5, 1)		월 평균 강수량 (mm)

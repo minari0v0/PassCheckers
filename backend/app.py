@@ -17,6 +17,7 @@ from routes.analysis import analysis_bp
 from routes.locations import locations_bp
 from routes.weight import weight_bp
 from routes.category import category_bp
+from routes.recommend import recommend_bp
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -34,6 +35,7 @@ app.register_blueprint(analysis_bp)
 app.register_blueprint(locations_bp)
 app.register_blueprint(weight_bp)
 app.register_blueprint(category_bp)
+app.register_blueprint(recommend_bp, url_prefix='/api')
 
 # Redis 연결
 redis_client = redis.from_url(Config.REDIS_URL)
