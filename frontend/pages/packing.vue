@@ -616,10 +616,6 @@ onUnmounted(() => {
   margin: 0;
 }
 
-.analysis-selector-content {
-  /* 구조를 위해 남겨둔 클래스 */
-}
-
 .loading-indicator,
 .no-history {
   text-align: center;
@@ -990,4 +986,11 @@ color: var(--subtitle-color);
   40%, 60% { transform: translate3d(4px, 0, 0); }
 }
 .shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+/* 툴팁 너비 강제 지정을 위한 전역 스타일 */
+    :global(.v-popper--theme-passcheckers-tooltip .v-popper__inner) {
+      max-width: 400px !important;
+      white-space: normal !important;
+      word-break: keep-all !important;
+    }
+
 </style>
