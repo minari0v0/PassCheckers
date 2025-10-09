@@ -33,9 +33,9 @@ const props = defineProps({
 
 const emit = defineEmits(['dragstart', 'unpack']);
 
-// --- Tooltip State Management ---
-const isTooltipVisible = ref(false);      // The single source of truth for visibility
-const showInfoOnLongHover = ref(false); // An internal state to trigger long-hover visibility
+// --- 툴팁 상태 관리 ---
+const isTooltipVisible = ref(false);      // 툴팁 표시 여부를 결정하는 유일한 상태
+const showInfoOnLongHover = ref(false); // 롱호버(길게 누르기) 툴팁을 발동시키기 위한 내부 상태
 let longHoverTimer = null;
 
 const isConditional = computed(() => {
@@ -48,25 +48,25 @@ const isConditional = computed(() => {
   return false;
 });
 
-// Watch for external commands (auto-tooltip) or internal commands (long-hover)
-// and update the single source of truth.
+// 외부 명령(자동 툴팁) 또는 내부 명령(롱호버)을 감시하여\
+// 유일한 상태 값(isTooltipVisible)을 업데이트
 watch(() => props.isTooltipShown || showInfoOnLongHover.value, (shouldBeVisible) => {
   isTooltipVisible.value = shouldBeVisible;
 });
 
-// Tooltip is now fully manual, controlled only by the `shown` property.
+// 이제 툴팁은 `shown` 속성을 통해서만 제어되는 완전 수동 방식
 const tooltipOptions = computed(() => ({
   content: props.item.notes || (props.luggageType === 'carry-on' ? props.item.carry_on_allowed : props.item.checked_baggage_allowed),
   theme: 'passcheckers-tooltip',
   placement: 'top',
-  triggers: [], // No triggers, fully manual
+  triggers: [], // 트리거 없음, 완전 수동 제어
   shown: isTooltipVisible.value,
 }));
 
 
-// --- Event Handlers ---
+// --- 이벤트 핸들러 ---
 
-// For the whole component, to handle long-hover on NORMAL items
+// 일반 아이템의 롱호버를 처리하기 위한 전체 컴포넌트 이벤트
 const handleComponentMouseEnter = () => {
   if (isConditional.value || !props.item.notes) return;
   longHoverTimer = setTimeout(() => {
@@ -79,7 +79,7 @@ const handleComponentMouseLeave = () => {
   showInfoOnLongHover.value = false;
 };
 
-// For the 'i' icon, to handle direct hover on CONDITIONAL items
+// 조건부 아이템의 직접 호버를 처리하기 위한 'i' 아이콘 이벤트
 const handleIconMouseEnter = () => {
   if (isConditional.value) {
     isTooltipVisible.value = true;
@@ -92,7 +92,7 @@ const handleIconMouseLeave = () => {
   }
 };
 
-// --- Other Logic ---
+// --- 기타 로직 ---
 const itemClass = computed(() => ({
   'has-notes': !isConditional.value && props.item.notes,
 }));
@@ -119,7 +119,7 @@ const emitUnpack = () => {
   cursor: grab;
   transition: background-color 0.2s, box-shadow 0.2s;
   position: relative;
-  overflow: hidden; /* Important for the slide-in effect */
+  overflow: hidden;
 }
 
 .packed-item:hover {

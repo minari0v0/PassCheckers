@@ -6,7 +6,7 @@
     :draggable="!isPacked && !isFullyProhibited"
     @dragstart="onDragStart"
   >
-    <div class="item-label">{{ item.item_name }}</div>
+    <div class="item-label" :class="{ 'is-inside': isNearTop }">{{ item.item_name }}</div>
     
     <div v-if="isPacked" class="packed-overlay"></div>
 
@@ -27,6 +27,13 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['item-dragstart']);
+
+const isNearTop = computed(() => {
+  if (!props.item.bbox) return false;
+  const y_min = props.item.bbox[1];
+  // 박스 상단이 이미지 높이의 상위 5% 내에 위치하면 이름표 위치를 조정합니다.
+  return y_min < 0.05;
+});
 
 const boxStyle = computed(() => {
   const { width, height, offsetX, offsetY } = props.imageSize;
@@ -63,21 +70,21 @@ const onDragStart = (event) => {
 <style scoped>
 .image-item {
   position: absolute;
-  border: 2px solid #007bff;
-  background-color: rgba(0, 123, 255, 0.15);
+  border: 2px solid #f39c12; /* 주황색 테마 */
+  background-color: rgba(243, 156, 18, 0.2); /* 주황색 테마 */
   cursor: grab;
   transition: all 0.3s ease;
 }
 
 .image-item:hover {
-  background-color: rgba(0, 123, 255, 0.3);
+  background-color: rgba(243, 156, 18, 0.4); /* 주황색 테마 */
 }
 
 .item-label {
   position: absolute;
   top: -24px;
   left: -2px;
-  background-color: #007bff;
+  background-color: #f39c12; /* 주황색 테마 */
   color: white;
   padding: 3px 8px;
   font-size: 13px;
@@ -87,20 +94,26 @@ const onDragStart = (event) => {
   transition: background-color 0.3s ease;
 }
 
-/* --- Packed State --- */
+.item-label.is-inside {
+  top: 0;
+  left: 0;
+  border-radius: 0 0 6px 0; /* 안쪽 위치에 맞게 테두리 둥글기 조정 */
+}
+
+/* --- 패킹 완료 상태 --- */
 .image-item.is-packed {
   border-style: dashed;
-  border-color: #adb5bd;
-  background-color: rgba(173, 181, 189, 0.1);
+  border-color: #bdc3c7; /* 원래 회색 */
+  background-color: rgba(189, 195, 199, 0.1); /* 원래 회색 */
   cursor: not-allowed;
 }
 
 .image-item.is-packed:hover {
-  background-color: rgba(173, 181, 189, 0.1);
+  background-color: rgba(189, 195, 199, 0.1); /* 원래 회색 */
 }
 
 .image-item.is-packed .item-label {
-  background-color: #adb5bd;
+  background-color: #bdc3c7; /* 원래 회색 */
 }
 
 .packed-overlay {
@@ -112,10 +125,10 @@ const onDragStart = (event) => {
   background-color: rgba(255, 255, 255, 0.5);
 }
 
-/* --- Fully Prohibited State --- */
+/* --- 완전 금지 상태 --- */
 .image-item.is-fully-prohibited {
   border-color: #e74c3c;
-  background-color: transparent; /* No background color */
+  background-color: transparent; /* 배경색 없음 */
   cursor: not-allowed;
 }
 
@@ -130,7 +143,7 @@ const onDragStart = (event) => {
   width: 100%;
   height: 100%;
   background-color: rgba(231, 76, 60, 0.15);
-  /* Diagonal red lines */
+  /* 빨간색 대각선 */
   background-image: repeating-linear-gradient(
     45deg,
     rgba(231, 76, 60, 0.3),

@@ -10,13 +10,13 @@
 
       <div class="page-section">
 
-        <!-- Header -->
+        <!-- 헤더 -->
         <div class="analysis-selector-header">
           <q-icon name="history" size="28px" style="color: #26A69A;" />
           <h2>분류 기록 선택</h2>
         </div>
 
-        <!-- Content -->
+        <!-- 컨텐츠 -->
         <div class="analysis-selector-content">
           <div v-if="isHistoryLoading" class="loading-indicator">
             <p>분석 기록을 불러오는 중입니다...</p>
@@ -199,8 +199,6 @@
             <div class="regulations-content-wrapper" :class="{ 'is-expanded': isRegulationsExpanded }">
               <div class="regulations-content">
                 <div class="regulations-details">
-                  <br></br>
-                  <p>본 정보는 일반적인 참고용이며, 정확한 규정은 이용하시는 항공사나 공항에 문의하시기 바랍니다.</p>
                   <h4>액체류 반입 규정 (3-1-1 규칙)</h4>
                   <ul>
                     <li>각 용기는 3.4온스(100ml) 이하여야 합니다.</li>
@@ -214,6 +212,7 @@
                     <li><b>유아용 식품:</b> 분유, 모유, 주스 등은 제한 없이 반입 가능합니다.</li>
                     <li><b>면세품:</b> 'STEB'(보안봉투)에 밀봉된 경우 용량 제한 없이 반입 가능합니다.</li>
                   </ul>
+                  <p class="regulations-notice">본 정보는 일반적인 참고 자료이므로, 정확한 규정은 이용하시는 항공사나 공항에 문의하시기 바랍니다.</p>
                 </div>
               </div>
             </div>
@@ -254,7 +253,7 @@ const { user } = useAuth();
 const { getApiUrl, getApiBaseUrl } = useApiUrl();
 const API_BASE_URL = getApiBaseUrl();
 
-// --- State ---
+// --- 상태 관리 ---
 const classificationHistory = ref([]);
 const isHistoryLoading = ref(true);
 const selectedAnalysisId = ref(null);
@@ -288,7 +287,7 @@ const fullImageUrl = computed(() => {
 
 const unpackedItems = computed(() => allItems.value.filter(i => !isItemPacked(i.item_id)));
 
-// --- Data Fetching ---
+// --- 데이터 가져오기 ---
 const fetchHistory = async () => {
   if (!user.value) return;
   isHistoryLoading.value = true;
@@ -319,7 +318,7 @@ const fetchPackingData = async (id) => {
   }
 };
 
-// --- Methods ---
+// --- 메소드 ---
 const selectAnalysis = (id) => {
   selectedAnalysisId.value = id;
   fetchPackingData(id);
@@ -374,7 +373,7 @@ const unpackItem = (itemId) => {
   }
 };
 
-// --- Drag and Drop Logic ---
+// --- 드래그 앤 드롭 로직 ---
 const onDragStart = (item) => {
   draggedItem.value = item;
 };
@@ -385,11 +384,11 @@ const handleUnpack = () => {
   draggedItem.value = null;
 };
 
-// --- Watchers for Tooltip Logic ---
+// --- 툴팁 로직 감시자 ---
 watch(carryOnItems, (newItems, oldItems) => {
-  // An item was added if the new array is longer
+  // 새 배열이 이전 배열보다 길면 아이템이 추가된 것으로 간주
   if (newItems.length > oldItems.length) {
-    // Find the item that exists in the new array but not in the old one
+    // 새 배열에만 있고 이전 배열에는 없는 아이템을 찾음
     const addedItem = newItems.find(newItem => !oldItems.some(oldItem => oldItem.item_id === newItem.item_id));
     if (addedItem && isConditional(addedItem, 'carry-on')) {
       showTemporaryTooltip(addedItem.item_id);
@@ -398,9 +397,9 @@ watch(carryOnItems, (newItems, oldItems) => {
 }, { deep: true });
 
 watch(checkedItems, (newItems, oldItems) => {
-  // An item was added if the new array is longer
+  // 새 배열이 이전 배열보다 길면 아이템이 추가된 것으로 간주
   if (newItems.length > oldItems.length) {
-    // Find the item that exists in the new array but not in the old one
+    // 새 배열에만 있고 이전 배열에는 없는 아이템을 찾음
     const addedItem = newItems.find(newItem => !oldItems.some(oldItem => oldItem.item_id === newItem.item_id));
     if (addedItem && isConditional(addedItem, 'checked')) {
       showTemporaryTooltip(addedItem.item_id);
@@ -494,7 +493,7 @@ const isFullyProhibited = (item) => {
   return isProhibitedInCarryOn && isProhibitedInChecked && warningsSeen.has('carry-on') && warningsSeen.has('checked');
 };
 
-// --- Computed & Watchers ---
+// --- 계산된 속성 및 감시자 ---
 const isItemPacked = (itemId) => {
   return carryOnItems.value.some(i => i.item_id === itemId) || checkedItems.value.some(i => i.item_id === itemId);
 };
@@ -541,7 +540,7 @@ onUnmounted(() => {
 <style scoped>
 :root {
   --bg-color: #f4f7f9;
-  --panel-bg-color: #EAECEE; /* Changed for contrast */
+  --panel-bg-color: #EAECEE;
   --item-bg-color: #ffffff;
   --border-color: #e9ecef;
   --text-color: #212529;
@@ -583,7 +582,7 @@ onUnmounted(() => {
   border-radius: 20px;
   padding: 32px;
   margin: 0 auto;
-  max-width: 900px; /* Adjusted width */
+  max-width: 900px;
   width: 100%;
 }
 
@@ -618,7 +617,7 @@ onUnmounted(() => {
 }
 
 .analysis-selector-content {
-  /* This class is for structure, might not need specific styles */
+  /* 구조를 위해 남겨둔 클래스 */
 }
 
 .loading-indicator,
@@ -643,7 +642,6 @@ onUnmounted(() => {
   padding: 0;
   max-height: 620px; 
   overflow-y: auto;
-  /* Add padding to prevent clipping on hover */
   padding-top: 5px;
   margin-top: -5px;
 }
@@ -661,7 +659,6 @@ onUnmounted(() => {
   border: 1px solid #e9ecef;
 }
 
-/* Previous, correct hover effect */
 .history-list li:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 25px rgba(0,0,0,0.08);
@@ -706,13 +703,13 @@ onUnmounted(() => {
   font-size: 1.1rem;
   font-weight: 500;
   color: #3c4a5a;
-  background-color: #f1f1f1; /* Match luggage-container bg */
+  background-color: #f1f1f1;
   padding: 1rem;
   border-radius: 12px;
   border: 1px solid var(--border-color);
   margin-bottom: 2rem;
-  position: relative; /* For positioning pseudo-elements */
-  overflow: hidden; /* To keep rounded corners on progress bar */
+  position: relative;
+  overflow: hidden;
 }
 .instruction-text::before {
   content: '';
@@ -726,7 +723,7 @@ onUnmounted(() => {
   transition: width 0.8s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 .instruction-text-content {
-  position: relative; /* Lifts text above the ::before pseudo-element */
+  position: relative;
 }
 
 .packing-columns {
@@ -808,13 +805,13 @@ onUnmounted(() => {
   padding: 0.75rem;
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  background-color: #f8f9fa; /* Changed for contrast */
+  background-color: #f8f9fa;
   cursor: grab;
   transition: background-color 0.2s, color 0.2s;
   user-select: none;
 }
 .packing-list-item:hover {
-  background-color: #e9ecef; /* Slightly darker on hover */
+  background-color: #e9ecef;
 }
 
 .drag-handle { margin-right: 0.75rem; color: var(--disabled-color); cursor: grab; }
@@ -962,10 +959,18 @@ onUnmounted(() => {
 color: var(--subtitle-color);
 }
 .regulations-details h4 {
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   font-weight: 600;
   color: var(--text-color);
   margin: 1rem 0 0.5rem;
+}
+
+.regulations-notice {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e9ecef;
+  font-size: 0.85rem;
+  color: #676f77;
 }
 
 /* --- Modal --- */
