@@ -855,7 +855,7 @@ onUnmounted(() => {
   align-items: center;
   gap: 1rem;
   margin-bottom: 1rem;
-  padding: 0 1rem; /* Adjust header padding */
+  padding: 0 1rem;
 }
 .luggage-icon-wrapper {
   display: flex;
@@ -864,7 +864,7 @@ onUnmounted(() => {
   width: 56px;
   height: 56px;
   border-radius: 16px;
-  background-color: #eef2f7; /* Light blue-gray background */
+  background-color: #eef2f7;
 }
 .luggage-title { font-size: 1.2rem; font-weight: 600; margin: 0; }
 .luggage-subtitle { font-size: 0.9rem; color: var(--subtitle-color); margin: 0; }
@@ -878,7 +878,7 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  background-color: #ffffff; /* Ensure dropzone is white */
+  background-color: #ffffff;
 }
 .luggage-dropzone.sortable-ghost {
   background-color: #e9f5ff;
@@ -981,7 +981,7 @@ color: var(--subtitle-color);
   color: #676f77;
 }
 
-/* --- Modal --- */
+/* --- 모달 --- */
 .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; }
 .modal-content { background: white; padding: 2rem; border-radius: 1rem; text-align: center; max-width: 450px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
 .modal-title { margin-top: 0; color: #e74c3c !important; font-size: 1.8rem; }
