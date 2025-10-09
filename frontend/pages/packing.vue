@@ -113,7 +113,9 @@
           <!-- 기내용 가방 -->
           <div class="luggage-container">
             <div class="luggage-header">
-              <span class="luggage-icon">✈️</span>
+              <div class="luggage-icon-wrapper">
+              <q-icon name="work" size="28px" color="grey" />
+            </div>
               <div>
                 <h3 class="luggage-title">기내 반입</h3>
                 <p class="luggage-subtitle">휴대 가능한 가방</p>
@@ -149,7 +151,9 @@
           <!-- 위탁용 캐리어 -->
           <div class="luggage-container">
             <div class="luggage-header">
-              <span class="luggage-icon">🧳</span>
+              <div class="luggage-icon-wrapper">
+              <q-icon name="luggage" size="28px" color="grey" />
+            </div>
               <div>
                 <h3 class="luggage-title">위탁 수하물</h3>
                 <p class="luggage-subtitle">체크인 캐리어</p>
@@ -853,7 +857,15 @@ onUnmounted(() => {
   margin-bottom: 1rem;
   padding: 0 1rem; /* Adjust header padding */
 }
-.luggage-icon { font-size: 2rem; }
+.luggage-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background-color: #eef2f7; /* Light blue-gray background */
+}
 .luggage-title { font-size: 1.2rem; font-weight: 600; margin: 0; }
 .luggage-subtitle { font-size: 0.9rem; color: var(--subtitle-color); margin: 0; }
 
