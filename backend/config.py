@@ -21,6 +21,17 @@ class Config:
     # CORS 설정
     CORS_ORIGINS = [
         "http://localhost:3000",
+        "http://127.0.0.1:3000",
         "http://passcheckers.kro.kr",
         "http://localhost"
     ] 
+
+    # Amadeus API 설정
+
+    AMADEUS_TEST_API_KEY = os.environ.get('AMADEUS_TEST_API_KEY')
+    AMADEUS_TEST_API_SECRET = os.environ.get('AMADEUS_TEST_API_SECRET')
+    
+    AMADEUS_PROD_API_KEY = os.environ.get('AMADEUS_PROD_API_KEY')
+    AMADEUS_PROD_API_SECRET = os.environ.get('AMADEUS_PROD_API_SECRET')
+
+    

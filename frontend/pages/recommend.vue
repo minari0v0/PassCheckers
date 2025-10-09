@@ -110,22 +110,36 @@
             <p class="q-mt-md text-subtitle1">AI가 날씨와 여행지 정보를 분석 중입니다...</p>
           </div>
 
-          <div v-else class="result-state">
-            <q-list separator>
-              <q-item-label header><strong>{{ finalSelections.destination }}</strong> 여행을 위한 추천</q-item-label>
-              <q-item v-for="item in packingList" :key="item.name">
-                <q-item-section avatar><q-icon :name="item.icon" /></q-item-section>
-                <q-item-section>
-                  <q-item-label>{{ item.name }}</q-item-label>
-                  <q-item-label caption>{{ item.reason }}</q-item-label>
-                </q-item-section>
-                <q-item-section side>
-                  <q-icon :name="item.regulation === 'carry-on' ? 'flight_takeoff' : 'luggage'" :color="item.regulation === 'carry-on' ? 'blue' : 'deep-orange'">
-                    <q-tooltip>{{ item.regulation === 'carry-on' ? '기내 반입' : '위탁 수하물' }}</q-tooltip>
-                  </q-icon>
-                </q-item-section>
-              </q-item>
-            </q-list>
+          <div v-else class="result-grid">
+            <div class="recommendation-list">
+              <div v-for="group in packingList" :key="group.group_name" class="q-mb-lg">
+                <q-list separator>
+                    <q-item-label header>{{ group.group_name }}</q-item-label>
+                    <q-item v-for="item in group.items" :key="item.name">
+                        <q-item-section avatar><q-icon :name="item.icon" /></q-item-section>
+                        <q-item-section>
+                            <q-item-label>{{ item.name }}</q-item-label>
+                        </q-item-section>
+                        <q-item-section side>
+                            <q-icon :name="item.regulation === 'carry-on' ? 'flight_takeoff' : 'luggage'" :color="item.regulation === 'carry-on' ? 'blue' : 'deep-orange'">
+                                <q-tooltip>{{ item.regulation }}</q-tooltip>
+                            </q-icon>
+                        </q-item-section>
+                    </q-item>
+                </q-list>
+              </div>
+            </div>
+            <div class="weather-chart-container">
+              <q-card flat bordered v-if="historicalWeather">
+                <q-card-section>
+                  <div class="text-h6">월별 날씨 요약</div>
+                  <div class="text-subtitle2">{{ finalSelections.destination }}</div>
+                </q-card-section>
+                <q-card-section style="height: 400px;">
+                  <WeatherChart :weather-data="historicalWeather" />
+                </q-card-section>
+              </q-card>
+            </div>
           </div>
         </q-card>
       </div>
@@ -136,6 +150,7 @@
 <script setup>
 import { ref } from 'vue';
 import SurveyStepper from '~/components/recommend/SurveyStepper.vue';
+import WeatherChart from '~/components/recommend/WeatherChart.vue';
 import { useApiUrl } from '~/composables/useApiUrl';
 
 definePageMeta({ middleware: 'auth' });
@@ -145,6 +160,7 @@ const showResults = ref(false);
 const isLoading = ref(false);
 const packingList = ref([]);
 const finalSelections = ref(null);
+const historicalWeather = ref(null);
 const { getApiUrl } = useApiUrl();
 
 const startSurvey = () => { isStarted.value = true; };
@@ -153,6 +169,7 @@ const goBackToSurvey = () => {
   showResults.value = false;
   packingList.value = [];
   finalSelections.value = null;
+  historicalWeather.value = null;
 };
 
 const handleSurveyComplete = async (surveyData) => {
@@ -160,30 +177,35 @@ const handleSurveyComplete = async (surveyData) => {
   showResults.value = true;
   isLoading.value = true;
   packingList.value = [];
+  historicalWeather.value = null;
 
   try {
-    const endpoint = getApiUrl('/api/packing-recommendation');
-    const response = await fetch(endpoint, {
+    const recommendationEndpoint = getApiUrl('/api/packing-recommendation');
+    const response = await fetch(recommendationEndpoint, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(surveyData),
     });
 
     if (!response.ok) {
-      throw new Error('Network response was not ok');
+      throw new Error('Network response was not ok for packing list');
     }
 
     const data = await response.json();
-    // API 응답이 mockData와 유사한 형식이라고 가정합니다.
-    packingList.value = data;
+    packingList.value = data.packing_list;
+
+    if (data.location_id) {
+      const weatherEndpoint = getApiUrl(`/api/locations/${data.location_id}/weather/historical`);
+      const weatherResponse = await fetch(weatherEndpoint);
+      if (weatherResponse.ok) {
+        historicalWeather.value = await weatherResponse.json();
+      }
+    }
 
   } catch (error) {
     console.error('Error fetching packing list:', error);
-    // 에러 발생 시 사용자에게 보여줄 메시지
     packingList.value = [
-        { name: 'API 로딩 실패', reason: '추천 목록을 불러오는 데 실패했습니다. 잠시 후 다시 시도해주세요.', regulation: 'checked', icon: 'warning' },
+        { group_name: '오류', items: [{ name: 'API 로딩 실패', reason: '추천 목록을 불러오는 데 실패했습니다. 잠시 후 다시 시도해주세요.', regulation: 'checked', icon: 'warning' }] },
     ];
   } finally {
     isLoading.value = false;
@@ -461,5 +483,19 @@ const handleSurveyComplete = async (surveyData) => {
 
 .result-state {
   padding: 1rem;
+}
+
+.result-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.recommendation-list {
+  /* styles for the left column */
+}
+
+.weather-chart-container {
+  /* styles for the right column */
 }
 </style>

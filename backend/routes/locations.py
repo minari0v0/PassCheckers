@@ -1,6 +1,7 @@
 # backend/routes/locations.py
 from flask import Blueprint, request, jsonify
 from db.database_utils import get_db_connection
+from services.recommendation_service import get_yearly_historical_weather
 
 locations_bp = Blueprint('locations_bp', __name__, url_prefix='/api/locations')
 
@@ -127,9 +128,18 @@ def get_country_map():
             # 결과를 딕셔너리 형태로 변환합니다: {"country_name": location_id}
             country_map = {row['country']: row['location_id'] for row in cursor.fetchall()}
         return jsonify(country_map)
-    except Exception as e:
-        print(f"Error fetching country map: {e}")
-        return jsonify({"error": "서버 오류가 발생했습니다."}), 500
     finally:
         if conn:
             conn.close()
+
+@locations_bp.route('/<int:location_id>/weather/historical', methods=['GET'])
+def get_location_yearly_weather(location_id):
+    """
+    Returns 12 months of historical weather data for a given location.
+    """
+    try:
+        weather_data = get_yearly_historical_weather(location_id)
+        return jsonify(weather_data)
+    except Exception as e:
+        print(f"[ERROR] in get_location_yearly_weather: {e}")
+        return jsonify({"error": str(e)}), 500

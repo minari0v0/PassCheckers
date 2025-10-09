@@ -1,0 +1,781 @@
+﻿id,airline_name_ko,airline_name_en,iata_code
+1,대한 항공,Korean Air,KE
+2,아시아나 항공,Asiana Airlines,OZ
+3,제주 항공,JEJU air,7C
+4,진에어,Jin Air,LJ
+5,에어 부산,Air Busan,BX
+6,이스타항공,Eastar Jet,ZE
+7,티웨이 항공,Tway Air,TW
+8,에어 서울,Air Seoul,RS
+9,에어프레미아,Air Premia,YP
+10,에어로 K,Aero K,RF
+11,에어제타,AirZeta,KJ
+12,21 에어,21 Air,2I
+13,40 마일 에어,40 Mile Air,Q5
+14,748 항공서비스,748 Air Services,FE
+15,9 에어,9 Air,AQ
+16,AB 항공,AB Aviation,Y6
+17,ABX 에어,ABX Air,GB
+18,ALS 리미티드,ALS Limited,K4
+19,APG 항공,APG Airlines,GP
+20,ASL 벨기에 항공,ASL Airlines Belgium,3V
+21,ASL 프랑스 항공,ASL Airlines France,5O
+22,ATSA 페루,ATSA Peru,4A
+23,BA 시티플라이어,BA CityFlyer,CJ
+24,BA 유로플라이어,BA Euroflyer,A0
+25,BBN 항공,BBN Airlines,B5
+26,BH 에어,BH Air,8H
+27,CM 항공,CM Airlines,H5
+28,CSA 체코 항공,CSA Czech Airlines,OK
+29,DAT 항공,DAT,DX
+30,DHL 과테말라,DHL de Guatemala,L3
+31,DHL 국제항공 ME,DHL International Aviation ME,ES
+32,DHL 에어 영국,DHL Air UK,D0
+33,DHL 에어 오스트리아,DHL Air Austria,Q7
+34,DHL 에어로 익스프레스,DHL Aero Expreso,D5
+35,DHL 에콰도르,DHL Ecuador,7T
+36,ETF 항공,ETF Airways,LI
+37,FITS 항공,FITS Aviation,8D
+38,FTL항공,FTL Airlines,C0
+39,GP 항공,GP Aviation,IV
+40,IBC 항공,IBC Airways,II
+41,ITA항공,ITA Airways,AZ
+42,JSX 항공,JSX,XE
+43,KF 카고,KF Cargo,FK
+44,KLM 네덜란드 항공,KLM Royal Dutch Airlines,KL
+45,LEAV 항공,LEAV Aviation,KK
+46,LOT 폴란드 항공,LOT Polish Airlines,LO
+47,M 제트 인터내셔널 ,M Jets International ,WW
+48,MHS 항공,MHS Aviation,M2
+49,MIAT 몽골 항공,MIAT Mongolian Airlines,OM
+50,MRK 항공,MRK Airlines,6V
+51,PAL 항공 캐나다,PAL Airlines Canada,PB
+52,PNG 항공,PNG Air,CG
+53,PSA 항공,PSA Airlines,OH
+54,SANSA 항공,SANSA,RZ
+55,SAS 랑공,SAS,SK
+56,SAS 연결,SAS Connect,SL
+57,SATA 에어 아조레스,SATA Air Azores,SP
+58,SF 항공,SF Airlines,O3
+59,SKS 항공,SKS Airways,KI
+60,SOSA 항공,Aerolineas Sosa,S0
+61,STP 항공,STP Airways,8F
+62,TAAG 항공,TAAG Angola Airlines,DT
+63,TACA 페루,TACA Peru,T0
+64,TAP 익스프레스,TAP Express,TP
+65,TAP 항공 포르투갈,TAP Air Portugal,TP
+66,TAROM 항공,TAROM,RO
+67,TUI 플라이,TUI fly,X3
+68,TUI 플라이 노르딕,TUI fly Nordic,6B
+69,TUI 플라이 벨기에,TUI fly Belgium,TB
+70,UPS,UPS,5X
+71,USA 제트 항공,USA Jet Airlines,UJ
+72,UVT 항공,UVT-Aero,RT
+73,가루다 인도네시아 항공,Garuda Indonesia,GA
+74,걸리버 항공,GullivAir,G2
+75,걸프앤캐리비안항공,Gulf & Caribbean Air,IF
+76,걸프항공,Gulf Air,GF
+77,겟젯 항공,GetJet Airlines,GW
+78,고려항공,Air Koryo,JS
+79,고젯 항공,GoJet,G7
+80,고투스카이,Go2Sky,6G
+81,골 항공,GOL,G3
+82,골든 미얀마 항공,Golden Myanmar Airlines,Y5
+83,골든베이 항공,Golden Bay Air,G1
+84,광시 베이부 걸프 항공,Guangxi Beibu Gulf Airlines,GX
+85,그랜드캐년 항공,Grand Canyon Airlines,YR
+86,그랜트 항공,Grant Aviation,GV
+87,그레이터 베이 항공,Greater Bay Airlines,HB
+88,그린아프리카 항공,Green Africa,Q9
+89,글로벌 아프리카 항공,Global Africa Aviation,Z5
+90,글로벌 크로싱 항공,Global Crossing Airlines,G6
+91,글로벌 항공 운영,Global Aviation Operations,GE
+92,나우루 항공,Nauru Airlines,ON
+93,나제르 항공,Niger Airways,NJ
+94,나티레바 에어 모아나,Natireva Air Moana,NM
+95,남 에어,Nam Air,IN
+96,남아프리카 항공,South African Airways,SA
+97,내셔널 항공,National Airways,9Y
+98,네스마 이집트 항공,Nesma Airlines Egypt,NE
+99,네오스 항공,Neos,NO
+100,네팔 항공,Nepal Airlines,RA
+101,넷제트,NetJets,1I
+102,노던 에어 카고,Northern Air Cargo,NC
+103,노드스타 항공,NordStar Airlines,Y7
+104,노드윈드 항공,Nordwind Airlines,N4
+105,노르디카,Nordica,ND
+106,노르딕 리저널 항공,Nordic Regional Airlines,N7
+107,노르스 애틀랜틱 영국,Norse Atlantic UK,Z0
+108,노르스 애틀랜틱 항공,Norse Atlantic Airways,N0
+109,노르웨이 항공 셔틀 AOC,Norwegian Air Shuttle AOC,DY
+110,노르웨이 항공 셔틀 ASA,Norwegian Air Shuttle ASA,DY
+111,노르웨이 항공 스웨덴 AOC,Norwegian Air Sweden AOC,D8
+112,노바 항공 아르메니아,NovAir Armenia,NG
+113,노보에어,NOVOAIR,VQ
+114,노스 스타 에어카고,North Star Air Cargo,0N
+115,노스라이트 항공,North-Wright Airways,HW
+116,노스웨스턴 에어 리스,Northwestern Airlease,J3
+117,녹 에어,Nok Air,DD
+118,놀리노르 항공,Nolinor Aviation,N5
+119,누벨레어 튀니지,Nouvelair Tunisie,BJ
+120,뉴 잉글랜드 항공,New England Airlines,EJ
+121,닉스 에어,NyxAir,OJ
+122,단에어,Dan Air,DN
+123,달로 항공,Daallo Airlines,D3
+124,델타항공,Delta,DL
+125,독일 항공,German Airways,ZQ
+126,디비 디비 에어,Divi Divi Air,3R
+127,디어제트항공,Deer Jet,DF
+128,라 코스테나,La Costena,LC
+129,라 콤페니,La Compagnie,B0
+130,라노 에어,Rano Air,R4
+131,라오스 스카이웨이,Lao Skyway,LK
+132,라오스 항공,Lao Airlines,QV
+133,라이언 에어서비스,Ryan Air Services,7S
+134,라이언에어,Ryanair,FR
+135,라이언에어 영국,Ryanair UK,RK
+136,라이온 항공,Lion Air,JT
+137,라이트 에어 서비스,Wright Air Service,8V
+138,라탐 카고 칠레,LATAM Cargo Chile,UC
+139,라탐 카고 콜롬비아,LATAM Cargo Colombia,L7
+140,라탐 항공,LATAM Airlines,LA
+141,라탐 항공 브라질,LATAM Airlines Brasil,JJ
+142,라탐 항공 에콰도르,LATAM Airlines Ecuador,XL
+143,라탐 항공 칠레,LATAM Airlines Chile,LA
+144,라탐 항공 콜롬비아,LATAM Airlines Colombia,4C
+145,라탐 항공 파라과이,LATAM Airlines Paraguay,PZ
+146,라탐 항공 페루,LATAM Airlines Peru,LP
+147,람 모잠비크 항공,LAM - Mozambique Airlines,TM
+148,럭스윙,Luxwing,BN
+149,럭키 에어,Lucky Air,8L
+150,레더윙즈,Red Wings,WZ
+151,레드 에어,RED Air,L5
+152,레이븐 알라스카,Ravn Alaska,7H
+153,레인도 유나이티드서비스,Raindo United Services,R0
+154,레전드 항공,Legend Airlines,LC
+155,로간에어,Loganair,LM
+156,로시야 항공,Rossiya - Russian Airlines,FV
+157,로얄 모로코 항공,Royal Air Maroc,AT
+158,로얄 에어 필리핀,Royal Air Philippines,RW
+159,로얄 요르단 항공,Royal Jordanian,RJ
+160,로타나 제트 항공,Rotana Jet,RG
+161,루미윙스,Lumiwings,L9
+162,루타카 항공,Rutaca,5R
+163,루프트한자,Lufthansa,LH
+164,루프트한자 시티라인,Lufthansa CityLine,CL
+165,루프트한자 카고,Lufthansa Cargo,LH
+166,루프트한자시티항공,Lufthansa City Airlines,VL
+167,룩스에어,Luxair,LG
+168,룸카고,Romcargo,NJ
+169,룽 항공,Loong Air,GJ
+170,룽장 항공,Longjiang Airlines,LT
+171,르완다 항공,RwandAir,WB
+172,리비아 윙스,Libyan Wings,YL
+173,리저널 스카이,Regional Sky,4P
+174,리저널 항공 서비스,Regional Air Services,8N
+175,림분 에어,Rimbun Air,RI
+176,링크 항공,Link Airways,FC
+177,마그니 차터스,Magnicharters,UJ
+178,마라부,Marabu,DI
+179,마라톤 항공,Marathon Airlines,O8
+180,마르틴에어,Martinair,MP
+181,마비곡 항공,Mavi Gok Airlines ,4M
+182,마스,Mas,M7
+183,마스윙스,MASwings,MY
+184,마야 아일랜드 항공,Maya Island Air,2M
+185,마이 인도 항공,My Indo Airlines,2Y
+186,마이 프라이터 항공,MY FREIGHTER,C6
+187,마이웨이 항공,MyWay Airlines,MJ
+188,마이카고항공,MYCargo Airline,9T
+189,만다린 항공,Mandarin Airlines,AE
+190,만야다나폰 항공,Mann Yadanarpon Airlines,7Y
+191,만타 에어,Manta Air,NR
+192,말레스 항공,Maleth Aero,DB
+193,말레이시아 항공,Malaysia Airlines,MH
+194,맥스 항공 나이지리아,Max Air Nigeria,VM
+195,머큐리 월드 카고,Mercury World Cargo,4X
+196,메다비아,Medavia,N5
+197,메드스키 항공,Medsky Airways,BM
+198,메사 항공,Mesa Airlines,YV
+199,모던 로지스틱스,MODERN Logistics,WD
+200,몰디비안,Maldivian,Q2
+201,몰타 메드에어,Malta MedAir,MT
+202,미들 이스트 항공 ,Middle East Airlines,ME
+203,미스트랄 항공,Poste Air Cargo,M4
+204,미얀마 국영항공,Myanmar National Airlines,UB
+205,미얀마 국제항공,Myanmar Airways International,8M
+206,바드르 항공,Badr Airlines,J4
+207,바틱 에어 인도네시아,Batik Air Indonesia,ID
+208,방콕항공,Bangkok Airways,PG
+209,밸류제트,ValueJet,VK
+210,뱀부 항공,Bamboo Airways,QH
+211,버니크 항공,Berniq Airways,NB
+212,버자야 에어,Berjaya Air,J8
+213,버즈,Buzz,RR
+214,버진 애틀랜틱 항공,Virgin Atlantic Airways,VS
+215,버진 오스트레일리아,Virgin Australia,VA
+216,버짓 라인,Budget Lines,BD
+217,베링항공,Bering Air,8E
+218,베미지 항공,Bemidji Airlines,CH
+219,베어스킨 항공사,Bearskin Airlines,JV
+220,베이징 케피탈 항공,Beijing Capital Airlines,JD
+221,베트남 항공,Vietnam Airlines,VN
+222,베트남 항공 서비스,Vietnam Air Services,0V
+223,본자항공,Bonza,AB
+224,볼가-드뇌프르 항공,Volga-Dnepr Airlines,VI
+225,볼라리스 엘살바도르,Volaris El Salvador,N3
+226,볼라리스 코스타리카,Volaris Costa Rica,Q6
+227,볼라리스 항공,Volaris,Y4
+228,볼로테아,Volotea,V7
+229,볼리비아 항공,Boliviana de Aviacion,OB
+230,볼리비아 항공 운송,Transportes Aereos Bolivianos,2L
+231,부다 에어,Buddha Air,U4
+232,부라키 항공,Buraq Air,UZ
+233,부엘링 항공,Vueling,VY
+234,부탄 항공,Bhutan Airlines,B3
+235,부티크 에어,Boutique Air,4B
+236,불가리아 항공,Bulgaria Air,FB
+237,브라덴스 지역항공,Braathens Regional Airlines,TF
+238,브라바 항공,Brava Linhas Aereas,NT
+239,브라텐스 국제항공,Braathens International Airways,TT
+240,브랜슨 에어 익스프레스,Branson Air Express,1X
+241,브뤼셀 항공,Brussels Airlines,SN
+242,브리즈 항공,Breeze Airways,MX
+243,블루 아일랜드,Blue Islands,SI
+244,비만 방글라데시 항공,Biman Bangladesh Airlines,BG
+245,비바 에어로버스,Viva Aerobus,VB
+246,비에케스 에어링크,Vieques Air Link,V4
+247,비엣젯 항공,VietJet Air,VJ
+248,비온드 항공,Beond,B4
+249,비즈니스 항공 센터,Business Aviation Centre,UQ
+250,빈터 카나리아스,Binter Canarias,NT
+251,사모아 에어웨이,Samoa Airways,OL
+252,사모아 항공,Samoa Air,OL
+253,사우디아 항공,Saudia,SV
+254,사우리야항공,Saurya Airlines,S1
+255,사우스웨스트 항공,Southwest Airlines,WN
+256,사우스윈드 항공,Southwind Airlines,2S
+257,사테나 항공,SATENA,9R
+258,사파리 링크 항공,Safarilink,F2
+259,사파리 익스프레스 카고,Safari Express Cargo,ZF
+260,사페어,Safair,FA
+261,살람 에어,SalamAir,OV
+262,살사 다아이티,Salsa dHaiti,SO
+263,상해 항공,Shanghai Airlines,FM
+264,샤먼 항공,Xiamen Airlines,MF
+265,샤프 항공,Sharp Airlines,SH
+266,샬레어 항공,Chalair Aviation,CE
+267,서던에어 차터,Southern Air Charter,PL
+268,선 컨트리 항공,Sun Country Airlines,SY
+269,선댄스 항공 베네수엘라,Sundance Air Venezuela,R8
+270,선데어,Sundair,SR
+271,선도르 국제항공,Sun dOr International Airlines,2U
+272,선라이즈 항공,Sunrise Airways,S6
+273,선스플래시 항공 LLC,Sunsplash Aviation,YH
+274,선윙 항공,Sunwing Airlines,WG
+275,선전 항공,Shenzhen Airlines,ZH
+276,세린 에어,SereneAir,ER
+277,세버스탈 에어컴퍼니,Severstal Aircompany,D2
+278,세부 퍼시픽 항공,Cebu Pacific,5J
+279,세브고,Cebgo,DG
+280,세이프 에어 컴퍼니,Safe Air Company,K3
+281,세인트바스 커뮤터,Saint Barth Commuter,PV
+282,세페란항공,Sepehran Airlines,IS
+283,센터럴 마운틴에어,Central Mountain Air,9M
+284,셈에어,CemAir,5Z
+285,소몬에어,Somon Air,SZ
+286,솔렌타 항공 모잠비크,Solenta Aviation Mozambique,FW
+287,솔로몬 항공,Solomon Airlines,IE
+288,솔리네어,Solinair,SP
+289,송버드 항공,Songbird Airways,SK
+290,수난 루이리 항공,Sunan Ruili Airlines,DR
+291,수단 항공,Sudan Airways,SD
+292,수리남 항공,Surinam Airways,PY
+293,수파르나 항공,Suparna Airlines,Y8
+294,슈리 항공,Shree Airlines,N9
+295,슈퍼에어 제트,Super Air Jet,IU
+296,스마트링스 항공,SmartLynx Airlines,6Y
+297,스마트링스 항공 몰타,SmartLynx Malta,2N
+298,스마트윙스,Smartwings,QS
+299,스마트윙스 슬로바키아,Smartwings Slovakia,6D
+300,스마트윙스 폴란드,Smartwings Polska,3Z
+301,스마트윙스 헝가리,Smartwings Hungary,7O
+302,스모키베이 에어,Smokey Bay Air,2E
+303,스위스 국제 항공,SWISS International Air Lines,LX
+304,스위프트에어,Swiftair,WT
+305,스카이 KG 항공,Sky KG airlines,Y3
+306,스카이 셔틀 헬리콥터스 리미티드,Sky Shuttle Helicopters Limited,3E
+307,스카이 익스프레스,SKY express,GQ
+308,스카이 항공,SkyAir,S8
+309,스카이라인 익스프레스,Skyline Express,QU
+310,스카이리스 카고,Skylease Cargo,GG
+311,스카이마크 항공,Skymark Airlines,BC
+312,스카이업,SkyUp,PQ
+313,스카이업 MT,SkyUp MT,U5
+314,스카이워드 익스프레스,Skyward Express,OW
+315,스카이웨스트 항공,SkyWest Airlines,OO
+316,스카이웨이 코스타리카,SKYWAY Costa Rica,LC
+317,스카이택시,Skytaxi,TE
+318,스카이하이 도미니카나,SKYhigh Dominicana,DO
+319,스캇 항공,SCAT Airlines,DV
+320,스키퍼스 항공,Skippers Aviation,HK
+321,스타 에어 인도,Star Air India,S5
+322,스타룩스 항공,STARLUX Airlines,JX
+323,스타보에어,Stabo Air,4E
+324,스타이스트 항공,Star East Airline,4R
+325,스타플라이어,StarFlyer,7G
+326,스파이스 제트,SpiceJet,SG
+327,스프린트 에어,SprintAir,P8
+328,시나몬 에어,Cinnamon Air,C7
+329,시닉 항공,Scenic Airlines,YR
+330,시라크 항공,Shirak Avia,5G
+331,시리아 항공,Syrian Airlines,RB
+332,시본 항공,Seaborne Airlines,BB
+333,시엘로스 항공,Cielos Airlines,A2
+334,시티링크,Citilink,QG
+335,시티제트,CityJet,WX
+336,실버스톤 항공 서비스,Silverstone Air Services,K5
+337,실크 아비아,Silk Avia,US
+338,실트 에어,Sylt Air,7E
+339,싱가포르 항공,Singapore Airlines,SQ
+340,썬익스프레스,SunExpress,XQ
+341,쓰촨 항공,Sichuan Airlines,3U
+342,씨에어 인터내셔널,SEAir International,XO
+343,아나 윙즈,ANA Wings,EH
+344,아루바 항공,Aruba Airlines,AG
+345,아르메니아 에어웨이,Armenia Airways,6A
+346,아리아나 아프간 항공,Ariana Afghan Airlines,FG
+347,아리크 항공,Arik Air,W3
+348,아마쿠사 항공,Amakusa Airlines,MZ
+349,아메리라이트,Ameriflight,A8
+350,아메리제트 인터내셔널,Amerijet International,M6
+351,아메리칸 항공,American Airlines,AA
+352,아벨로항공,Avelo Airlines,XP
+353,아비아 트래픽 컴퍼니,Avia Traffic Company,YK
+354,아비아스타-TU,Aviastar-TU,4B
+355,아비앙카 과테말라,Avianca Guatemala,GU
+356,아비앙카 아르헨티나,Avianca Argentina,A0
+357,아비앙카 에콰도르,Avianca Ecuador,2K
+358,아비앙카 엘살바도르,Avianca El Salvador,TA
+359,아비앙카 온두라스,Avianca Honduras,WC
+360,아비앙카 카고,Avianca Cargo,QT
+361,아비앙카 코스타리카,Avianca Costa Rica,LR
+362,아비앙카 항공,avianca,AV
+363,아비어 항공,Avior Airlines,9V
+364,아비온 익스프레스 몰타,Avion Express Malta,X8
+365,아스카리 에비에이션,Askari Aviation,4K
+366,아스키 항공,ASKY Airlines,KP
+367,아스타 항공,Asta Linhas Aereas,0A
+368,아스트랄 항공,Astral Aviation,8V
+369,아에로 멕시코,Aeromexico,AM
+370,아에로 유니온,Aerounion,6R
+371,아에로탁시 아베테,Aerotaxi Abaete,E4
+372,아이벡스 항공,IBEX Airlines,FW
+373,아이슬란드 항공,Icelandair,FI
+374,아이플라이,I-Fly,F7
+375,아일랜드 에어 서비스,Island Air Service,2O
+376,아젤바이잔 항공,Azerbaijan Airlines,J2
+377,아조레스 항공,Azores Airlines,S4
+378,아주르 항공,Azur Air,ZF
+379,아줄 브라질 ,Azul Brazilian Airlines,AD
+380,아줄 코넥타,Azul Conecta,2F
+381,아즈텍 항공,Aztec Airways,AJ
+382,아카사 항공,Akasa Air,QP
+383,아트란,ATRAN,V8
+384,아틀라스 에어,Atlas Air,5Y
+385,아틀랜틱 에어웨이,Atlantic Airways,RC
+386,아프리제트 비즈니스서비스,Afrijet Business Service,J7
+387,아프리카 월드 항공,Africa World Airlines,AW
+388,아프리카 익스프레스 에어웨이,African Express Airways,XU
+389,아프리카 항공 ,Compagnie Africaine dAviation,BU
+390,아프리키야 항공,Afriqiyah Airways,8U
+391,악락 항공,Aklak Air,6L
+392,안데스리네아스애리아,Andes Lineas Aereas,O4
+393,알래스카 센트랄 익스프레스,Alaska Central Express,KO
+394,알래스카 시플레인서비스,Alaska Seaplane,J5
+395,알래스카 항공,Alaska Airlines,AS
+396,알래스카 항공 교통,Alaska Air Transit,JN
+397,알렉산드리아 항공,Alexandria Airlines,DQ
+398,알로사 항공,Alrosa Airlines,6R
+399,알류샨 항공,Aleutian Airways,VC
+400,알리앙스 항공,Alliance Airlines,QQ
+401,알바스타,AlbaStar,AP
+402,알파인 에어 익스프레스,Alpine Aviation Alpine Air Express,5A
+403,앙공라 항공,Angara Airlines,2G
+404,앙구일라 에어서비스,Anguilla Air Services,Q3
+405,애니마윙스,Animawings,A2
+406,앨키나 이스라엘 항공,Arkia Israeli Airlines,IZ
+407,야쿠티아 항공,Yakutia Airlines,R3
+408,어드밴스드 에어,Advanced Air,AN
+409,얼라이드 에어,Allied Air,4W
+410,에게안 항공,Aegean Airlines,A3
+411,에델바이스 에어,Edelweiss Air,WK
+412,에메랄드항공 아일랜드,Emerald Airlines Ireland,EA
+413,에메테베,Emetebe,ET
+414,에미레이트 항공,Emirates Airline,EK
+415,에바 항공,EVA Air,BR
+416,에바스 항공,EVAS Air,8K
+417,에비에어,Aviair,GD
+418,에어 구이린,Air Guilin,GT
+419,에어 그린란드,Air Greenland,GL
+420,에어 노스,Air North,4N
+421,에어 뉴기니,Air Niugini,PX
+422,에어 뉴질랜드,Air New Zealand,NZ
+423,에어 돌로미티,Air Dolomiti,EN
+424,에어 라로통가,Air Rarotonga,GZ
+425,에어 리비아,Air Libya,7I
+426,에어 링크,Air Link,LZ
+427,에어 마냐스,Air Manas,ZM
+428,에어 마카오,Air Macau,NX
+429,에어 말타,Air Malta,KM
+430,에어 메디티라아난,Air Mediterranean,MV
+431,에어 모리셔스,Air Mauritius,MK
+432,에어 몬테네그로,Air Montenegro,4O
+433,에어 바누아투,Air Vanuatu,NF
+434,에어 벨기에,Air Belgium,KF
+435,에어 부르키나,Air Burkina,2J
+436,에어 생피에르,Air Saint Pierre,PJ
+437,에어 세네갈,Air Senegal,HC
+438,에어 세르비아,Air Serbia,JU
+439,에어 센츄리 ,Air Century,Y2
+440,에어 시알,Air Sial,PF
+441,에어 아라비아,Air Arabia,G9
+442,에어 아라비아 모로코,Air Arabia Maroc,3O
+443,에어 아라비아 아부다비,Air Arabia Abu Dhabi,3L
+444,에어 아라비아 이집트,Air Arabia Egypt,E5
+445,에어 아스타나,Air Astana,KC
+446,에어 아스트라,Air Astra,2A
+447,에어 알바니아,Air Albania,ZB
+448,에어 알시,Air Alsie,6I
+449,에어 알제리,Air Algerie,AH
+450,에어 앙카,Air Anka,TZ
+451,에어 오스트랄,Air Austral,UU
+452,에어 우르가,Air Urga,3N
+453,에어 위스콘신,Air Wisconsin,ZW
+454,에어 유로파 익스프레스,Air Europa Express,X5
+455,에어 유로파 항공,Air Europa Lineas Aereas,UX
+456,에어 인뉴이트,Air Inuit,3H
+457,에어 인도,Air India,AI
+458,에어 인디아 익스프레스,Air India Express,IX
+459,에어 지부티,Air Djibouti,DJ
+460,에어 짐바브웨,Air Zimbabwe,UM
+461,에어 차트마스,Air Chathams,3C
+462,에어 초이스원,Air Choice One,3E
+463,에어 카고캐리어,Air Cargo Carriers,2Q
+464,에어 카라이브,Air Caraibes,TX
+465,에어 칼레도니,Air Caledonie,TY
+466,에어 캐나다,Air Canada,AC
+467,에어 캐나다 루즈,Air Canada Rouge,RV
+468,에어 커넥트 항공,Air Connect,KS
+469,에어 코트디부아르,Air Cote dlvoire,HF
+470,에어 크리벡,Air Creebec,YN
+471,에어 타히티 누이,Air Tahiti Nui,TN
+472,에어 탄루윈,Air Thanlwin,ST
+473,에어 트란삿,Air Transat,TS
+474,에어 트랜스포트 인터내셔널,Air Transport International,8C
+475,에어 틴디,Air Tindi,8T
+476,에어 파나마,Air Panama,7P
+477,에어 프랑스,Air France,AF
+478,에어 플라맹고,Air Flamenco,F4
+479,에어 피스,Air Peace,P4
+480,에어 호라이즌,Air Horizont,HT
+481,에어 홍콩,Air Hong Kong,LD
+482,에어 후한,Air Juan,AO
+483,에어노스,Airnorth,TL
+484,에어로 노마드,Aero Nomad,KA
+485,에어로 딜리,Aero Dili,8G
+486,에어로 콘트렉트 항공,Aero Contractors,N2
+487,에어로로직,AeroLogic,3S
+488,에어로스탄,Aerostan,KW
+489,에어로트렌스카고,Aerotranscargo,F5
+490,에어루스,Aerus,ZV
+491,에어리탈리아,Aeroitalia,XZ
+492,에어리프트 알래스카,Airlift Alaska,K2
+493,에어링거스,Aer Lingus,EI
+494,에어링구스리저널,Aer Lingus Regional,EI
+495,에어맥스 카고,Airmax Cargo,X8
+496,에어발틱,airBaltic,BT
+497,에어버스 국제운송,Airbus Transport International,4Y
+498,에어브리지카고 항공,AirBridgeCargo Airlines,RU
+499,에어블루,airblue,PA
+500,에어아시아,AirAsia,AK
+501,에어아시아 엑스,AirAsia X,D7
+502,에어익스플로어,AirExplore,ED
+503,에어재팬,AirJapan,NQ
+504,에어카리베,AerCaribe,JK
+505,에어카리베 페루,Aer Caribe Peru,EF
+506,에어칼린,Aircalin,SB
+507,에어케냐,AirKenya,P2
+508,에어허버항공,Airhub Airlines,RE
+509,에와 항공,Ewa Air,ZD
+510,에이젯,AJet,VF
+511,에코젯,EcoJet,8J
+512,에티오피아 모잠비크 항공,Ethiopian Mozambique Airlines,ZU
+513,에티오피아 항공,Ethiopian Airlines,ET
+514,에티하드 항공,Etihad Airways,EY
+515,엔더버 항공,Endeavor Air,9E
+516,엔터 에어,Enter Air,E4
+517,엘리항공,Ellinair,EL
+518,엘알 항공,El Al,LY
+519,영국 항공,British Airways,BA
+520,예메니아,Yemenia,IY
+521,예티 항공,Yeti Airlines,YT
+522,오렌부르크 항공,Orenburg Airlines,O7
+523,오로라 ,Aurora,HZ
+524,오리니 에어서비스,Aurigny Air Services,GR
+525,오리엔탈 에어 브리지,Oriental Air Bridge,OC
+526,오리지날에어,Originair,OG
+527,오릭스 에어서비스,Auric Air Services,UI
+528,오만 에어,Oman Air,WY
+529,오스트리안 항공 ,Austrian Airlines,OS
+530,오야 국제항공,Oya International Airline,YI
+531,오캐이 항공,Okay Airways,BK
+532,올림픽 항공,Olympic Air,OA
+533,와모스 항공,Wamos Air,EB
+534,와사야 항공,Wasaya Airways,WP
+535,요르단 항공,Jordan Aviation,R5
+536,우간다 항공 ,Uganda Airlines,UR
+537,우랄 항공,Ural Airlines,U6
+538,우루무치 항공,Urumqi Air,UQ
+539,우즈베키스탄 항공,Uzbekistan Airways,HY
+540,워보로우즈 에어 벤처스,Warbelows Air Ventures,4W
+541,원항공 SAU,One Airways SAU,OX
+542,월드 아틀랜틱 항공,World Atlantic Airlines,WL
+543,월드투플라이,World2Fly,2W
+544,월드투플라이 포르투갈,World2Fly Portugal,3P
+545,웨스턴 글로벌 항공,Western Global Airlines,KD
+546,웨스트제트 ,WestJet,WS
+547,위데뢰에 항공,Wideroe,WF
+548,위즈 에어 ,Wizz Air,W6
+549,위즈 에어 몰타,Wizz Air Malta,W4
+550,위즈 에어 아부다비,Wizz Air Abu Dhabi,5W
+551,위즈 에어 영국,Wizz Air UK,W9
+552,윙고 파나마,Wingo Panama,WH
+553,윙즈 에어,Wings Air,IW
+554,유나이티드 항공,United Airlines,UA
+555,유니 항공,Uni Air,B7
+556,유니월드에어카고,Uniworld Air Cargo,U7
+557,유니크 에어,Unique Air,6U
+558,유럽 항공 차터,European Air Charter,H6
+559,유로 애틀랜틱 항공,euroAtlantic airways,YU
+560,유로 항공,Euroairlines,Q4
+561,유로윙스 유럽 리미티드,Eurowings Europe Limited,E6
+562,유로윙즈,Eurowings,EW
+563,유얼웨이즈,yourways,YZ
+564,유엠 항공,UM Air,UF
+565,유테어 항공,Utair Aviation,UT
+566,이-카고,E-Cargo,RF
+567,이르에어로,IrAero,IO
+568,이베로젯,Iberojet,E9
+569,이베리아 익스프레스,Iberia Express,I2
+570,이베리아 항공,Iberia,IB
+571,이스타페타 항공,Estafeta,E7
+572,이스턴 에어웨이,Eastern Airways,T3
+573,이자비아,Izhavia,I8
+574,이즈니스 항공,Eznis Airways,MG
+575,이지 차터,Easy Charter,RD
+576,이지에어,EZ Air,7Z
+577,이지젯,easyJet,U2
+578,이지젯 유럽,easyJet Europe,EC
+579,이집트항공,EgyptAir,MS
+580,이쿼플라이트,Equaflight,E7
+581,인도네시아 에어아시아,Indonesia AirAsia,QZ
+582,인디고 항공,IndiGo,6E
+583,인디아원 에어,IndiaOne Air,I7
+584,인티라 항공,Intira Airlines,8B
+585,일리암나 에어택시,Iliamna Air Taxi,V8
+586,일본 항공,Japan Airlines,JL
+587,일본 항공 커뮤터,Japan Air Commuter,JC
+588,자지라항공,Jazeera Airways,J9
+589,잠보제트,Jambojet,JM
+590,잠비아 항공,Zambia Airways,ZN
+591,장시 항공,Jiangxi Air,RY
+592,적도콩고항공,Equatorial Congo Airlines,LC
+593,전일본공수,All Nippon Airways,NH
+594,제트 아비아,ZetAvia,ZK
+595,제트블루 항공,JetBlue Airways,B6
+596,제트스마트 페루,JetSMART Peru,JZ
+597,제트스타 아시아,Jetstar Asia,3K
+598,제트스타 일본,Jetstar Japan,GK
+599,제트스타 항공,Jetstar Airways,JQ
+600,조지아 항공,Georgian Airlines,GH
+601,주바 항공,Jubba Airways,6J
+602,주바 항공 소말리아,Jubba Airways Somalia,3J
+603,준야오 항공,Juneyao Air,HO
+604,중국 남방 항공,China Southern Airlines,CZ
+605,중국 노스웨스턴 국제항공 ,China Northwestern Cargo International Airlines,CO
+606,중국 동방 항공,China Eastern Airlines,MU
+607,중국 익스프레스 항공,China Express Airlines,G5
+608,중국 중앙 항공,China Central Airlines,I9
+609,중화 항공,China Airlines,CI
+610,지멕스 항공,Zimex Aviation,XM
+611,지오스카이,GeoSky,D4
+612,집 에어,ZIPAIR,ZG
+613,차터 에어 트랜스포트,Charter Air Transport,VC
+614,챌린지 항공,Challenge Airlines,X7
+615,챌린지 항공 IL,Challenge Airlines IL,5C
+616,천진 항공,Tianjin Airlines,GS
+617,체어항공 AG,Chair Airlines AG,GM
+618,춘추 항공,Spring Airlines,9C
+619,충칭 항공,Chongqing Airlines,OQ
+620,칭다오 항공,Qingdao Airlines,QW
+621,카고 쓰리,Cargo Three,C3
+622,카고룩스 국제항공,Cargolux Airlines International,CV
+623,카고제트 항공,Cargojet Airways,W8
+624,카나리플라이 항공,CanaryFly,PM
+625,카나트 샤크 항공,Qanot Sharq Airlines,HH
+626,카리브 항공,Caribbean Airlines,BW
+627,카메룬 항공,Camair-Co,QC
+628,카멕스항공,CAMEX Airlines,Z7
+629,카자흐 항공,Qazaq Air,IQ
+630,카타르 항공,Qatar Airways,QR
+631,카페베르데 항공,Cabo Verde Airlines,VR
+632,칼리타 에어,Kalitta Air,K4
+633,칼리타 차터,Kalitta Charters,K9
+634,캄 에어,Calm Air,MO
+635,캄보디아 앙코르 항공,Cambodia Angkor Air,K6
+636,캄보디아 항공,Cambodia Airways,KR
+637,캐나다 북부 항공,Canadian North,5T
+638,캐나다 제트라인,Canada Jetlines,AU
+639,캐세이퍼시픽 항공,Cathay Pacific,CX
+640,컨투어 항공,Contour Airlines,LF
+641,케냐 항공,Kenya Airways,KQ
+642,케심 항공,Qeshm Air,QB
+643,케이맨 항공,Cayman Airways,KX
+644,케이프 항공,Cape Air,9K
+645,켄모어 에어,Kenmore Air,M5
+646,켄보렉 에어,Kenn Borek Air,4K
+647,코렌돈 네덜란드 항공,Corendon Dutch Airlines,CD
+648,코렌돈 항공,Corendon Airlines,XC
+649,코렌돈 항공 유럽,Corendon Airlines Europe,XR
+650,코르스에어,Corsair,SS
+651,코미 아비아트랜스,Komiaviatrans,KO
+652,코스타리카 그린 항공,Costa Rica Green Airways,GW
+653,코파 항공,Copa Airlines,CM
+654,코파 항공 콜롬비아,Copa Airlines Colombia,P5
+655,코퍼레이트 에어 오스트레일리아,Corporate Air Australia,FC
+656,콘도르 플루그디엔스트,Condor Flugdienst,DE
+657,콘비아사,Conviasa,V0
+658,콩고 항공,Congo Airways,8Z
+659,콴타스 항공,Qantas Airways,QF
+660,쿠바 항공,Cubana de Aviacion,CU
+661,쿠웨이트 항공,Kuwait Airways,KU
+662,쿤밍 항공,Kunming Airlines,KY
+663,퀵젯 항공,Quikjet Airlines,QO
+664,퀸 빌키스 항공,Queen Bilqis Airways,QA
+665,크라스아비아,KrasAvia,KV
+666,크로노스 항공,Cronos Airlines,C8
+667,크로아티아 항공,Croatia Airlines,OU
+668,클릭 에어,Clic air,VE
+669,키라임 에어,Key Lime Air,KG
+670,타나나 에어서비스,Tanana Air Service,Z3
+671,타라 항공,Tara Air,TB
+672,타르코 항공,Tarco Aviation,3T
+673,타실리 항공,Tassili Airlines,SF
+674,타이 라이온 에어,Thai Lion Air,SL
+675,타이 비엣젯 항공,Thai VietJet Air,VZ
+676,타이 에어아시아,Thai AirAsia,FD
+677,타이 에어아시아 X,Thai AirAsia X,XJ
+678,타이 항공,Thai Airways,TG
+679,타이거에어 타이완,Tigerair Taiwan,IT
+680,타이탄 항공,Titan Airways,ZT
+681,타이탄 항공 몰타,Titan Airways Malta,TM
+682,타즈만 카고 항공,Tasman Cargo Airlines,HJ
+683,타취안 항공,Taquan Air,K3
+684,테일윈드 항공,Tailwind Airlines,TI
+685,테일윈드 항공 서비스,Tailwind Air Service,TQ
+686,투르피알 항공,Turpial Airlines,T9
+687,투스 항공,Tus Airways,U8
+688,튀니지 항공,Tunisair,TU
+689,튀니지 항공 익스프레스,Tunisair Express,UG
+690,트랜스 몰디비안 항공,Trans Maldivian Airways,M8
+691,트랜스글로벌항공,TransGlobal Airways,T7
+692,트랜스누사 항공 서비스,TransNusa Air Services,8B
+693,트랜스아비아,Transavia,HV
+694,트랜스아비아 프랑스,Transavia France,TO
+695,트랜스에어 세네갈,Transair Senegal,R2
+696,트레이드 항공,Trade Air,C3
+697,트레이드윈드 항공,Tradewind Aviation,TJ
+698,트로픽 항공,Tropic Air,9N
+699,트리가나 에어,Trigana Air,IL
+700,트빌리시 항공,Tbilisi Airlines,TD
+701,트윈 제트,Twin Jet,T7
+702,파노라마 항공,Panorama Airways,5P
+703,파라네어,Paranair,ZP
+704,파스칸 항공,Pascan Aviation,P6
+705,파키스탄 국제항공,Pakistan International Airlines,PK
+706,패션에어,PassionAir,OP
+707,팬퍼시픽 항공,Pan Pacific Airlines,8Y
+708,퍼블릭차터닷컴,PublicCharters.com,P1
+709,퍼시픽 코스탈 항공,Pacific Coastal Airlines,8P
+710,페가수스 항공,Pegasus Airlines,PC
+711,페덱스,FedEx,FX
+712,페스트젯 짐바브웨,fastjet Zimbabwe,FN
+713,페트롤리움 에어 서비스,Petroleum Air Services,UF
+714,포베다 항공,Pobeda,DP
+715,포터 항공,Porter Airlines,PD
+716,포튜갈리아 항공,Portugalia,NI
+717,폴라 에어 카고,Polar Air Cargo,PO
+718,푸마 항공,Puma Air Linhas Aereas,Z4
+719,푸저우 항공,Fuzhou Airlines,FU
+720,프라단 에어 익스프레스,Pradhaan Air Express,6P
+721,프렌치 비,French Bee,BF
+722,프론티어 항공,Frontier Airlines,F9
+723,프리덤 II,Freedom II,FA
+724,프리덤 항공,Freedom Airline,4F
+725,프리미어 트랜스 에어,Premier Trans Aire,3X
+726,프리버드 유럽,Freebird Europe,MI
+727,프리버드 항공,Freebird Airlines,FH
+728,프리빌리지스타일,Privilege Style,P6
+729,프리시즌 항공서비스,Precision Air Services,PW
+730,플라이 GTA 항공,flyGTA Airlines,SX
+731,플라이 나미비아,FlyNamibia,WV
+732,플라이 나스,flynas,XY
+733,플라이 몬세라트,FlyMontserrat,5M
+734,플라이 빅,flybig,S9
+735,플라이 아르나,Fly Arna,G6
+736,플라이 올웨이즈,Fly AllWays,8W
+737,플라이 요르단,Fly Jordan,F0
+738,플라이 원,FLYONE,5F
+739,플라이 진나,Fly Jinnah,9P
+740,플라이 펠리칸,FlyPelican,FP
+741,플라이두바이,flydubai,FZ
+742,플라이본디,Flybondi,FO
+743,플라이어딜,flyadeal,F3
+744,플라이원 아르메니아,FLYONE Armenia,3F
+745,플라이투스카이,Fly2Sky,F6
+746,플라이트 링크,Flightlink,YS
+747,플라이히바,Fly Khiva,D3
+748,플러스 울트라 항공,Plus Ultra Airlines,PU
+749,플레이 항공,PLAY,OG
+750,플렉스플라이트,FlexFlight,W2
+751,피드 몬트 항공,Piedmont Airlines,PT
+752,피지 항공,Fiji Airways,FJ
+753,피치 항공,Peach,MM
+754,핀 에어,Finnair,AY
+755,필리핀 그랜드캐년 헬리콥터,Papillon Grand Canyon Helicopters,HI
+756,필리핀 에어아시아,Philippines AirAsia,Z2
+757,필리핀 항공,Philippine Airlines,PR
+758,하와이안 항공,Hawaiian Airlines,HA
+759,하이 플라이,Hi Fly,5K
+760,하이 플라이 몰타,Hi Fly Malta,3L
+761,하이난 항공,Hainan Airlines,HU
+762,하이버니언 항공,Hibernian Airlines,HG
+763,하이스카이 루마니아,HiSky Romania,H4
+764,하이스카이 몰도바,HiSky Moldova,H7
+765,한에어라인,Hahn AirLines,HR
+766,허베이 항공,Hebei Airlines,NS
+767,헤스톤 항공,Heston Airlines,HN
+768,헬로젯,HelloJets,H3
+769,헬리제트 인터내셔널,Helijet International,JB
+770,헬베틱 항공,Helvetic Airways,2L
+771,홀리데이 유럽,Holiday Europe,5Q
+772,홀리데이 항공,Holiday Airlines,HD
+773,홍콩 익스프레스,HK Express,UO
+774,홍콩 항공,Hong Kong Airlines,HX
+775,홍해 항공,Red Sea Airlines,RS
+776,후지드림 항공,Fuji Dream Airlines,JH
+777,훈누 항공,Hunnu Air,MR
+778,휴모 항공,Humo Air,HJ
+779,히말라야 항공,Himalaya Airlines,H9
+780,힌터렌드 항공,Hinterland Aviation,OI

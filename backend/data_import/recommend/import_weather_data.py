@@ -16,7 +16,6 @@ from config import Config
 
 def get_db_connection():
     """데이터베이스 연결을 생성합니다."""
-    # ... (이전 코드와 동일) ...
     url = os.environ.get('DATABASE_URL')
     if url is None:
         url = Config.SQLALCHEMY_DATABASE_URI

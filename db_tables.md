@@ -1,5 +1,4 @@
 # PassCheckers 데이터베이스 테이블 구조
-
 ### 1. `users` (사용자 정보)
 | 컬럼명 | 타입 | 제약조건 | 설명 |
 | --- | --- | --- | --- |
@@ -101,21 +100,74 @@
 | `avg_weight_unit` | VARCHAR(10) | | 평균 무게 단위 ('g' 또는 'kg') |
 
 ### 10. `location_details` (여행지 상세 정보)
-컬럼명	타입	제약조건	설명
-location_id	INT	PRIMARY KEY, FOREIGN KEY	locations.location_id와 연결
-latitude	DECIMAL(9, 6)	NOT NULL	날씨 API 호출용 위도
-longitude	DECIMAL(9, 6)	NOT NULL	날씨 API 호출용 경도
-airport_code	VARCHAR(10)		Amadeus API 호출용 공항 코드
-power_outlet_type	VARCHAR(50)		'안심 팁'용 현지 전압/콘센트
-tipping_culture	VARCHAR(100)		'안심 팁'용 팁 문화 정보
-rainy_season_start	INT		건기/우기 추천용 우기 시작 월
-rainy_season_end	INT		건기/우기 추천용 우기 종료 월
+| 컬럼명 | 타입 | 제약조건 | 설명 |
+| --- | --- | --- | --- |
+| `location_id` | INT | PRIMARY KEY, FOREIGN KEY | `locations.location_id`와 연결 |
+| `latitude` | DECIMAL(9, 6) | NOT NULL | 날씨 API 호출용 위도 |
+| `longitude` | DECIMAL(9, 6) | NOT NULL | 날씨 API 호출용 경도 |
+| `airport_code` | VARCHAR(10) | | Amadeus API 호출용 공항 코드 |
+| `power_outlet_type` | VARCHAR(50) | | '안심 팁'용 현지 전압/콘센트 |
+| `tipping_culture` | VARCHAR(100) | | '안심 팁'용 팁 문화 정보 |
+| `rainy_season_start` | INT | | 건기/우기 추천용 우기 시작 월 |
+| `rainy_season_end` | INT | | 건기/우기 추천용 우기 종료 월 |
 
 ### 11. `location_weather` (여행지 월별 기후 데이터)
-컬럼명	타입	제약조건	설명
-id	INT	AUTO_INCREMENT, PRIMARY KEY	고유 ID
-location_id	INT	NOT NULL, FOREIGN KEY	locations.location_id와 연결
-month	INT	NOT NULL	해당 월 (1~12)
-avg_min_temp	DECIMAL(4, 1)		월 평균 최저 기온
-avg_max_temp	DECIMAL(4, 1)		월 평균 최고 기온
-monthly_precipitation_mm	DECIMAL(5, 1)		월 평균 강수량 (mm)
+| 컬럼명 | 타입 | 제약조건 | 설명 |
+| --- | --- | --- | --- |
+| `id` | INT | AUTO_INCREMENT, PRIMARY KEY | 고유 ID |
+| `location_id` | INT | NOT NULL, FOREIGN KEY | `locations.location_id`와 연결 |
+| `month` | INT | NOT NULL | 해당 월 (1~12) |
+| `avg_min_temp` | DECIMAL(4, 1) | | 월 평균 최저 기온 |
+| `avg_max_temp` | DECIMAL(4, 1) | | 월 평균 최고 기온 |
+| `monthly_precipitation_mm` | DECIMAL(5, 1) | | 월 평균 강수량 (mm) |
+
+### 12. `weather_rules` (날씨 기반 추천 규칙)
+| 컬럼명 | 타입 | 제약조건 | 설명 |
+| --- | --- | --- | --- |
+| `rule_id` | INT | AUTO_INCREMENT, PRIMARY KEY | 규칙 고유 ID |
+| `condition_name` | VARCHAR(255) | NOT NULL | 규칙의 이름 (예: 더운 날씨) |
+| `condition_logic` | VARCHAR(255) | NULL | 참고용 논리 (예: avg_temp_c > 25) |
+| `reason` | TEXT | NULL | 추천 이유 |
+
+### 13. `rule_items` (규칙별 추천 아이템)
+| 컬럼명 | 타입 | 제약조건 | 설명 |
+| --- | --- | --- | --- |
+| `id` | INT | AUTO_INCREMENT, PRIMARY KEY | 고유 ID |
+| `rule_id` | INT | NOT NULL, FOREIGN KEY | `weather_rules.rule_id`와 연결 |
+| `item_name` | VARCHAR(255) | NOT NULL | 추천 아이템 이름 |
+
+### 14. `companion_items` (동반자 맞춤 아이템)
+| 컬럼명 | 타입 | 제약조건 | 설명 |
+| --- | --- | --- | --- |
+| `id` | INT | AUTO_INCREMENT, PRIMARY KEY | 고유 ID |
+| `companion_type` | VARCHAR(50) | NOT NULL | 동반자 유형 |
+| `item_name` | VARCHAR(255) | NOT NULL | 추천 아이템 이름 |
+| `reason` | TEXT | NULL | 추천 이유 |
+
+### 15. `theme_items` (테마별 추천 아이템)
+| 컬럼명 | 타입 | 제약조건 | 설명 |
+| --- | --- | --- | --- |
+| `id` | INT | AUTO_INCREMENT, PRIMARY KEY | 고유 ID |
+| `theme_tag` | VARCHAR(50) | NOT NULL | 연결될 테마 태그 |
+| `season` | VARCHAR(20) | NOT NULL | 해당 계절 (여름/겨울) |
+| `item_name` | VARCHAR(255) | NOT NULL | 추천 아이템 이름 |
+| `reason` | TEXT | NULL | 추천 이유 |
+
+### 16. `flight_condition_items` (비행 조건별 추천 아이템)
+| 컬럼명 | 타입 | 제약조건 | 설명 |
+| --- | --- | --- | --- |
+| `id` | INT | AUTO_INCREMENT, PRIMARY KEY | 고유 ID |
+| `condition_type` | VARCHAR(50) | NOT NULL | 비행 조건 타입 (예: 장거리 비행) |
+| `category` | VARCHAR(100) | NULL | 아이템 카테고리 (예: 숙면 및 휴식) |
+| `item_name` | VARCHAR(255) | NOT NULL | 추천 아이템 이름 |
+| `reason` | TEXT | NULL | 추천 이유 |
+
+### 17. `safety_recommendations` (안전 점수 기반 추천 아이템)
+| 컬럼명 | 타입 | 제약조건 | 설명 |
+| --- | --- | --- | --- |
+| `id` | INT | AUTO_INCREMENT, PRIMARY KEY | 고유 ID |
+| `risk_type` | VARCHAR(50) | NOT NULL | 안전 위험 유형 (e.g., theft, overall) |
+| `score_threshold`| INT | NOT NULL | 이 점수를 초과할 때 규칙 활성화 |
+| `item_name` | VARCHAR(255) | NOT NULL | 추천 아이템 이름 |
+| `reason` | TEXT | NULL | 추천 이유 |
+
