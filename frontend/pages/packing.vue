@@ -21,7 +21,7 @@
     <!-- 2. 패킹 진행 화면 -->
     <div v-else-if="packingData" class="packing-workspace">
       <p class="instruction-text" :style="progressBarStyle">
-        {{ instructionTextContent }}
+        <span class="instruction-text-content">{{ instructionTextContent }}</span>
       </p>
 
       <div class="packing-columns">
@@ -177,6 +177,7 @@
             <div class="regulations-content-wrapper" :class="{ 'is-expanded': isRegulationsExpanded }">
               <div class="regulations-content">
                 <div class="regulations-details">
+                  <br></br>
                   <p>본 정보는 일반적인 참고용이며, 정확한 규정은 이용하시는 항공사나 공항에 문의하시기 바랍니다.</p>
                   <h4>액체류 반입 규정 (3-1-1 규칙)</h4>
                   <ul>
@@ -557,24 +558,27 @@ onUnmounted(() => {
   font-size: 1.1rem;
   font-weight: 500;
   color: #3c4a5a;
-  background-color: var(--panel-bg-color);
+  background-color: #f1f1f1; /* Match luggage-container bg */
   padding: 1rem;
   border-radius: 12px;
   border: 1px solid var(--border-color);
-  position: relative;
-  z-index: 1;
-  overflow: hidden;
   margin-bottom: 2rem;
+  position: relative; /* For positioning pseudo-elements */
+  overflow: hidden; /* To keep rounded corners on progress bar */
 }
 .instruction-text::before {
   content: '';
   position: absolute;
-  top: 0; left: 0; height: 100%;
+  top: 0;
+  left: 0;
+  height: 100%;
   width: var(--progress-width, 0%);
   background-color: #a8e6cf;
   border-radius: 12px;
   transition: width 0.8s cubic-bezier(0.25, 0.8, 0.25, 1);
-  z-index: -1;
+}
+.instruction-text-content {
+  position: relative; /* Lifts text above the ::before pseudo-element */
 }
 
 .packing-columns {
@@ -754,8 +758,8 @@ onUnmounted(() => {
   border-radius: 12px;
 }
 .regulations-panel.is-expanded .regulations-summary {
-  opacity: 0.6;
-  transition: opacity 0.3s ease-in-out;
+  color: var(--disabled-color);
+  transition: color 0.3s ease-in-out;
 }
 
 .regulations-header {
@@ -807,8 +811,7 @@ onUnmounted(() => {
 }
 .regulations-details {
   font-size: 0.9rem;
-  line-height: 1.6;
-  color: var(--subtitle-color);
+color: var(--subtitle-color);
 }
 .regulations-details h4 {
   font-size: 0.85rem;
