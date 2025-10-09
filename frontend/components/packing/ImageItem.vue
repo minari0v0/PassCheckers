@@ -8,12 +8,10 @@
   >
     <div class="item-label">{{ item.item_name }}</div>
     
-    <!-- '패킹 완료' 상태를 위한 오버레이 -->
     <div v-if="isPacked" class="packed-overlay"></div>
 
-    <!-- '완전 금지' 상태를 위한 오버레이와 아이콘 -->
     <div v-if="isFullyProhibited" class="prohibited-overlay">
-      <span class="prohibited-icon">❌</span>
+      <span class="prohibited-icon"></span>
     </div>
   </div>
 </template>
@@ -31,15 +29,23 @@ const props = defineProps({
 const emit = defineEmits(['item-dragstart']);
 
 const boxStyle = computed(() => {
-  if (!props.imageSize.width || !props.item.bbox) {
+  const { width, height, offsetX, offsetY } = props.imageSize;
+  if (!width || !props.item.bbox) {
     return { display: 'none' };
   }
+  
   const [x_min, y_min, x_max, y_max] = props.item.bbox;
+
+  const left = offsetX + (x_min * width);
+  const top = offsetY + (y_min * height);
+  const boxWidth = (x_max - x_min) * width;
+  const boxHeight = (y_max - y_min) * height;
+
   return {
-    left: `${x_min * 100}%`,
-    top: `${y_min * 100}%`,
-    width: `${(x_max - x_min) * 100}%`,
-    height: `${(y_max - y_min) * 100}%`,
+    left: `${left}px`,
+    top: `${top}px`,
+    width: `${boxWidth}px`,
+    height: `${boxHeight}px`,
   };
 });
 
@@ -57,44 +63,44 @@ const onDragStart = (event) => {
 <style scoped>
 .image-item {
   position: absolute;
-  border: 2px solid #f39c12;
-  background-color: rgba(243, 156, 18, 0.2);
+  border: 2px solid #007bff;
+  background-color: rgba(0, 123, 255, 0.15);
   cursor: grab;
   transition: all 0.3s ease;
 }
 
 .image-item:hover {
-  background-color: rgba(243, 156, 18, 0.4);
+  background-color: rgba(0, 123, 255, 0.3);
 }
 
 .item-label {
   position: absolute;
-  z-index: 10; /* 오버레이 위에 표시되도록 z-index 추가 */
-  top: -22px;
+  top: -24px;
   left: -2px;
-  background-color: #f39c12;
+  background-color: #007bff;
   color: white;
-  padding: 2px 6px;
-  font-size: 12px;
+  padding: 3px 8px;
+  font-size: 13px;
   font-weight: 500;
-  border-radius: 4px;
+  border-radius: 6px;
   white-space: nowrap;
   transition: background-color 0.3s ease;
 }
 
-/* --- 패킹 완료 상태 --- */
+/* --- Packed State --- */
 .image-item.is-packed {
-  border-color: #bdc3c7;
-  background-color: rgba(189, 195, 199, 0.1);
+  border-style: dashed;
+  border-color: #adb5bd;
+  background-color: rgba(173, 181, 189, 0.1);
   cursor: not-allowed;
 }
 
 .image-item.is-packed:hover {
-  background-color: rgba(189, 195, 199, 0.1);
+  background-color: rgba(173, 181, 189, 0.1);
 }
 
 .image-item.is-packed .item-label {
-  background-color: #bdc3c7;
+  background-color: #adb5bd;
 }
 
 .packed-overlay {
@@ -103,20 +109,13 @@ const onDragStart = (event) => {
   left: 0;
   width: 100%;
   height: 100%;
-  background: repeating-linear-gradient(
-    45deg,
-    rgba(128, 128, 128, 0.2),
-    rgba(128, 128, 128, 0.2) 5px,
-    transparent 5px,
-    transparent 10px
-  );
-  opacity: 0.7;
+  background-color: rgba(255, 255, 255, 0.5);
 }
 
-/* --- 완전 금지 상태 --- */
+/* --- Fully Prohibited State --- */
 .image-item.is-fully-prohibited {
   border-color: #e74c3c;
-  background-color: transparent;
+  background-color: transparent; /* No background color */
   cursor: not-allowed;
 }
 
@@ -130,15 +129,14 @@ const onDragStart = (event) => {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(231, 76, 60, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.prohibited-icon {
-  font-size: 2rem;
-  opacity: 0.7;
-  text-shadow: 0 0 5px rgba(0,0,0,0.3);
+  background-color: rgba(231, 76, 60, 0.15);
+  /* Diagonal red lines */
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(231, 76, 60, 0.3),
+    rgba(231, 76, 60, 0.3) 4px,
+    transparent 4px,
+    transparent 8px
+  );
 }
 </style>
