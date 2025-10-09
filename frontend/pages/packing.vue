@@ -2,20 +2,42 @@
   <div class="packing-page-container">
     <!-- 1. 분석 기록 선택 화면 -->
     <div v-if="!selectedAnalysisId" class="analysis-selector">
-      <h1 class="page-title">패킹할 분석 기록 선택</h1>
-      <p class="page-description">지난 분석 기록을 선택하여 패킹을 시작하세요.</p>
-      <div v-if="isHistoryLoading" class="loading-indicator">분석 기록을 불러오는 중...</div>
-      <ul v-else-if="classificationHistory.length > 0" class="history-list">
-        <li v-for="item in classificationHistory" :key="item.id" @click="selectAnalysis(item.id)">
-          <div class="history-item-content">
-            <span class="history-item-icon">🧳</span>
-            <span class="history-item-dest">{{ item.destination || '목적지 미설정' }}</span>
-            <span class="history-item-date">{{ new Date(item.analysis_date).toLocaleDateString() }}</span>
+
+      <section class="page-header">
+        <h1>패킹 가이드, <span class="text-primary">수하물 패킹</span></h1>
+        <p>완벽한 여행의 시작, PassCheckers와 함께 짐을 꾸려보세요.</p>
+      </section>
+
+      <div class="page-section">
+
+        <!-- Header -->
+        <div class="analysis-selector-header">
+          <q-icon name="history" size="28px" style="color: #26A69A;" />
+          <h2>분류 기록 선택</h2>
+        </div>
+
+        <!-- Content -->
+        <div class="analysis-selector-content">
+          <div v-if="isHistoryLoading" class="loading-indicator">
+            <p>분석 기록을 불러오는 중입니다...</p>
           </div>
-          <span class="history-item-count">{{ item.total_items }}개 물품</span>
-        </li>
-      </ul>
-      <div v-else class="no-history">분석 기록이 없습니다. 먼저 수하물 분석을 진행해주세요.</div>
+          <ul v-else-if="classificationHistory.length > 0" class="history-list">
+            <li v-for="item in classificationHistory" :key="item.id" @click="selectAnalysis(item.id)">
+              <img :src="item.thumbnail_url ? `${API_BASE_URL}${item.thumbnail_url}` : 'https://via.placeholder.com/80x80.png?text=No+Img'" alt="분석 썸네일" class="history-item-thumbnail"/>
+              <div class="history-item-details">
+                <div class="history-item-dest">{{ item.destination || '목적지 미설정' }}</div>
+                <div class="history-item-date">{{ new Date(item.analysis_date).toLocaleDateString() }}</div>
+              </div>
+              <span class="history-item-count">{{ item.total_items }}개 물품</span>
+            </li>
+          </ul>
+          <div v-else class="no-history">
+            <svg xmlns="http://www.w3.org/2000/svg" height="32" viewBox="0 -960 960 960" width="32"><path d="M480-320q17 0 28.5-11.5T520-360v-240q0-17-11.5-28.5T480-640q-17 0-28.5 11.5T440-600v240q0 17 11.5 28.5T480-320Zm-40-360h80v-80h-80v80Zm40 600q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"/></svg>
+            <p>분석 기록이 없습니다. 먼저 수하물 분석을 진행해주세요.</p>
+          </div>
+        </div>
+
+      </div>
     </div>
 
     <!-- 2. 패킹 진행 화면 -->
@@ -536,19 +558,145 @@ onUnmounted(() => {
   min-height: 100vh;
 }
 
+
+.page-header {
+  text-align: center;
+  margin-top: 48px;
+  margin-bottom: 32px;
+}
+.page-header h1 {
+  font-size: 2.2rem;
+  font-weight: bold;
+}
+.page-header p {
+  color: #888;
+  margin-top: 8px;
+}
+.page-header .text-primary {
+  color: var(--primary-color);
+}
+
 /* --- 1. 분석 기록 선택 --- */
-.analysis-selector { max-width: 900px; margin: 0 auto; }
-.page-title { font-size: 2rem; font-weight: 700; text-align: center; color: var(--text-color); margin-bottom: 0.5rem; }
-.page-description { text-align: center; color: var(--subtitle-color); margin-bottom: 2.5rem; }
-.loading-indicator, .no-history { text-align: center; padding: 3rem; font-size: 1.1rem; color: var(--subtitle-color); background: var(--panel-bg-color); border-radius: 12px; }
-.history-list { list-style: none; padding: 0; }
-.history-list li { background: var(--panel-bg-color); margin-bottom: 1rem; padding: 1.25rem 1.75rem; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: transform 0.2s ease, box-shadow 0.2s ease; border: 1px solid #e0e6ed; }
-.history-list li:hover { transform: translateY(-4px); box-shadow: 0 8px 25px rgba(0,0,0,0.07); }
-.history-item-content { display: flex; align-items: center; gap: 1rem; font-size: 1.1rem; }
-.history-item-icon { font-size: 1.5rem; }
-.history-item-dest { font-weight: 600; }
-.history-item-date { color: #888; }
-.history-item-count { background-color: #e9ecef; color: #495057; padding: 0.3rem 0.8rem; border-radius: 1rem; font-size: 0.9rem; }
+.page-section {
+  background:#f8fbff;
+  border:1px solid #e3f0fa;
+  border-radius: 20px;
+  padding: 32px;
+  margin: 0 auto;
+  max-width: 900px; /* Adjusted width */
+  width: 100%;
+}
+
+.analysis-selector-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+
+
+.css-icon.history-icon {
+  display: inline-block;
+  width: 28px;
+  height: 28px;
+  background-color: #26A69A; /* The desired teal color */
+  mask-image: url('https://cdn.jsdelivr.net/npm/@material-icons/svg/svg/history.svg');
+  -webkit-mask-image: url('https://cdn.jsdelivr.net/npm/@material-icons/svg/svg/history.svg');
+  mask-size: contain;
+  -webkit-mask-size: contain;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-position: center;
+}
+
+.analysis-selector-header h2 {
+  font-weight: 600;
+  font-size: 1.2rem;
+  margin: 0;
+}
+
+.analysis-selector-content {
+  /* This class is for structure, might not need specific styles */
+}
+
+.loading-indicator,
+.no-history {
+  text-align: center;
+  padding: 4rem 2rem;
+  font-size: 1.1rem;
+  color: var(--subtitle-color);
+  border-radius: 12px;
+  background-color: #fff;
+  border: 2px dashed var(--border-color);
+}
+
+.no-history svg {
+  display: block;
+  margin: 0 auto 1rem;
+  fill: var(--subtitle-color);
+}
+
+.history-list {
+  list-style: none;
+  padding: 0;
+  max-height: 620px; 
+  overflow-y: auto;
+  /* Add padding to prevent clipping on hover */
+  padding-top: 5px;
+  margin-top: -5px;
+}
+
+.history-list li {
+  background: #ffffff;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  border: 1px solid #e9ecef;
+}
+
+/* Previous, correct hover effect */
+.history-list li:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+}
+
+.history-item-thumbnail {
+  width: 70px;
+  height: 70px;
+  border-radius: 8px;
+  object-fit: cover;
+  background-color: #f0f2f5;
+}
+
+.history-item-details {
+  flex-grow: 1;
+}
+
+.history-item-dest {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.history-item-date {
+  color: #888;
+  font-size: 0.9rem;
+  margin-top: 0.25rem;
+}
+
+.history-item-count {
+  background-color: #e9ecef;
+  color: #495057;
+  padding: 0.3rem 0.8rem;
+  border-radius: 1rem;
+  font-size: 0.9rem;
+}
 
 /* --- 2. 패킹 진행 화면 --- */
 .packing-workspace { max-width: 1600px; margin: 0 auto; }
