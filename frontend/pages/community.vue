@@ -82,7 +82,10 @@
 
             <div class="post-footer">
               <div class="post-meta">
-                <span class="location">{{ post.location }}</span>
+                  <span class="location">
+                    <i class="material-icons">place</i>
+                    {{ post.location }}
+                  </span>
                 <span class="date">{{ post.date }}</span>
               </div>
               <div class="post-actions">
