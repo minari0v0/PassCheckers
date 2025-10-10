@@ -280,13 +280,29 @@ const loadPosts = async () => {
   }
 }
 
-// 태그 선택 함수
+// 검색어 입력 시 디바운스를 적용한 검색 처리 함수 (500ms 지연)
+const handleSearch = () => {
+  if (searchTimeout) {
+    clearTimeout(searchTimeout)
+  }
+  
+  searchTimeout = setTimeout(() => {
+    currentPage.value = 1
+    loadPosts()
+  }, 500)
+}
+
+// 사이드바에서 태그를 선택/해제하여 필터링하는 함수
 const selectTag = (tagName) => {
   if (selectedTag.value === tagName) {
-    selectedTag.value = null // 이미 선택된 태그를 다시 클릭하면 선택 해제
+    selectedTag.value = null
   } else {
     selectedTag.value = tagName
   }
+  currentPage.value = 1
+  loadPosts()
+}
+
 }
 
 // 페이지네이션 함수
