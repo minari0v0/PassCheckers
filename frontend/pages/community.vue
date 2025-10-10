@@ -166,14 +166,17 @@
         <div class="sidebar-section">
           <h3 class="sidebar-title">인기 여행지</h3>
           <div class="location-list">
-            <div 
+            <button 
               v-for="location in popularLocations" 
               :key="location.name"
-              class="location-item"
+              class="location-button"
+              :class="{ active: selectedLocation === location.name }"
+              @click="selectLocation(location.name)"
             >
+              <i class="material-icons location-icon">place</i>
               <span class="location-name">{{ location.name }}</span>
-              <span class="location-count">({{ location.count }})</span>
-            </div>
+              <span class="location-badge">{{ location.count }}</span>
+            </button>
           </div>
         </div>
 
