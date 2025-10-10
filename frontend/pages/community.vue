@@ -21,21 +21,16 @@
             <i class="material-icons search-icon">search</i>
             <input 
               type="text" 
-              placeholder="여행 정보 검색..." 
+              placeholder="검색" 
               class="search-input"
               v-model="searchQuery"
+              @input="handleSearch"
             >
           </div>
-          <div class="action-buttons">
-            <button class="filter-btn">
-              <i class="material-icons">tune</i>
-              필터
-            </button>
-            <button class="write-btn">
+          <button class="write-btn" @click="showWritePost = true">
               <i class="material-icons">edit</i>
               글쓰기
             </button>
-          </div>
         </div>
 
         <!-- 게시물 목록 -->
