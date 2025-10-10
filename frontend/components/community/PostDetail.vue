@@ -480,3 +480,51 @@ const deleteComment = async (commentId) => {
   }
 }
 
+// 답글 작성을 시작하는 함수
+const startReply = (commentId) => {
+  replyingTo.value = commentId
+  replyText.value = ''
+}
+
+// 답글 작성을 취소하는 함수
+const cancelReply = () => {
+  replyingTo.value = null
+  replyText.value = ''
+}
+
+// 답글을 서버에 제출하는 함수
+const submitReply = async (parentCommentId) => {
+  if (!replyText.value.trim()) return
+
+  try {
+    const token = getToken()
+    if (!token) {
+      alert('로그인이 필요합니다')
+      return
+    }
+
+    const response = await fetch(`${apiUrl}/community/posts/${props.postId}/comments`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        content: replyText.value.trim(),
+        parent_id: parentCommentId
+      })
+    })
+
+    if (response.ok) {
+      replyText.value = ''
+      replyingTo.value = null
+      await loadComments()
+      // 커뮤니티 페이지에 변경사항 알림
+      emit('update')
+    }
+  } catch (error) {
+    console.error('Failed to submit reply:', error)
+    alert('답글 작성에 실패했습니다')
+  }
+}
+
