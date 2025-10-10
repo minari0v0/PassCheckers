@@ -667,8 +667,20 @@ const loadPopularLocations = async () => {
   }
 }
 
+// 최근 게시글을 서버에서 불러오는 함수
+const recentPosts = ref([])
+const loadRecentPosts = async () => {
+  try {
+    const response = await fetch(`${apiUrl}/community/recent?limit=3`)
+    const data = await response.json()
+    if (response.ok && data.posts) {
+      recentPosts.value = data.posts
+    }
+  } catch (error) {
+    console.error('Failed to load recent posts:', error)
   }
-])
+}
+
 </script>
 
 <style scoped>
