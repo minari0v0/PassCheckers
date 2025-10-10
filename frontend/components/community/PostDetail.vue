@@ -432,3 +432,18 @@ const toggleBookmark = async () => {
   }
 }
 
+// 게시글을 공유하거나 링크를 복사하는 함수
+const sharePost = () => {
+  if (navigator.share) {
+    navigator.share({
+      title: post.value.title,
+      text: post.value.summary,
+      url: window.location.href
+    })
+  } else {
+    // 클립보드에 복사
+    navigator.clipboard.writeText(window.location.href)
+    alert('링크가 클립보드에 복사되었습니다')
+  }
+}
+
