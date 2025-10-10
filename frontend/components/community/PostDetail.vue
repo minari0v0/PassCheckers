@@ -540,3 +540,8 @@ const getTotalCommentCount = () => {
   return total
 }
 
+// 댓글 섹션을 표시/숨김 토글하는 함수
+const toggleComments = () => {
+  showComments.value = !showComments.value
+}
+
