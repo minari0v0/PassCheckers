@@ -276,3 +276,39 @@ const loadPost = async () => {
   }
 }
 
+// 댓글 목록을 서버에서 불러와 계층 구조로 정리하는 함수
+const loadComments = async () => {
+  try {
+    const token = getToken()
+    const headers = {}
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
+    }
+    
+    const response = await fetch(`${apiUrl}/community/posts/${props.postId}/comments`, {
+      headers: headers
+    })
+    const data = await response.json()
+    
+    if (response.ok) {
+      // 댓글을 계층적으로 정리
+      const allComments = data.comments || []
+      const parentComments = allComments.filter(comment => !comment.parent_comment_id)
+      const replies = allComments.filter(comment => comment.parent_comment_id)
+      
+      // 각 부모 댓글에 답글들을 연결
+      const organizedComments = parentComments.map(parent => {
+        const childReplies = replies.filter(reply => reply.parent_comment_id === parent.id)
+        return {
+          ...parent,
+          replies: childReplies
+        }
+      })
+      
+      comments.value = organizedComments
+    }
+  } catch (error) {
+    console.error('Failed to load comments:', error)
+  }
+}
+
