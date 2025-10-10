@@ -425,24 +425,33 @@ const handleImageError = (event) => {
   event.target.src = '/images/default_wallpaper.png'
 }
 
+// 이전 페이지로 이동하는 함수
 const goToPreviousPage = () => {
   if (currentPage.value > 1) {
     currentPage.value--
+    loadPosts()
   }
 }
 
+// 다음 페이지로 이동하는 함수
 const goToNextPage = () => {
-  const totalPages = Math.ceil(allPosts.value.length / postsPerPage)
-  if (currentPage.value < totalPages) {
+  if (posts.value.length >= postsPerPage) {
     currentPage.value++
+    loadPosts()
   }
 }
 
-// 현재 페이지에 표시할 게시물 계산
+// 특정 페이지로 이동하는 함수
+const goToPage = (page) => {
+  if (page !== currentPage.value && page >= 1 && page <= totalPages.value) {
+    currentPage.value = page
+    loadPosts()
+  }
+}
+
+// 현재 페이지에 표시할 게시물을 반환하는 computed 속성
 const posts = computed(() => {
-  const startIndex = (currentPage.value - 1) * postsPerPage
-  const endIndex = startIndex + postsPerPage
-  return allPosts.value.slice(startIndex, endIndex)
+  return allPosts.value
 })
 
 // 전체 게시물 데이터 (최신순으로 정렬)
