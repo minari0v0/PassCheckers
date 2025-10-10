@@ -88,24 +88,25 @@
                   </span>
                 <span class="date">{{ post.date }}</span>
               </div>
-              <div class="post-actions">
-                <button class="action-btn">
-                  <i class="material-icons">favorite</i>
-                  {{ post.likes }}
+              
+              <!-- 액션 버튼들을 카드 우측 아래로 -->
+              <div class="post-actions" @click.stop>
+                <button class="action-btn" :class="{ active: post.is_liked }" @click="toggleLike(post.id, $event)">
+                  <i class="material-icons">{{ post.is_liked ? 'favorite' : 'favorite_border' }}</i>
+                  <span>{{ post.likes_count || 0 }}</span>
                 </button>
-                <button class="action-btn">
+                <button class="action-btn" @click="openPostWithComments(post.id, $event)">
                   <i class="material-icons">comment</i>
-                  {{ post.comments }}
+                  <span>{{ post.comments_count || 0 }}</span>
                 </button>
-                <button class="action-btn">
-                  <i class="material-icons">bookmark</i>
-                </button>
-                <button class="action-btn">
-                  <i class="material-icons">share</i>
+                <button class="action-btn" :class="{ active: post.is_bookmarked }" @click="toggleBookmark(post.id, $event)">
+                  <i class="material-icons">{{ post.is_bookmarked ? 'bookmark' : 'bookmark_border' }}</i>
                 </button>
               </div>
+              </div>
             </div>
-          </div>
+          </button>
+          </transition-group>
         </div>
 
         <!-- 페이지네이션 -->
