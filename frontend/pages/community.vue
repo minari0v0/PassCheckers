@@ -188,6 +188,7 @@
               v-for="post in recentPosts" 
               :key="post.id"
               class="recent-post-item"
+              @click="openPostDetail(post.id)"
             >
               <div class="recent-post-content">
                 <div class="recent-post-title">{{ post.title }}</div>
@@ -199,6 +200,12 @@
         </div>
       </div>
     </div>
+
+    <!-- 게시글 작성 모달 -->
+    <WritePost v-if="showWritePost" @close="showWritePost = false" @submit="handlePostSubmit" />
+
+    <!-- 게시글 상세 모달 -->
+    <PostDetail v-if="selectedPostId" :post-id="selectedPostId" @close="closePostDetail" @update="handlePostUpdate" />
   </div>
 </template>
 
