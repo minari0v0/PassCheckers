@@ -334,6 +334,9 @@ const openPostWithComments = (postId, event) => {
   })
 }
 
+// 게시글 상세 모달을 닫는 함수
+const closePostDetail = () => {
+  selectedPostId.value = null
 }
 
 // 페이지네이션 함수
