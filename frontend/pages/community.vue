@@ -319,6 +319,21 @@ const openPostDetail = (postId) => {
   selectedPostId.value = postId
 }
 
+// 댓글 버튼 클릭 시 게시글을 열고 댓글 섹션으로 자동 스크롤하는 함수
+const openPostWithComments = (postId, event) => {
+  event.stopPropagation()
+  selectedPostId.value = postId
+  // PostDetail 컴포넌트가 마운트된 후 댓글로 스크롤
+  nextTick(() => {
+    setTimeout(() => {
+      const commentsSection = document.querySelector('.comments-section')
+      if (commentsSection) {
+        commentsSection.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
+    }, 300) // 모달 애니메이션 대기
+  })
+}
+
 }
 
 // 페이지네이션 함수
