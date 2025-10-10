@@ -454,139 +454,6 @@ const posts = computed(() => {
   return allPosts.value
 })
 
-// 전체 게시물 데이터 (최신순으로 정렬)
-const allPosts = ref([
-  {
-    id: 1,
-    author: '여행자123',
-    title: '일본 도쿄 3박 4일 여행 후기',
-    summary: '지난주 도쿄 여행을 다녀왔습니다. 날씨가 정말 좋았고, 음식도 맛있었어요. 특히 추천하는 곳은...',
-    tags: ['일본', '도쿄', '여행후기'],
-    location: '일본, 도쿄',
-    date: '2025-02-15',
-    likes: 42,
-    comments: 12
-  },
-  {
-    id: 2,
-    author: '국내여행러버',
-    title: '제주도 렌트카 없이 3일 여행 코스 공유',
-    summary: '제주도를 대중교통만으로 알차게 여행하는 방법을 공유합니다. 버스와 택시를 활용하면 충분히...',
-    tags: ['제주도', '대중교통', '여행코스'],
-    location: '대한민국, 제주도',
-    date: '2025-02-10',
-    likes: 78,
-    comments: 23
-  },
-  {
-    id: 3,
-    author: '세계여행가',
-    title: '유럽 배낭여행 짐 꾸리기 팁',
-    summary: '한 달간의 유럽 배낭여행을 위한 짐 꾸리기 노하우를 공유합니다. 최소한의 짐으로 최대한의 효율을...',
-    tags: ['유럽', '배낭여행', '짐꾸리기'],
-    location: '유럽',
-    date: '2025-02-05',
-    likes: 105,
-    comments: 34
-  },
-  {
-    id: 4,
-    author: '푸드트래블러',
-    title: '방콕 맛집 추천 TOP 10',
-    summary: '태국 방콕에서 꼭 가봐야 할 맛집들을 소개합니다. 현지인들이 사랑하는 곳부터 관광객들에게 인기 있는 곳까지...',
-    tags: ['방콕', '맛집', '태국'],
-    location: '태국, 방콕',
-    date: '2025-02-01',
-    likes: 89,
-    comments: 28
-  },
-  {
-    id: 5,
-    author: '유럽탐험가',
-    title: '프랑스 파리 5일 여행 일정',
-    summary: '파리에서 꼭 가봐야 할 명소들과 맛집들을 소개합니다. 에펠탑, 루브르 박물관, 노트르담...',
-    tags: ['프랑스', '파리', '유럽여행'],
-    location: '프랑스, 파리',
-    date: '2025-01-28',
-    likes: 156,
-    comments: 45
-  },
-  {
-    id: 6,
-    author: '아시아여행러',
-    title: '싱가포르 3박 4일 완벽 가이드',
-    summary: '싱가포르의 숨은 명소들과 현지 맛집을 공유합니다. 마리나 베이 샌즈, 가든스 바이 더 베이...',
-    tags: ['싱가포르', '아시아', '도시여행'],
-    location: '싱가포르',
-    date: '2025-01-25',
-    likes: 92,
-    comments: 31
-  },
-  {
-    id: 7,
-    author: '자연사랑러',
-    title: '뉴질랜드 남섬 자동차 여행',
-    summary: '뉴질랜드 남섬의 아름다운 자연을 자동차로 둘러보는 여행 후기입니다. 밀포드 사운드, 퀸스타운...',
-    tags: ['뉴질랜드', '자연여행', '자동차여행'],
-    location: '뉴질랜드, 남섬',
-    date: '2025-01-22',
-    likes: 134,
-    comments: 38
-  },
-  {
-    id: 8,
-    author: '맛집탐험가',
-    title: '이탈리아 로마 맛집 투어',
-    summary: '로마에서 맛본 최고의 이탈리안 요리들을 소개합니다. 파스타, 피자, 젤라토까지...',
-    tags: ['이탈리아', '로마', '맛집'],
-    location: '이탈리아, 로마',
-    date: '2025-01-20',
-    likes: 87,
-    comments: 26
-  },
-  {
-    id: 9,
-    author: '문화탐험가',
-    title: '터키 이스탄불 역사 여행',
-    summary: '이스탄불의 역사적 명소들을 둘러보는 여행기입니다. 아야 소피아, 블루 모스크, 그랜드 바자르...',
-    tags: ['터키', '이스탄불', '역사여행'],
-    location: '터키, 이스탄불',
-    date: '2025-01-18',
-    likes: 76,
-    comments: 19
-  },
-  {
-    id: 10,
-    author: '해외취업러',
-    title: '호주 워킹홀리데이 준비하기',
-    summary: '호주 워킹홀리데이를 준비하는 분들을 위한 완벽 가이드입니다. 비자, 숙소, 일자리 정보...',
-    tags: ['호주', '워킹홀리데이', '취업'],
-    location: '호주',
-    date: '2025-01-15',
-    likes: 203,
-    comments: 67
-  },
-  {
-    id: 11,
-    author: '가족여행러',
-    title: '대만 가족여행 4박 5일',
-    summary: '아이들과 함께한 대만 가족여행 후기입니다. 어린이 박물관, 타이페이 101, 야시장...',
-    tags: ['대만', '가족여행', '아이동반'],
-    location: '대만, 타이페이',
-    date: '2025-01-12',
-    likes: 145,
-    comments: 42
-  },
-  {
-    id: 12,
-    author: '혼자여행러',
-    title: '스페인 바르셀로나 솔로 여행',
-    summary: '혼자 떠난 바르셀로나 여행기입니다. 사그라다 파밀리아, 구엘 공원, 라스 람블라스...',
-    tags: ['스페인', '바르셀로나', '솔로여행'],
-    location: '스페인, 바르셀로나',
-    date: '2025-01-10',
-    likes: 98,
-    comments: 29
 // 페이지네이션에 표시할 페이지 번호들을 계산하는 computed 속성
 const visiblePages = computed(() => {
   const pages = []
@@ -612,45 +479,6 @@ const loadPopularTags = async () => {
   } catch (error) {
     console.error('Failed to load popular tags:', error)
   }
-])
-
-// 인기 태그 데이터
-const popularTags = ref([
-  { name: '유럽', count: 245 },
-  { name: '일본', count: 189 },
-  { name: '배낭여행', count: 156 },
-  { name: '맛집', count: 134 },
-  { name: '제주도', count: 112 }
-])
-
-// 인기 여행지 데이터
-const popularLocations = ref([
-  { name: '일본, 도쿄', count: 156 },
-  { name: '대한민국, 제주도', count: 143 },
-  { name: '태국, 방콕', count: 112 },
-  { name: '프랑스, 파리', count: 98 },
-  { name: '이탈리아, 로마', count: 87 }
-])
-
-// 최근 게시글 데이터
-const recentPosts = ref([
-  {
-    id: 1,
-    title: '제주도 우도 자전거 여행 후기',
-    author: 'JD 제주도러버',
-    date: '2025-02-15'
-  },
-  {
-    id: 2,
-    title: '방콕 짜뚜짝 시장 가이드',
-    author: 'TL 태국러버',
-    date: '2025-02-12'
-  },
-  {
-    id: 3,
-    title: '유럽 환전 팁과 현지 ATM 이용법',
-    author: 'YT 여행탐험가',
-    date: '2025-02-10'
 }
 
 // 인기 여행지를 서버에서 불러오는 함수
@@ -697,7 +525,132 @@ onMounted(() => {
   padding: 0 0 60px 0;
 }
 
-/* 페이지 헤더 */
+/* 로딩 및 비어있는 상태 */
+.loading-state,
+.empty-state {
+  padding: 60px 24px;
+  text-align: center;
+  color: #999;
+  background: #fff;
+  border-radius: 16px;
+  margin: 24px 0;
+}
+
+.empty-state i {
+  font-size: 72px;
+  color: #ccc;
+  margin-bottom: 16px;
+}
+
+.empty-state p {
+  font-size: 1.1rem;
+  margin: 16px 0;
+}
+
+.write-first-btn {
+  padding: 12px 32px;
+  background: #2196f3;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 16px;
+  transition: all 0.2s;
+}
+
+.write-first-btn:hover {
+  background: #1976d2;
+}
+
+/* 게시글 카드 버튼 스타일 */
+.post-card {
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  background: #fff;
+  transition: all 0.2s;
+  display: flex;
+  overflow: hidden;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  padding: 0;
+}
+
+.post-card:hover {
+  box-shadow: 0 8px 24px rgba(33, 150, 243, 0.15);
+  transform: translateY(-2px);
+}
+
+.post-image {
+  width: 200px;
+  height: 280px;
+  flex-shrink: 0;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f5f5f5;
+}
+
+.post-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+/* 액션 버튼들 - 카드 우측 아래 */
+.post-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.post-actions .action-btn {
+  background: #f5f5f5;
+  border: none;
+  color: #666;
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s ease;
+}
+
+.post-actions .action-btn:hover {
+  background: #e3f2fd;
+  color: #2196f3;
+  transform: scale(1.05);
+}
+
+.post-actions .action-btn.active {
+  color: #2196f3;
+}
+
+.post-actions .action-btn.active i {
+  color: #2196f3;
+}
+
+.post-actions .action-btn i {
+  font-size: 18px;
+}
+
+.post-meta .location {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.post-meta .location i {
+  font-size: 16px;
+}
+
 .page-header {
   text-align: center;
   margin-top: 48px;
@@ -738,7 +691,6 @@ onMounted(() => {
   box-shadow: 0 2px 8px rgba(0,0,0,0.03);
 }
 
-
 /* 검색 섹션 */
 .search-section {
   display: flex;
@@ -778,17 +730,12 @@ onMounted(() => {
   box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
 }
 
-.action-buttons {
-  display: flex;
-  gap: 8px;
-}
-
-.filter-btn, .write-btn {
+.write-btn {
   padding: 12px 16px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid #2196f3;
   border-radius: 8px;
-  background: #fff;
-  color: #666;
+  background: #2196f3;
+  color: #fff;
   font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
@@ -796,17 +743,7 @@ onMounted(() => {
   align-items: center;
   gap: 6px;
   transition: all 0.2s;
-}
-
-.write-btn {
-  background: #2196f3;
-  color: #fff;
-  border-color: #2196f3;
-}
-
-.filter-btn:hover {
-  border-color: #2196f3;
-  color: #2196f3;
+  white-space: nowrap;
 }
 
 .write-btn:hover {
@@ -816,26 +753,48 @@ onMounted(() => {
 
 /* 게시물 목록 */
 .posts-list {
+  transition: opacity 0.3s ease;
+}
+
+.posts-list.loading {
+  opacity: 0.6;
+}
+
+.posts-list > div {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 15px;
 }
 
-.post-card {
-  border: 1px solid #e0e0e0;
-  border-radius: 12px;
+/* 게시글 페이드 트랜지션 */
+.post-fade-enter-active,
+.post-fade-leave-active {
+  transition: all 0.3s ease;
+}
+
+.post-fade-enter-from {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.post-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+.post-fade-move {
+  transition: transform 0.3s ease;
+}
+
+.post-body {
+  flex: 1;
   padding: 20px;
-  background: #fff;
-  transition: all 0.2s;
-}
-
-.post-card:hover {
-  box-shadow: 0 8px 24px rgba(33, 150, 243, 0.15);
-  transform: translateY(-2px);
+  display: flex;
+  flex-direction: column;
 }
 
 .post-header {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .author-info {
@@ -863,6 +822,7 @@ onMounted(() => {
 }
 
 .post-content {
+  flex: 1;
   margin-bottom: 16px;
 }
 
@@ -871,12 +831,24 @@ onMounted(() => {
   font-weight: bold;
   color: #222;
   margin: 0 0 8px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .post-summary {
   color: #666;
   line-height: 1.5;
   margin: 0 0 12px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .post-tags {
@@ -907,30 +879,6 @@ onMounted(() => {
   font-size: 0.9rem;
 }
 
-.post-actions {
-  display: flex;
-  gap: 16px;
-}
-
-.action-btn {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  background: none;
-  border: none;
-  color: #999;
-  font-size: 0.9rem;
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 4px;
-  transition: all 0.2s;
-}
-
-.action-btn:hover {
-  background: #f5f5f5;
-  color: #2196f3;
-}
-
 /* 사이드바 */
 .sidebar {
   display: flex;
@@ -945,7 +893,7 @@ onMounted(() => {
 .sidebar-section {
   background: #fff;
   border-radius: 16px;
-  padding: 20px;
+  padding: 10px 20px 20px 20px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.03);
   position: relative;
 }
@@ -961,10 +909,10 @@ onMounted(() => {
 }
 
 .sidebar-title {
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: bold;
   color: #222;
-  margin: 0 0 16px 0;
+  margin: 0 0 12px 0;
   position: relative;
 }
 
@@ -1009,32 +957,68 @@ onMounted(() => {
   box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
 }
 
-.location-list, .recent-posts-list {
+.location-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.location-item {
+.location-button {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 8px 0;
-  border-bottom: 1px solid #f0f0f0;
+  gap: 8px;
+  padding: 10px 12px;
+  background: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+  text-align: left;
 }
 
-.location-item:last-child {
-  border-bottom: none;
+.location-button:hover {
+  background: #f5f5f5;
+  transform: translateX(4px);
+}
+
+.location-button.active {
+  background: #e3f2fd;
+  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.2);
+}
+
+.location-icon {
+  color: #2196f3;
+  font-size: 18px;
+  flex-shrink: 0;
 }
 
 .location-name {
   color: #333;
   font-weight: 500;
+  font-size: 0.9rem;
+  flex: 1;
 }
 
-.location-count {
-  color: #999;
-  font-size: 0.9rem;
+.location-badge {
+  background: #e0e0e0;
+  color: #666;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.location-button.active .location-badge {
+  background: #2196f3;
+  color: #fff;
+}
+
+.recent-posts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .recent-post-item {
@@ -1044,6 +1028,16 @@ onMounted(() => {
   justify-content: space-between;
   align-items: flex-start;
   gap: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 8px;
+  padding: 12px;
+  margin: 0 -12px;
+}
+
+.recent-post-item:hover {
+  background: #f8f9fa;
+  color: #2196f3;
 }
 
 .recent-post-item:last-child {
@@ -1076,7 +1070,6 @@ onMounted(() => {
   white-space: nowrap;
   flex-shrink: 0;
 }
-
 
 /* 페이지네이션 */
 .pagination {
@@ -1114,15 +1107,35 @@ onMounted(() => {
   cursor: not-allowed;
 }
 
-.page-number {
-  font-size: 1.1rem;
-  font-weight: bold;
-  color: #2196f3;
-  padding: 8px 16px;
-  background: #e3f2fd;
-  border-radius: 6px;
-  min-width: 40px;
+.page-numbers {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.page-number-btn {
+  padding: 12px 16px;
+  background: #fff;
+  color: #666;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-weight: 500;
+  min-width: 48px;
   text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.page-number-btn:hover {
+  background: #f5f5f5;
+  border-color: #2196f3;
+  color: #2196f3;
+}
+
+.page-number-btn.active {
+  background: #2196f3;
+  color: #fff;
+  border-color: #2196f3;
 }
 
 /* 반응형 디자인 */
@@ -1138,25 +1151,28 @@ onMounted(() => {
     gap: 12px;
   }
   
-  .action-buttons {
+  .write-btn {
     width: 100%;
-    justify-content: space-between;
-  }
-  
-  .filter-btn, .write-btn {
-    flex: 1;
     justify-content: center;
+  }
+
+  .post-card {
+    flex-direction: column;
+  }
+
+  .post-image {
+    width: 100%;
+    height: 150px;
+  }
+
+  .post-body {
+    padding: 16px;
   }
   
   .post-footer {
     flex-direction: column;
     gap: 12px;
     align-items: flex-start;
-  }
-  
-  .post-actions {
-    width: 100%;
-    justify-content: space-around;
   }
   
   .pagination {
