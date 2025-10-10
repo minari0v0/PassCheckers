@@ -375,3 +375,33 @@ const isEdited = (comment) => {
   return updated - created > 1000
 }
 
+// 게시글 좋아요를 토글하는 함수
+const toggleLike = async () => {
+  try {
+    const token = getToken()
+    if (!token) {
+      alert('로그인이 필요합니다')
+      return
+    }
+
+    const response = await fetch(`${apiUrl}/community/posts/${props.postId}/like`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+
+    if (response.ok) {
+      const data = await response.json()
+      isLiked.value = data.liked
+      if (post.value) {
+        post.value.likes_count = data.likes_count
+      }
+      // 커뮤니티 페이지에 변경사항 알림
+      emit('update')
+    }
+  } catch (error) {
+    console.error('Failed to toggle like:', error)
+  }
+}
+
