@@ -651,6 +651,22 @@ const recentPosts = ref([
     title: '유럽 환전 팁과 현지 ATM 이용법',
     author: 'YT 여행탐험가',
     date: '2025-02-10'
+}
+
+// 인기 여행지를 서버에서 불러오는 함수
+const popularLocations = ref([])
+const loadPopularLocations = async () => {
+  try {
+    const response = await fetch(`${apiUrl}/community/locations/popular?limit=5`)
+    const data = await response.json()
+    if (response.ok && data.locations) {
+      popularLocations.value = data.locations
+    }
+  } catch (error) {
+    console.error('Failed to load popular locations:', error)
+  }
+}
+
   }
 ])
 </script>
