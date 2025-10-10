@@ -17,6 +17,7 @@ from routes.analysis import analysis_bp
 from routes.locations import locations_bp
 from routes.weight import weight_bp
 from routes.category import category_bp
+from routes.community import community_bp
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -25,7 +26,12 @@ app.config.from_object(Config)
 jwt = JWTManager(app)
 
 # CORS 설정
-CORS(app, origins=Config.CORS_ORIGINS, supports_credentials=True)
+CORS(app, 
+     origins=Config.CORS_ORIGINS, 
+     supports_credentials=True,
+     allow_headers=["Content-Type", "Authorization"],
+     expose_headers=["Content-Type", "Authorization"],
+     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
 
 # 블루프린트 등록
 app.register_blueprint(classify_bp)
@@ -34,6 +40,7 @@ app.register_blueprint(analysis_bp)
 app.register_blueprint(locations_bp)
 app.register_blueprint(weight_bp)
 app.register_blueprint(category_bp)
+app.register_blueprint(community_bp)
 
 # Redis 연결
 redis_client = redis.from_url(Config.REDIS_URL)
@@ -208,6 +215,107 @@ def init_db():
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     """)
 
+    # ===== 커뮤니티 테이블 생성 =====
+    
+    # posts 테이블 생성
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS posts (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT NOT NULL,
+            title VARCHAR(255) NOT NULL,
+            content TEXT NOT NULL,
+            summary VARCHAR(500),
+            location VARCHAR(255),
+            image_id INT DEFAULT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            likes_count INT DEFAULT 0,
+            comments_count INT DEFAULT 0,
+            views_count INT DEFAULT 0,
+            is_deleted BOOLEAN DEFAULT FALSE,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (image_id) REFERENCES images(id) ON DELETE SET NULL,
+            INDEX idx_created_at (created_at),
+            INDEX idx_location (location),
+            INDEX idx_user_id (user_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    """)
+    
+    # tags 테이블 생성
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS tags (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(50) NOT NULL UNIQUE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_name (name)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    """)
+    
+    # post_tags 연결 테이블 생성
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS post_tags (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            post_id INT NOT NULL,
+            tag_id INT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
+            FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE,
+            UNIQUE KEY unique_post_tag (post_id, tag_id),
+            INDEX idx_post_id (post_id),
+            INDEX idx_tag_id (tag_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    """)
+    
+    # comments 테이블 생성
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS comments (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            post_id INT NOT NULL,
+            user_id INT NOT NULL,
+            content TEXT NOT NULL,
+            parent_comment_id INT DEFAULT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            is_deleted BOOLEAN DEFAULT FALSE,
+            FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY (parent_comment_id) REFERENCES comments(id) ON DELETE CASCADE,
+            INDEX idx_post_id (post_id),
+            INDEX idx_user_id (user_id),
+            INDEX idx_parent_comment_id (parent_comment_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    """)
+    
+    # post_likes 테이블 생성
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS post_likes (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            post_id INT NOT NULL,
+            user_id INT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            UNIQUE KEY unique_post_like (post_id, user_id),
+            INDEX idx_post_id (post_id),
+            INDEX idx_user_id (user_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    """)
+    
+    # post_bookmarks 테이블 생성
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS post_bookmarks (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            post_id INT NOT NULL,
+            user_id INT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            UNIQUE KEY unique_post_bookmark (post_id, user_id),
+            INDEX idx_post_id (post_id),
+            INDEX idx_user_id (user_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    """)
+
     # 스키마 마이그레이션: items 테이블에 category 컬럼이 없는 경우 추가
     db_name = conn.db.decode() if isinstance(conn.db, bytes) else conn.db
     cursor.execute("""
@@ -220,6 +328,34 @@ def init_db():
     if cursor.fetchone()['cnt'] == 0:
         cursor.execute("ALTER TABLE items ADD COLUMN category VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL")
         print("[DB MIGRATION] 'category' column added to 'items' table.")
+    
+    # 스키마 마이그레이션: posts 테이블에 image_id 컬럼이 없는 경우 추가
+    cursor.execute("""
+        SELECT COUNT(*) as cnt
+        FROM information_schema.COLUMNS
+        WHERE TABLE_SCHEMA = %s
+        AND TABLE_NAME = 'posts'
+        AND COLUMN_NAME = 'image_id'
+    """, (db_name,))
+    if cursor.fetchone()['cnt'] == 0:
+        cursor.execute("""
+            ALTER TABLE posts 
+            ADD COLUMN image_id INT DEFAULT NULL,
+            ADD CONSTRAINT fk_posts_image FOREIGN KEY (image_id) REFERENCES images(id) ON DELETE SET NULL
+        """)
+        print("[DB MIGRATION] 'image_id' column added to 'posts' table.")
+    
+    # 기존 image_url 컬럼이 있으면 제거 (image_id로 전환)
+    cursor.execute("""
+        SELECT COUNT(*) as cnt
+        FROM information_schema.COLUMNS
+        WHERE TABLE_SCHEMA = %s
+        AND TABLE_NAME = 'posts'
+        AND COLUMN_NAME = 'image_url'
+    """, (db_name,))
+    if cursor.fetchone()['cnt'] > 0:
+        cursor.execute("ALTER TABLE posts DROP COLUMN image_url")
+        print("[DB MIGRATION] 'image_url' column removed from 'posts' table.")
     
     conn.commit()
     cursor.close()
