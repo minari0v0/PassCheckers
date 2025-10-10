@@ -447,3 +447,36 @@ const sharePost = () => {
   }
 }
 
+// 댓글을 삭제하는 함수
+const deleteComment = async (commentId) => {
+  if (!confirm('댓글을 삭제하시겠습니까?')) return
+
+  try {
+    const token = getToken()
+    if (!token) {
+      alert('로그인이 필요합니다')
+      return
+    }
+
+    const response = await fetch(`${apiUrl}/community/comments/${commentId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+
+    if (response.ok) {
+      await loadComments()
+      showMenuFor.value = null // 메뉴 닫기
+      // 커뮤니티 페이지에 변경사항 알림
+      emit('update')
+    } else {
+      const errorData = await response.json()
+      alert('댓글 삭제에 실패했습니다: ' + (errorData.error || ''))
+    }
+  } catch (error) {
+    console.error('Failed to delete comment:', error)
+    alert('댓글 삭제 중 오류가 발생했습니다')
+  }
+}
+
