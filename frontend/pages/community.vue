@@ -34,12 +34,31 @@
         </div>
 
         <!-- 게시물 목록 -->
-        <div class="posts-list">
-          <div 
-            v-for="post in posts" 
-            :key="post.id"
-            class="post-card"
-          >
+        <div v-if="posts.length === 0 && !loading" class="empty-state">
+          <i class="material-icons">article</i>
+          <p>아직 게시글이 없습니다</p>
+          <button class="write-first-btn" @click="showWritePost = true">
+            첫 게시글 작성하기
+          </button>
+        </div>
+
+        <div class="posts-list" :class="{ 'loading': loading }">
+          <transition-group name="post-fade" tag="div">
+            <button 
+              v-for="post in posts" 
+              :key="post.id"
+              class="post-card"
+              @click="openPostDetail(post.id)"
+            >
+            <div class="post-image">
+              <img 
+                :src="getImageUrl(post.image_id)" 
+                :alt="post.title"
+                @error="handleImageError"
+              />
+            </div>
+            
+            <div class="post-body">
             <div class="post-header">
               <div class="author-info">
                 <div class="author-avatar">{{ post.author.charAt(0) }}</div>
