@@ -120,13 +120,22 @@
             이전
           </button>
           
-          <div class="page-number">
-            {{ currentPage }}
+          <!-- 페이지 번호들 -->
+          <div class="page-numbers">
+            <button 
+              v-for="page in visiblePages" 
+              :key="page"
+              class="page-number-btn"
+              :class="{ active: page === currentPage }"
+              @click="goToPage(page)"
+            >
+              {{ page }}
+            </button>
           </div>
           
           <button 
             class="pagination-btn next-btn"
-            :disabled="currentPage >= Math.ceil(allPosts.length / postsPerPage)"
+            :disabled="posts.length < postsPerPage"
             @click="goToNextPage"
           >
             다음
