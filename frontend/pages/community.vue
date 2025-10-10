@@ -412,6 +412,19 @@ const toggleBookmark = async (postId, event) => {
   }
 }
 
+// 게시물 이미지 URL을 생성하는 함수
+const getImageUrl = (imageId) => {
+  if (!imageId) {
+    return '/images/default_wallpaper.png'
+  }
+  return `${apiUrl}/community/images/${imageId}`
+}
+
+// 이미지 로드 실패 시 기본 이미지로 대체하는 함수
+const handleImageError = (event) => {
+  event.target.src = '/images/default_wallpaper.png'
+}
+
 const goToPreviousPage = () => {
   if (currentPage.value > 1) {
     currentPage.value--
