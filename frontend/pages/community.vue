@@ -351,6 +351,37 @@ const handlePostSubmit = () => {
   loadPosts()
 }
 
+// 게시물 목록에서 좋아요를 토글하는 함수
+const toggleLike = async (postId, event) => {
+  event.stopPropagation()
+  try {
+    const token = getToken()
+    if (!token) {
+      alert('로그인이 필요합니다')
+      return
+    }
+
+    const response = await fetch(`${apiUrl}/community/posts/${postId}/like`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+
+    if (response.ok) {
+      const data = await response.json()
+      // 해당 게시글의 상태만 업데이트
+      const post = allPosts.value.find(p => p.id === postId)
+      if (post) {
+        post.is_liked = data.liked
+        post.likes_count = data.likes_count
+      }
+    }
+  } catch (error) {
+    console.error('Failed to toggle like:', error)
+  }
+}
+
 const goToPreviousPage = () => {
   if (currentPage.value > 1) {
     currentPage.value--
