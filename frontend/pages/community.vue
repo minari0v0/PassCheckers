@@ -210,11 +210,16 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
+import WritePost from '~/components/community/WritePost.vue'
+import PostDetail from '~/components/community/PostDetail.vue'
 
 definePageMeta({
   middleware: 'auth'
 })
+
+const { apiUrl } = useApiUrl()
+const { getToken } = useAuth()
 
 // 반응형 데이터
 const searchQuery = ref('')
