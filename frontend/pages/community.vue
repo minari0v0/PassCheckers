@@ -345,6 +345,12 @@ const handlePostUpdate = () => {
   loadRecentPosts()
 }
 
+// 게시글 작성이 완료되었을 때 호출되는 함수
+const handlePostSubmit = () => {
+  currentPage.value = 1
+  loadPosts()
+}
+
 const goToPreviousPage = () => {
   if (currentPage.value > 1) {
     currentPage.value--
