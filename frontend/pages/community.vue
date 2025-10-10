@@ -681,6 +681,13 @@ const loadRecentPosts = async () => {
   }
 }
 
+// 마운트 시 데이터 로드
+onMounted(() => {
+  loadPosts()
+  loadPopularTags()
+  loadPopularLocations()
+  loadRecentPosts()
+})
 </script>
 
 <style scoped>
