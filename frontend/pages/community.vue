@@ -69,7 +69,7 @@
             <div class="post-content">
               <h3 class="post-title">{{ post.title }}</h3>
               <p class="post-summary">{{ post.summary }}</p>
-              <div class="post-tags">
+                <div v-if="post.tags && post.tags.length > 0" class="post-tags">
                 <span 
                   v-for="tag in post.tags" 
                   :key="tag"
