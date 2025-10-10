@@ -323,3 +323,46 @@ const handleImageError = (event) => {
   event.target.src = '/images/default_wallpaper.png'
 }
 
+// 날짜를 상대적 시간 형식으로 변환하는 함수 (예: "3시간 전")
+const formatDate = (dateString) => {
+  if (!dateString) return ''
+  
+  // MySQL datetime 형식을 로컬 시간으로 파싱
+  // "2025-10-10 19:48:54" 형식을 그대로 한국 시간으로 인식
+  let date
+  if (dateString.includes('GMT')) {
+    // GMT 형식인 경우 (기존 방식)
+    date = new Date(dateString)
+  } else {
+    // MySQL datetime 형식인 경우 - 이미 한국 시간이므로 그대로 사용
+    // "2025-10-10 19:48:54" -> "2025-10-10T19:48:54" (로컬 시간으로 파싱)
+    const isoString = dateString.replace(' ', 'T')
+    date = new Date(isoString)
+  }
+  
+  const now = new Date()
+  
+  if (isNaN(date.getTime())) {
+    console.error('Invalid date:', dateString)
+    return '날짜 오류'
+  }
+  
+  const diff = now - date
+  const seconds = Math.floor(diff / 1000)
+  const minutes = Math.floor(seconds / 60)
+  const hours = Math.floor(minutes / 60)
+  const days = Math.floor(hours / 24)
+
+  if (days > 7) {
+    return date.toLocaleDateString('ko-KR')
+  } else if (days > 0) {
+    return `${days}일 전`
+  } else if (hours > 0) {
+    return `${hours}시간 전`
+  } else if (minutes > 0) {
+    return `${minutes}분 전`
+  } else {
+    return '방금 전'
+  }
+}
+
