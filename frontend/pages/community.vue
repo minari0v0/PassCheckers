@@ -587,6 +587,30 @@ const allPosts = ref([
     date: '2025-01-10',
     likes: 98,
     comments: 29
+// 페이지네이션에 표시할 페이지 번호들을 계산하는 computed 속성
+const visiblePages = computed(() => {
+  const pages = []
+  const start = Math.max(1, currentPage.value - 2)
+  const end = Math.min(totalPages.value, start + 4)
+  
+  for (let i = start; i <= end; i++) {
+    pages.push(i)
+  }
+  
+  return pages
+})
+
+// 인기 태그를 서버에서 불러오는 함수
+const popularTags = ref([])
+const loadPopularTags = async () => {
+  try {
+    const response = await fetch(`${apiUrl}/community/tags/popular?limit=5`)
+    const data = await response.json()
+    if (response.ok && data.tags) {
+      popularTags.value = data.tags
+    }
+  } catch (error) {
+    console.error('Failed to load popular tags:', error)
   }
 ])
 
