@@ -339,7 +339,12 @@ const closePostDetail = () => {
   selectedPostId.value = null
 }
 
-// 페이지네이션 함수
+// 게시글 상세에서 변경사항 발생 시 목록을 새로고침하는 함수
+const handlePostUpdate = () => {
+  loadPosts()
+  loadRecentPosts()
+}
+
 const goToPreviousPage = () => {
   if (currentPage.value > 1) {
     currentPage.value--
