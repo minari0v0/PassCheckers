@@ -225,7 +225,60 @@ const { getToken } = useAuth()
 const searchQuery = ref('')
 const currentPage = ref(1)
 const postsPerPage = 10
+const totalPages = ref(1)
 const selectedTag = ref(null)
+const selectedLocation = ref(null)
+const loading = ref(true)
+const allPosts = ref([])
+const showWritePost = ref(false)
+const selectedPostId = ref(null)
+
+let searchTimeout = null
+
+// 게시물 목록을 불러오는 함수 (페이지네이션, 필터링, 검색 적용)
+const loadPosts = async () => {
+  loading.value = true
+  try {
+    let url = `${apiUrl}/community/posts?page=${currentPage.value}&per_page=${postsPerPage}`
+    
+    if (selectedTag.value) {
+      url += `&tag=${encodeURIComponent(selectedTag.value)}`
+    }
+    
+    if (selectedLocation.value) {
+      url += `&location=${encodeURIComponent(selectedLocation.value)}`
+    }
+    
+    if (searchQuery.value) {
+      url += `&search=${encodeURIComponent(searchQuery.value)}`
+    }
+    
+    // JWT 토큰 포함 (좋아요/북마크 상태 확인용)
+    const token = getToken()
+    const headers = {}
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
+    }
+    
+    const response = await fetch(url, { headers })
+    const data = await response.json()
+    
+    if (response.ok && data.posts) {
+      allPosts.value = data.posts
+      // 총 페이지 수 업데이트 (백엔드에서 total_pages를 제공한다고 가정)
+      if (data.total_pages) {
+        totalPages.value = data.total_pages
+      } else {
+        // 백엔드에서 total_pages를 제공하지 않으면 현재 페이지 기준으로 추정
+        totalPages.value = Math.max(currentPage.value, posts.value.length >= postsPerPage ? currentPage.value + 1 : currentPage.value)
+      }
+    }
+  } catch (error) {
+    console.error('Failed to load posts:', error)
+  } finally {
+    loading.value = false
+  }
+}
 
 // 태그 선택 함수
 const selectTag = (tagName) => {
