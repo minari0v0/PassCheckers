@@ -303,6 +303,17 @@ const selectTag = (tagName) => {
   loadPosts()
 }
 
+// 사이드바에서 여행지를 선택/해제하여 필터링하는 함수
+const selectLocation = (locationName) => {
+  if (selectedLocation.value === locationName) {
+    selectedLocation.value = null
+  } else {
+    selectedLocation.value = locationName
+  }
+  currentPage.value = 1
+  loadPosts()
+}
+
 }
 
 // 페이지네이션 함수
