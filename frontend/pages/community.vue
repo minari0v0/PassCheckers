@@ -123,14 +123,15 @@
         <div class="sidebar-section">
           <h3 class="sidebar-title">인기 태그</h3>
           <div class="tag-list">
-            <div 
+            <button 
               v-for="tag in popularTags" 
               :key="tag.name"
-              class="tag-item"
+              class="tag-button"
+              :class="{ active: selectedTag === tag.name }"
+              @click="selectTag(tag.name)"
             >
-              <span class="tag-name">#{{ tag.name }}</span>
-              <span class="tag-count">({{ tag.count }})</span>
-            </div>
+              #{{ tag.name }}
+            </button>
           </div>
         </div>
 
@@ -172,7 +173,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 
 definePageMeta({
   middleware: 'auth'
@@ -182,6 +183,16 @@ definePageMeta({
 const searchQuery = ref('')
 const currentPage = ref(1)
 const postsPerPage = 10
+const selectedTag = ref(null)
+
+// 태그 선택 함수
+const selectTag = (tagName) => {
+  if (selectedTag.value === tagName) {
+    selectedTag.value = null // 이미 선택된 태그를 다시 클릭하면 선택 해제
+  } else {
+    selectedTag.value = tagName
+  }
+}
 
 // 페이지네이션 함수
 const goToPreviousPage = () => {
@@ -669,13 +680,44 @@ const recentPosts = ref([
   background: linear-gradient(90deg, transparent 0%, #e0e0e0 20%, #e0e0e0 80%, transparent 100%);
 }
 
-.tag-list, .location-list, .recent-posts-list {
+.tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag-button {
+  background: #e3f2fd;
+  color: #2196f3;
+  border: 2px solid transparent;
+  border-radius: 16px;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tag-button:hover {
+  background: #bbdefb;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2);
+}
+
+.tag-button.active {
+  background: #2196f3;
+  color: #fff;
+  border-color: #1976d2;
+  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3);
+}
+
+.location-list, .recent-posts-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.tag-item, .location-item {
+.location-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -683,16 +725,16 @@ const recentPosts = ref([
   border-bottom: 1px solid #f0f0f0;
 }
 
-.tag-item:last-child, .location-item:last-child {
+.location-item:last-child {
   border-bottom: none;
 }
 
-.tag-name, .location-name {
+.location-name {
   color: #333;
   font-weight: 500;
 }
 
-.tag-count, .location-count {
+.location-count {
   color: #999;
   font-size: 0.9rem;
 }
