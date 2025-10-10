@@ -545,3 +545,113 @@ const toggleComments = () => {
   showComments.value = !showComments.value
 }
 
+// 댓글의 메뉴(수정/삭제)를 토글하는 함수
+const toggleCommentMenu = (commentId) => {
+  if (showMenuFor.value === commentId) {
+    showMenuFor.value = null
+  } else {
+    showMenuFor.value = commentId
+  }
+}
+
+// 댓글 메뉴를 닫는 함수
+const closeMenu = () => {
+  showMenuFor.value = null
+}
+
+// 댓글 수정 모드를 시작하는 함수
+const startEditComment = (commentId, content) => {
+  editingCommentId.value = commentId
+  editingCommentText.value = content
+  showMenuFor.value = null // 메뉴 닫기
+}
+
+// 댓글 수정을 취소하는 함수
+const cancelEditComment = () => {
+  editingCommentId.value = null
+  editingCommentText.value = ''
+}
+
+// 수정한 댓글을 서버에 저장하는 함수
+const saveEditComment = async (commentId) => {
+  if (!editingCommentText.value.trim()) return
+
+  try {
+    const token = getToken()
+    if (!token) {
+      alert('로그인이 필요합니다')
+      return
+    }
+
+    const response = await fetch(`${apiUrl}/community/comments/${commentId}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        content: editingCommentText.value.trim()
+      })
+    })
+
+    if (response.ok) {
+      editingCommentId.value = null
+      editingCommentText.value = ''
+      await loadComments()
+      // 커뮤니티 페이지에 변경사항 알림
+      emit('update')
+    } else {
+      const errorData = await response.json()
+      alert('댓글 수정에 실패했습니다: ' + (errorData.error || ''))
+    }
+  } catch (error) {
+    console.error('Failed to edit comment:', error)
+    alert('댓글 수정 중 오류가 발생했습니다')
+  }
+}
+
+// 새 댓글을 작성하여 서버에 제출하는 함수
+const submitComment = async () => {
+  if (!newComment.value.trim()) return
+
+  try {
+    const token = getToken()
+    if (!token) {
+      alert('로그인이 필요합니다')
+      return
+    }
+
+    const commentData = {
+      content: newComment.value.trim()
+    }
+
+    // 답글인 경우 parent_id 추가
+    if (replyingTo.value) {
+      commentData.parent_id = replyingTo.value
+    }
+
+    const response = await fetch(`${apiUrl}/community/posts/${props.postId}/comments`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(commentData)
+    })
+
+    if (response.ok) {
+      newComment.value = ''
+      replyingTo.value = null
+      await loadComments()
+      // 커뮤니티 페이지에 변경사항 알림
+      emit('update')
+    } else {
+      const errorData = await response.json()
+      alert('댓글 작성에 실패했습니다: ' + (errorData.error || ''))
+    }
+  } catch (error) {
+    console.error('Failed to submit comment:', error)
+    alert('댓글 작성에 실패했습니다')
+  }
+}
+
