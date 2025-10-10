@@ -230,3 +230,49 @@
   </div>
 </template>
 
+<script setup>
+import { ref, onMounted } from 'vue'
+
+const props = defineProps({
+  postId: {
+    type: Number,
+    required: true
+  }
+})
+
+const emit = defineEmits(['close', 'update'])
+
+const { apiUrl } = useApiUrl()
+const { getToken } = useAuth()
+
+const post = ref(null)
+const comments = ref([])
+const loading = ref(true)
+const isLiked = ref(false)
+const isBookmarked = ref(false)
+const newComment = ref('')
+const replyingTo = ref(null)
+const showMenuFor = ref(null)
+const replyText = ref('')
+const showComments = ref(true) // 댓글 섹션 표시 여부
+const editingCommentId = ref(null) // 수정 중인 댓글 ID
+const editingCommentText = ref('') // 수정 중인 댓글 내용
+
+// 게시글 상세 정보를 서버에서 불러오는 함수
+const loadPost = async () => {
+  try {
+    const response = await fetch(`${apiUrl}/community/posts/${props.postId}`)
+    const data = await response.json()
+    
+    if (response.ok) {
+      post.value = data
+      // 태그 문자열을 배열로 변환
+      if (typeof data.tags === 'string') {
+        post.value.tags = data.tags ? data.tags.split(',') : []
+      }
+    }
+  } catch (error) {
+    console.error('Failed to load post:', error)
+  }
+}
+
