@@ -13,6 +13,7 @@ export const useApiUrl = () => {
   }
   
   return {
+    apiUrl: `${getApiBaseUrl()}/api`,
     getApiBaseUrl,
     getApiUrl
   }
