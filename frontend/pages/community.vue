@@ -314,6 +314,11 @@ const selectLocation = (locationName) => {
   loadPosts()
 }
 
+// 게시글 상세 모달을 여는 함수
+const openPostDetail = (postId) => {
+  selectedPostId.value = postId
+}
+
 }
 
 // 페이지네이션 함수
