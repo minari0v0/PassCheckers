@@ -655,3 +655,54 @@ const submitComment = async () => {
   }
 }
 
+// 게시글 상세 모달을 닫는 함수
+const closeModal = () => {
+  emit('close')
+}
+
+// 게시글의 좋아요/북마크 상태를 확인하는 함수
+const checkLikeAndBookmarkStatus = async () => {
+  try {
+    const token = getToken()
+    if (!token) return // 로그인하지 않은 경우 확인 안 함
+
+    // 좋아요 상태 확인
+    const likeResponse = await fetch(`${apiUrl}/community/posts/${props.postId}/like/status`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    if (likeResponse.ok) {
+      const likeData = await likeResponse.json()
+      isLiked.value = likeData.liked
+    }
+
+    // 북마크 상태 확인
+    const bookmarkResponse = await fetch(`${apiUrl}/community/posts/${props.postId}/bookmark/status`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    if (bookmarkResponse.ok) {
+      const bookmarkData = await bookmarkResponse.json()
+      isBookmarked.value = bookmarkData.bookmarked
+    }
+  } catch (error) {
+    console.error('Failed to check like/bookmark status:', error)
+  }
+}
+
+// 마운트 시 데이터 로드
+onMounted(async () => {
+  await Promise.all([loadPost(), loadComments(), checkLikeAndBookmarkStatus()])
+  loading.value = false
+  
+  // 메뉴 외부 클릭 시 닫기
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.comment-menu') && !e.target.closest('.reply-menu')) {
+      showMenuFor.value = null
+    }
+  })
+})
+</script>
+
