@@ -366,3 +366,12 @@ const formatDate = (dateString) => {
   }
 }
 
+// 댓글이 수정되었는지 확인하는 함수
+const isEdited = (comment) => {
+  if (!comment.updated_at || !comment.created_at) return false
+  const created = new Date(comment.created_at).getTime()
+  const updated = new Date(comment.updated_at).getTime()
+  // updated_at이 created_at보다 1초 이상 차이나면 수정된 것으로 간주
+  return updated - created > 1000
+}
+
