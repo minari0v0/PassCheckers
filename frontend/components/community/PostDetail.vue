@@ -528,3 +528,15 @@ const submitReply = async (parentCommentId) => {
   }
 }
 
+// 댓글과 답글을 포함한 총 댓글 수를 계산하는 함수
+const getTotalCommentCount = () => {
+  let total = 0
+  comments.value.forEach(comment => {
+    total += 1 // 부모 댓글
+    if (comment.replies) {
+      total += comment.replies.length // 답글들
+    }
+  })
+  return total
+}
+
