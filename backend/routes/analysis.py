@@ -5,6 +5,9 @@ from datetime import datetime
 import json
 import os
 from urllib.parse import urlparse
+import secrets
+import string
+
 
 analysis_bp = Blueprint("analysis", __name__)
 
@@ -26,6 +29,7 @@ def save_analysis_results():
         try:
             with conn.cursor() as cursor:
                 # 분석 결과 테이블이 없으면 생성
+                # 분석 결과 테이블이 없으면 생성
                 cursor.execute("""
                     CREATE TABLE IF NOT EXISTS analysis_results (
                         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -37,6 +41,7 @@ def save_analysis_results():
                         total_items INT NOT NULL,
                         analysis_date DATETIME NOT NULL,
                         destination VARCHAR(100),
+                        share_code VARCHAR(10) UNIQUE,
                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                         FOREIGN KEY (image_id) REFERENCES images(id) ON DELETE CASCADE
                     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
@@ -265,39 +270,65 @@ def get_analysis_history(user_id):
 
 @analysis_bp.route("/api/analysis/detail/<int:analysis_id>", methods=["GET"])
 def get_analysis_detail(analysis_id):
-    """특정 분석 결과의 상세 정보를 조회합니다."""
+    """특정 분석 결과의 상세 정보를 조회하고, 필요시 공유 코드를 생성합니다."""
     try:
         conn = get_db_connection()
         try:
             with conn.cursor() as cursor:
-                # 분석 결과 기본 정보
+                # 1. 분석 결과 기본 정보 조회
                 cursor.execute("""
                     SELECT ar.*, i.width, i.height
                     FROM analysis_results ar
-                                        LEFT JOIN images i ON ar.image_id = i.image_id
+                    LEFT JOIN images i ON ar.image_id = i.image_id
                     WHERE ar.id = %s
                 """, (analysis_id,))
                 
                 analysis_info = cursor.fetchone()
                 if not analysis_info:
                     return jsonify({"error": "분석 결과를 찾을 수 없습니다."}), 404
-                
-                # 분석된 물품들
+
+                # 2. 공유 코드 확인 및 생성
+                if not analysis_info.get('share_code'):
+                    while True:
+                        # 6자리 영문 대문자 + 숫자로 이루어진 코드 생성
+                        share_code = ''.join(secrets.choice(string.ascii_uppercase + string.digits) for _ in range(6))
+                        
+                        # 코드가 이미 존재하는지 확인
+                        cursor.execute("SELECT id FROM analysis_results WHERE share_code = %s", (share_code,))
+                        if not cursor.fetchone():
+                            break # 중복되지 않으면 루프 탈출
+                    
+                    # DB에 새로운 공유 코드 업데이트
+                    cursor.execute("""
+                        UPDATE analysis_results
+                        SET share_code = %s
+                        WHERE id = %s
+                    """, (share_code, analysis_id))
+                    conn.commit()
+                    analysis_info['share_code'] = share_code # 응답에 바로 반영
+
+                # 3. 분석된 물품들 조회 (packing.py 방식 적용)
                 cursor.execute("""
-                    SELECT * FROM analysis_items
+                    SELECT 
+                        id, item_name_ko, item_name_en, 
+                        bbox_x_min, bbox_y_min, bbox_x_max, bbox_y_max, 
+                        carry_on_allowed, checked_baggage_allowed, notes, notes_EN
+                    FROM analysis_items
                     WHERE analysis_id = %s
                     ORDER BY id
                 """, (analysis_id,))
                 
                 items = cursor.fetchall()
-                
-                # bbox 정보를 배열로 변환
+
+                # bbox 정보를 배열로 변환하고, 프론트엔드와 키 이름을 맞춤
                 for item in items:
+                    item['item_id'] = item.pop('id')
+                    item['item_name'] = item.pop('item_name_ko')
                     item['bbox'] = [
-                        float(item['bbox_x_min']),
-                        float(item['bbox_y_min']),
-                        float(item['bbox_x_max']),
-                        float(item['bbox_y_max'])
+                        item.pop('bbox_x_min'), 
+                        item.pop('bbox_y_min'), 
+                        item.pop('bbox_x_max'), 
+                        item.pop('bbox_y_max')
                     ]
                 
                 return jsonify({

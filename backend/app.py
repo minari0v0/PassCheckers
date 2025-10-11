@@ -18,6 +18,7 @@ from routes.locations import locations_bp
 from routes.weight import weight_bp
 from routes.category import category_bp
 from routes.packing import packing_bp
+from routes.share import share_bp
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -36,6 +37,7 @@ app.register_blueprint(locations_bp)
 app.register_blueprint(weight_bp)
 app.register_blueprint(category_bp)
 app.register_blueprint(packing_bp)
+app.register_blueprint(share_bp)
 
 # Redis 연결
 redis_client = redis.from_url(Config.REDIS_URL)
@@ -222,6 +224,18 @@ def init_db():
     if cursor.fetchone()['cnt'] == 0:
         cursor.execute("ALTER TABLE items ADD COLUMN category VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL")
         print("[DB MIGRATION] 'category' column added to 'items' table.")
+
+    # 스키마 마이그레이션: analysis_results 테이블에 share_code 컬럼이 없는 경우 추가
+    cursor.execute("""
+        SELECT COUNT(*) as cnt
+        FROM information_schema.COLUMNS
+        WHERE TABLE_SCHEMA = %s
+        AND TABLE_NAME = 'analysis_results'
+        AND COLUMN_NAME = 'share_code'
+    """, (db_name,))
+    if cursor.fetchone()['cnt'] == 0:
+        cursor.execute("ALTER TABLE analysis_results ADD COLUMN share_code VARCHAR(10) UNIQUE AFTER destination")
+        print("[DB MIGRATION] 'share_code' 컬럼이 'analysis_results' 테이블에 추가되었습니다.")
     
     conn.commit()
     cursor.close()
