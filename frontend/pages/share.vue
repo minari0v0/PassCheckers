@@ -122,14 +122,25 @@
                   <div class="form-content">
                       <label>동반자 공유 코드</label>
                       <div class="input-wrapper">
-                        <input v-model="partnerCode" @keyup.enter="handleConnect" @input="connectError = ''" type="text" placeholder="코드 입력 (예: B3X7K5)" maxlength="6" class="code-input" />
-                        <button v-if="partnerCode.length > 0" @click="partnerCode = ''" class="clear-input-btn">
+                        <input 
+                          ref="partnerCodeInputRef"
+                          v-model="partnerCode" 
+                          @keyup.enter="handleConnect" 
+                          @input="connectError = ''" 
+                          @focus="connectError = ''"
+                          type="text" 
+                          placeholder="코드 입력 (예: B3X7K5)" 
+                          maxlength="6" 
+                          class="code-input" 
+                        />
+                        <button v-if="partnerCode.length > 0" @click="clearAndFocusInput" class="clear-input-btn">
                           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                         </button>
                       </div>
                       <p v-if="connectError" class="error-message">{{ connectError }}</p>
-                      <button @click="handleConnect" :disabled="partnerCode.length < 4" class="connect-btn">
-                        연결하기
+                      <button @click="handleConnect" :disabled="partnerCode.length < 4 || isConnecting" class="connect-btn">
+                        <span v-if="!isConnecting">연결하기</span>
+                        <div v-else class="button-spinner"></div>
                       </button>
                   </div>
                 </div>
@@ -146,9 +157,9 @@
           </div>
           
           <div v-else-if="partners.length > 0" class="carousel-container">
-            <div class="carousel-track" :style="{ transform: `translateX(-${currentPartnerIndex * 100}%)` }">
-              <!-- 각 동반자 카드 -->
-              <div v-for="(partner, index) in partners" :key="partner.code" class="carousel-slide">
+            <div class="carousel-track" :style="{ transform: `translateX(-${currentSlideIndex * 100}%)`, transition: noTransition ? 'none' : 'transform 0.5s ease-in-out' }">
+              <!-- 각 동반자 카드 (복제 포함) -->
+              <div v-for="(partner, index) in carouselPartners" :key="`${partner.code}-${index}`" class="carousel-slide">
                 <div class="partner-card-content">
                   <div class="partner-image-container">
                     <img 
@@ -156,7 +167,7 @@
                       :src="getApiUrl(partner.analysis.image_url)" 
                       :alt="`${partner.code} 수하물`" 
                       class="analysis-image"
-                      @load="updatePartnerImageSize(index)"
+                      @load="updatePartnerImageSize(partner)"
                     />
                     <ImageItem 
                       v-for="item in partner.items" 
@@ -164,12 +175,12 @@
                       :item="item"
                       :image-size="partner.imageSize"
                       :color="partner.color"
-                      :show-label="index === currentPartnerIndex"
+                      :show-label="index === currentSlideIndex"
                     />
 
                     <!-- 아이템 목록 오버레이 -->
                     <transition name="fade">
-                      <div v-if="partner.showItemList && index === currentPartnerIndex" class="item-list-overlay">
+                      <div v-if="partner.showItemList && index === currentSlideIndex" class="item-list-overlay">
                         <ul class="item-list">
                           <li v-for="item in groupItems(partner.items)" :key="item.name">
                             <span class="item-name">{{ item.name }}</span>
@@ -180,7 +191,7 @@
                     </transition>
 
                     <!-- 목록 토글 버튼 -->
-                    <button v-if="index === currentPartnerIndex" @click="partner.showItemList = !partner.showItemList" class="list-toggle-btn hamburger-menu" :class="{ active: partner.showItemList }">
+                    <button v-if="index === currentSlideIndex" @click="partner.showItemList = !partner.showItemList" class="list-toggle-btn hamburger-menu" :class="{ active: partner.showItemList }">
                       <span class="line"></span>
                       <span class="line"></span>
                       <span class="line"></span>
@@ -194,10 +205,12 @@
             <div class="carousel-fixed-footer">
               <div class="partner-info">
                 <span class="partner-nav-preview prev">{{ prevPartnerName }}</span>
-                <div class="partner-info-main">
-                  <span class="partner-code">{{ currentPartner.code }}</span>
-                  <span class="partner-name">{{ currentPartner.analysis.destination || `분석 #${currentPartner.analysis.id}` }}</span>
-                </div>
+                <transition name="fade-info" mode="out-in">
+                  <div class="partner-info-main" :key="currentPartnerIndex">
+                    <span class="partner-code">{{ currentPartner.code }}</span>
+                    <span class="partner-name">{{ currentPartner.analysis.destination || `분석 #${currentPartner.analysis.id}` }}</span>
+                  </div>
+                </transition>
                 <span class="partner-nav-preview next">{{ nextPartnerName }}</span>
               </div>
             
@@ -206,7 +219,7 @@
                   v-for="(_, index) in partners" 
                   :key="`dot-${index}`" 
                   :class="{ active: index === currentPartnerIndex }" 
-                  @click="currentPartnerIndex = index"
+                  @click="goToSlide(index)"
                   class="dot"
                 ></button>
               </div>
@@ -283,9 +296,12 @@ const showHostItemList = ref(false); // 호스트 아이템 목록 표시 여부
 const showSuccessToast = ref(false); // 동반자 추가 성공 토스트 표시 여부
 const connectError = ref(''); // 동반자 연결 실패 메시지
 const isConnecting = ref(false); // 동반자 연결 로딩 상태
+const partnerCodeInputRef = ref(null); // 동반자 코드 입력창 ref
 
 // 파트너 캐러셀 관련 상태
-const currentPartnerIndex = ref(0);
+const currentPartnerIndex = ref(0); // 실제 데이터 인덱스
+const currentSlideIndex = ref(1); // 복제된 배열을 포함한 시각적 인덱스
+const noTransition = ref(false); // 루프 시 트랜지션 비활성화를 위한 ref
 const partnerColorPalette = ['#e57373', '#7986cb', '#4db6ac', '#ba68c8', '#90a4ae', '#f06292']; // 최종 색상 팔레트
 const availableColors = ref([...partnerColorPalette]);
 
@@ -330,6 +346,16 @@ const nextPartnerName = computed(() => {
 const currentPartner = computed(() => {
   if (partners.value.length === 0) return null;
   return partners.value[currentPartnerIndex.value];
+});
+
+// 캐러셀을 위한 복제된 파트너 배열 (무한 루프용)
+const carouselPartners = computed(() => {
+  if (partners.value.length === 0) {
+    return [];
+  }
+  const first = partners.value[0];
+  const last = partners.value[partners.value.length - 1];
+  return [last, ...partners.value, first];
 });
 
 // --- METHODS ---
@@ -464,7 +490,14 @@ async function handleCopyCode() {
  */
 async function handleConnect() {
   if (partnerCode.value.length < 4) return;
-  isLoading.value = true;
+
+  // 본인 코드 등록 방지
+  if (shareCode.value && partnerCode.value.toUpperCase() === shareCode.value) {
+    connectError.value = '자신의 공유 코드는 등록할 수 없습니다.';
+    return;
+  }
+
+  isConnecting.value = true;
   connectError.value = ''; // 이전 에러 메시지 초기화
   try {
     const url = getApiUrl(`/api/share/${partnerCode.value.toUpperCase()}`);
@@ -506,16 +539,30 @@ async function handleConnect() {
     console.error('동반자 연결 중 예외 발생:', e);
     connectError.value = '연결 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
   } finally {
-    isLoading.value = false;
+    isConnecting.value = false;
   }
+}
+
+function clearAndFocusInput() {
+  // 플레이스홀더 깜빡임을 방지하기 위해 먼저 포커스
+  partnerCodeInputRef.value?.focus();
+  partnerCode.value = '';
 }
 
 /**
  * 이전 동반자로 이동합니다.
  */
 function prevPartner() {
-  if (partners.value.length > 1) {
-    currentPartnerIndex.value = (currentPartnerIndex.value - 1 + partners.value.length) % partners.value.length;
+  if (partners.value.length <= 1) return;
+  noTransition.value = false;
+  currentSlideIndex.value--;
+  currentPartnerIndex.value = (currentPartnerIndex.value - 1 + partners.value.length) % partners.value.length;
+
+  if (currentSlideIndex.value === 0) {
+    setTimeout(() => {
+      noTransition.value = true;
+      currentSlideIndex.value = partners.value.length;
+    }, 500);
   }
 }
 
@@ -523,8 +570,16 @@ function prevPartner() {
  * 다음 동반자로 이동합니다.
  */
 function nextPartner() {
-  if (partners.value.length > 1) {
-    currentPartnerIndex.value = (currentPartnerIndex.value + 1) % partners.value.length;
+  if (partners.value.length <= 1) return;
+  noTransition.value = false;
+  currentSlideIndex.value++;
+  currentPartnerIndex.value = (currentPartnerIndex.value + 1) % partners.value.length;
+
+  if (currentSlideIndex.value === partners.value.length + 1) {
+    setTimeout(() => {
+      noTransition.value = true;
+      currentSlideIndex.value = 1;
+    }, 500);
   }
 }
 
@@ -570,68 +625,92 @@ function updateImageSize() {
 
 /**
  * 특정 동반자 카드의 이미지 크기를 계산하고 업데이트합니다.
- * @param {number} index - 파트너 배열의 인덱스
+ * @param {object} partner - 파트너 객체
  */
-function updatePartnerImageSize(index) {
-  const partner = partners.value[index];
+function updatePartnerImageSize(partner) {
   if (!partner || !partner.imageRef) return;
-
+  
   const imageEl = partner.imageRef;
-  if (!imageEl || !imageEl.parentElement) return;
 
-  const containerEl = imageEl.parentElement;
-  const containerWidth = containerEl.clientWidth;
-  const containerHeight = containerEl.clientHeight;
-  const naturalWidth = imageEl.naturalWidth;
-  const naturalHeight = imageEl.naturalHeight;
+  const checkParentAndResize = () => {
+    if (imageEl.parentElement && imageEl.naturalWidth > 0) {
+      const containerEl = imageEl.parentElement;
+      const containerWidth = containerEl.clientWidth;
+      const containerHeight = containerEl.clientHeight;
+      const naturalWidth = imageEl.naturalWidth;
+      const naturalHeight = imageEl.naturalHeight;
+      const imageAspectRatio = naturalWidth / naturalHeight;
+      const containerAspectRatio = containerWidth / containerHeight;
 
-  if (naturalWidth === 0 || naturalHeight === 0) return;
+      let renderedWidth, renderedHeight, offsetX, offsetY;
 
-  const imageAspectRatio = naturalWidth / naturalHeight;
-  const containerAspectRatio = containerWidth / containerHeight;
+      if (imageAspectRatio > containerAspectRatio) {
+        renderedWidth = containerWidth;
+        renderedHeight = renderedWidth / imageAspectRatio;
+        offsetX = 0;
+        offsetY = (containerHeight - renderedHeight) / 2;
+      } else {
+        renderedHeight = containerHeight;
+        renderedWidth = renderedHeight * imageAspectRatio;
+        offsetY = 0;
+        offsetX = (containerWidth - renderedWidth) / 2;
+      }
 
-  let renderedWidth, renderedHeight, offsetX, offsetY;
-
-  if (imageAspectRatio > containerAspectRatio) {
-    renderedWidth = containerWidth;
-    renderedHeight = renderedWidth / imageAspectRatio;
-    offsetX = 0;
-    offsetY = (containerHeight - renderedHeight) / 2;
-  } else {
-    renderedHeight = containerHeight;
-    renderedWidth = renderedHeight * imageAspectRatio;
-    offsetY = 0;
-    offsetX = (containerWidth - renderedWidth) / 2;
-  }
-
-  // 파트너 객체의 imageSize 값을 직접 업데이트
-  partner.imageSize = {
-    width: renderedWidth,
-    height: renderedHeight,
-    offsetX: offsetX,
-    offsetY: offsetY,
+      partner.imageSize = {
+        width: renderedWidth,
+        height: renderedHeight,
+        offsetX: offsetX,
+        offsetY: offsetY,
+      };
+    } else {
+      nextTick(checkParentAndResize);
+    }
   };
+
+  checkParentAndResize();
+}
+
+function goToSlide(index) {
+  noTransition.value = false;
+  currentPartnerIndex.value = index;
+  currentSlideIndex.value = index + 1;
 }
 
 // 동반자 목록 변경 감지
-watch(partners, async (newPartners, oldPartners) => {
+watch(partners, (newPartners, oldPartners) => {
   if (newPartners.length > oldPartners.length) {
+    // 새 동반자가 추가되었을 때 해당 슬라이드로 이동
     const newPartnerIndex = newPartners.length - 1;
-    await nextTick(); // DOM 업데이트를 기다림
-    const partner = newPartners[newPartnerIndex];
-    if (partner && partner.imageRef) {
-      // 이미지가 로드될 때까지 기다리거나, 로드 이벤트에 바인딩
-      const imageEl = partner.imageRef;
-      if (imageEl.complete) {
-        updatePartnerImageSize(newPartnerIndex);
-      } else {
-        imageEl.onload = () => {
-          updatePartnerImageSize(newPartnerIndex);
-        };
-      }
-    } 
+    goToSlide(newPartnerIndex);
+  } else if (newPartners.length < oldPartners.length) {
+    // 동반자가 제거되었을 때 인덱스 조정
+    if (currentPartnerIndex.value >= newPartners.length) {
+      goToSlide(Math.max(0, newPartners.length - 1));
+    }
   }
 }, { deep: true });
+
+// 이 감시자는 활성 슬라이드의 이미지 크기가 계산되도록 보장하며,
+// 특히 슬라이드가 표시된 후에 실행됩니다.
+watch(currentSlideIndex, async (newSlideIndex) => {
+  if (newSlideIndex > 0 && newSlideIndex <= partners.value.length) {
+    const partner = partners.value[newSlideIndex - 1];
+    
+    // 슬라이드가 제자리에 위치할 때까지 기다립니다.
+    await nextTick();
+
+    if (partner && partner.imageRef) {
+      const imageEl = partner.imageRef;
+      if (imageEl.complete) {
+        updatePartnerImageSize(partner);
+      } else {
+        imageEl.onload = () => {
+          updatePartnerImageSize(partner);
+        };
+      }
+    }
+  }
+});
 
 
 // --- LIFECYCLE ---
@@ -866,7 +945,7 @@ onUnmounted(() => {
 .share-header {
   display: flex;
   align-items: center;
-  padding: 1rem 0;
+  padding: 1.25rem 0; /* 여백 추가 */
   border-bottom: 1px solid #e0e0e0;
   margin-bottom: 2rem;
 }
@@ -878,7 +957,7 @@ onUnmounted(() => {
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 1rem; /* 크기 증가 */
   color: #555;
   transition: color 0.2s;
 }
@@ -888,9 +967,9 @@ onUnmounted(() => {
 
 .header-divider {
   width: 1px;
-  height: 24px;
+  height: 28px; /* 크기 증가 */
   background-color: #e0e0e0;
-  margin: 0 1rem;
+  margin: 0 1.25rem; /* 크기 증가 */
 }
 
 .header-title-group {
@@ -901,14 +980,14 @@ onUnmounted(() => {
 }
 
 .header-title {
-  font-size: 1.5rem;
+  font-size: 1.75rem; /* 크기 증가 */
   font-weight: 600;
   color: #333;
 }
 
 .icon-luggage {
-  width: 24px;
-  height: 24px;
+  width: 28px; /* 크기 증가 */
+  height: 28px; /* 크기 증가 */
   color: var(--main-blue, #2196f3);
 }
 
@@ -916,13 +995,13 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.9rem;
+  font-size: 1rem; /* 크기 증가 */
   color: #777;
 }
 
 .icon-users {
-  width: 16px;
-  height: 16px;
+  width: 20px; /* 크기 증가 */
+  height: 20px; /* 크기 증가 */
 }
 
 .share-main-content {
@@ -1238,14 +1317,13 @@ onUnmounted(() => {
 
 .code-input {
   width: 100%;
-  padding: 0.75rem 2.5rem 0.75rem 1rem; /* Add padding-right for the button */
+  padding: 0.75rem 2.5rem 0.75rem 1rem; /* 버튼을 위한 오른쪽 여백 추가 */
   border: 1px solid #ccc;
   border-radius: 6px;
   font-family: monospace;
   font-size: 1rem;
-  text-align: center;
   letter-spacing: 2px;
-  /* margin-bottom removed, moved to wrapper */
+  /* margin-bottom 제거, wrapper로 이동 */
 }
 
 .code-input::placeholder {
@@ -1294,6 +1372,16 @@ onUnmounted(() => {
 .connect-btn:disabled {
   background: #ccc;
   cursor: not-allowed;
+}
+
+.button-spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s ease-in-out infinite;
+  margin: 0 auto;
 }
 
 .error-message {
@@ -1351,10 +1439,6 @@ onUnmounted(() => {
   flex-shrink: 0;
   padding: 0 1rem; /* 슬라이드 간 간격 */
   box-sizing: border-box;
-}
-
-.partner-card-content {
-  /* 기존 스타일 유지 */
 }
 
 .carousel-nav {
@@ -1430,6 +1514,15 @@ onUnmounted(() => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.fade-info-enter-active,
+.fade-info-leave-active {
+  transition: opacity 0.2s ease;
+}
+.fade-info-enter-from,
+.fade-info-leave-to {
+  opacity: 0;
 }
 
 .carousel-dots {
