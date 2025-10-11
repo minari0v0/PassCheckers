@@ -531,8 +531,17 @@ const isPackingComplete = computed(() => {
   return packingProgress.value === 100 && allItems.value.length > 0;
 });
 
+// 페이지 로드 시 URL 쿼리 파라미터에 'analysis_id'가 있는지 확인함
+// 예: /packing?analysis_id=123 과 같이 접속하면 해당 분석 ID로 바로 패킹을 시작함
 onMounted(() => {
-  fetchHistory();
+  const route = useRoute();
+  const analysisIdFromQuery = route.query.analysis_id;
+
+  if (analysisIdFromQuery) {
+    selectAnalysis(analysisIdFromQuery);
+  } else {
+    fetchHistory();
+  }
   window.addEventListener('resize', updateImageSize);
 });
 
