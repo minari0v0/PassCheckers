@@ -42,6 +42,7 @@
 
     <!-- 2. 패킹 진행 화면 -->
     <div v-else-if="packingData" class="packing-workspace">
+      <PackingSummary :carry-on-items="carryOnItems" :checked-items="checkedItems" />
       <p class="instruction-text" :style="progressBarStyle">
         <span class="instruction-text-content">{{ instructionTextContent }}</span>
       </p>
@@ -250,6 +251,7 @@ import draggable from 'vuedraggable';
 import ImageItem from '~/components/packing/ImageItem.vue';
 import PackedItem from '~/components/packing/PackedItem.vue';
 import CelebrationAnimation from '~/components/CelebrationAnimation.vue';
+import PackingSummary from '~/components/packing/PackingSummary.vue';
 
 definePageMeta({ middleware: 'auth' });
 
