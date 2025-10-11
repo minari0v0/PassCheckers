@@ -122,3 +122,16 @@ python3 app.py
 3. Docker 컨테이너화
 4. 테스트 코드 작성
 5. CI/CD 파이프라인 구축
+
+### github 데스크탑 어플과 원격 github 속 브랜치를 동기화 하는 코드
+```powershell
+git fetch -p
+$goneBranches = git branch -vv | Select-String ": gone]" | ForEach-Object {
+    ($_ -split "\s+")[1]
+}
+foreach ($branch in $goneBranches) {
+    git branch -d $branch
+}
+```
+-d를 통한 병합된 브랜치만 안전하게 삭제하는 코드이며,
+병합되지 않은 브랜치는 삭제 진행 안됨
