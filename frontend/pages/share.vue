@@ -1,5 +1,13 @@
 <template>
   <div class="share-page-container">
+    <!-- 추가 완료 토스트 -->
+    <transition name="toast-fade">
+      <div v-if="showSuccessToast" class="success-toast">
+        <svg class="check-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+        <span>추가 완료!</span>
+      </div>
+    </transition>
+
     <!-- 로딩 오버레이 -->
     <div v-if="isLoading" class="page-loading-overlay">
       <div class="loading-container">
@@ -55,6 +63,23 @@
                 :item="item"
                 :image-size="imageSize"
               />
+
+              <!-- 아이템 목록 오버레이 -->
+              <transition name="fade">
+                <div v-if="showHostItemList" class="item-list-overlay">
+                  <ul class="item-list">
+                    <li v-for="item in groupedHostItems" :key="item.name">
+                      <span class="item-name">{{ item.name }}</span>
+                      <span class="item-count">x{{ item.count }}</span>
+                    </li>
+                  </ul>
+                </div>
+              </transition>
+
+              <!-- 목록 토글 버튼 -->
+              <button @click="showHostItemList = !showHostItemList" class="list-toggle-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+              </button>
             </div>
             <div class="share-code-box">
               <label>내 공유 코드</label>
@@ -112,10 +137,10 @@
             <p>동반자 추가 버튼을 눌러 여행 동반자를 연결하세요</p>
           </div>
           
-          <div v-else-if="partners.length > 0" class="partner-gallery-wrapper">
-            <div class="partner-gallery">
+          <div v-else-if="partners.length > 0" class="carousel-container">
+            <div class="carousel-track" :style="{ transform: `translateX(-${currentPartnerIndex * 100}%)` }">
               <!-- 각 동반자 카드 -->
-              <div v-for="(partner, index) in partners" :key="partner.code" class="partner-card">
+              <div v-for="(partner, index) in partners" :key="partner.code" class="carousel-slide">
                 <div class="partner-card-content">
                   <div class="partner-image-container">
                     <img 
@@ -130,7 +155,26 @@
                       :key="`partner-${partner.code}-${item.id}`"
                       :item="item"
                       :image-size="partner.imageSize"
+                      :color="partner.color"
+                      :show-label="index === currentPartnerIndex"
                     />
+
+                    <!-- 아이템 목록 오버레이 -->
+                    <transition name="fade">
+                      <div v-if="partner.showItemList && index === currentPartnerIndex" class="item-list-overlay">
+                        <ul class="item-list">
+                          <li v-for="item in groupItems(partner.items)" :key="item.name">
+                            <span class="item-name">{{ item.name }}</span>
+                            <span class="item-count">x{{ item.count }}</span>
+                          </li>
+                        </ul>
+                      </div>
+                    </transition>
+
+                    <!-- 목록 토글 버튼 -->
+                    <button v-if="index === currentPartnerIndex" @click="partner.showItemList = !partner.showItemList" class="list-toggle-btn">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                    </button>
                   </div>
                   <div class="partner-info">
                     <span class="partner-code">{{ partner.code }}</span>
@@ -139,6 +183,9 @@
                 </div>
               </div>
             </div>
+            <!-- 캐러셀 네비게이션 -->
+            <button v-if="partners.length > 1" @click="prevPartner" class="carousel-nav prev">&#8249;</button>
+            <button v-if="partners.length > 1" @click="nextPartner" class="carousel-nav next">&#8250;</button>
           </div>
         </div>
       </main>
@@ -203,25 +250,17 @@ const partnerCode = ref(''); // 동반자 코드 입력값
 const partners = ref([]); // 연결된 동반자 목록
 const showAddForm = ref(false); // 동반자 추가 폼 표시 여부
 const isLoading = ref(true);
+const showHostItemList = ref(false); // 호스트 아이템 목록 표시 여부
+const showSuccessToast = ref(false); // 동반자 추가 성공 토스트 표시 여부
+
+// 파트너 캐러셀 관련 상태
+const currentPartnerIndex = ref(0);
+const partnerColors = ['#6A8EAE', '#F08A5D', '#B83B5E', '#6A2C70', '#00B8A9', '#F6416C'];
 
 // 이미지 및 바운딩 박스 관련 상태
 const analysisImageRef = ref(null);
 const imageSize = ref({ width: 0, height: 0, offsetX: 0, offsetY: 0 });
 
-
-const vClickOutside = {
-  beforeMount(el, binding) {
-    el.clickOutsideEvent = (event) => {
-      if (!(el === event.target || el.contains(event.target))) {
-        binding.value(event);
-      }
-    };
-    document.addEventListener('click', el.clickOutsideEvent);
-  },
-  unmounted(el) {
-    document.removeEventListener('click', el.clickOutsideEvent);
-  },
-};
 
 // --- COMPUTED ---
 // 현재 선택된 분석 기록의 기본 정보
@@ -235,7 +274,30 @@ const selectedRecord = computed(() => {
   return records.value.find(r => r.id === selectedRecordId.value);
 });
 
+// 호스트의 아이템 목록을 그룹화하고 개수를 세는 computed 속성
+const groupedHostItems = computed(() => {
+  if (!detailedRecord.value || !detailedRecord.value.items) return [];
+  return groupItems(detailedRecord.value.items);
+});
+
 // --- METHODS ---
+/**
+ * 아이템 배열을 받아 이름별로 그룹화하고 개수를 셉니다.
+ * @param {Array} items - 분석된 아이템 배열
+ * @returns {Array} - { name: string, count: number } 형태의 배열
+ */
+function groupItems(items) {
+  if (!items) return [];
+  const itemCounts = items.reduce((acc, item) => {
+    const name = item.item_name || '알 수 없는 물품';
+    acc[name] = (acc[name] || 0) + 1;
+    return acc;
+  }, {});
+
+  return Object.entries(itemCounts)
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => a.name.localeCompare(b.name)); // 가나다순으로 정렬
+}
 /**
  * 사용자의 분석 기록 목록을 가져옵니다.
  */
@@ -364,18 +426,44 @@ async function handleConnect() {
         code: data.value.analysis.share_code,
         analysis: data.value.analysis,
         items: data.value.items,
-        imageSize: { width: 0, height: 0, offsetX: 0, offsetY: 0 }, // 파트너별 이미지 크기 상태
-        imageRef: ref(null) // 파트너별 이미지 DOM 요소 ref
+        imageSize: { width: 0, height: 0, offsetX: 0, offsetY: 0 },
+        imageRef: ref(null),
+        showItemList: false,
+        color: partnerColors[partners.value.length % partnerColors.length], // 파트너 색상 할당
       };
       partners.value.push(newPartner);
       partnerCode.value = '';
       showAddForm.value = false;
+
+      // 성공 토스트 표시
+      showSuccessToast.value = true;
+      setTimeout(() => {
+        showSuccessToast.value = false;
+      }, 2000);
     }
   } catch (e) {
     console.error('동반자 연결 중 예외 발생:', e);
     alert('연결 중 오류가 발생했습니다.');
   } finally {
     isLoading.value = false;
+  }
+}
+
+/**
+ * 이전 동반자로 이동합니다.
+ */
+function prevPartner() {
+  if (partners.value.length > 1) {
+    currentPartnerIndex.value = (currentPartnerIndex.value - 1 + partners.value.length) % partners.value.length;
+  }
+}
+
+/**
+ * 다음 동반자로 이동합니다.
+ */
+function nextPartner() {
+  if (partners.value.length > 1) {
+    currentPartnerIndex.value = (currentPartnerIndex.value + 1) % partners.value.length;
   }
 }
 
@@ -497,6 +585,39 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* --- 추가 완료 토스트 --- */
+.success-toast {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 99px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 10000;
+  font-weight: 500;
+}
+
+.success-toast .check-icon {
+  color: #4caf50; /* 초록색 체크 아이콘 */
+}
+
+.toast-fade-enter-active,
+.toast-fade-leave-active {
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.toast-fade-enter-from,
+.toast-fade-leave-to {
+  opacity: 0;
+  transform: translate(-50%, -20px);
+}
+
+
 /* --- Global Layout --- */
 .share-page-container {
   padding: 2rem;
@@ -791,6 +912,71 @@ onUnmounted(() => {
   display: block;
 }
 
+.list-toggle-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background-color: rgba(0, 0, 0, 0.4);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  transition: background-color 0.2s ease;
+}
+.list-toggle-btn:hover {
+  background-color: rgba(0, 0, 0, 0.6);
+}
+
+.item-list-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 15;
+  color: white;
+  padding: 2rem;
+  overflow-y: auto;
+  border-radius: 8px; /* 부모 컨테이너와 동일하게 */
+}
+
+.item-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.item-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  font-size: 1.1rem;
+}
+
+.item-list li:last-child {
+  border-bottom: none;
+}
+
+.item-list .item-name {
+  font-weight: 500;
+}
+
+.item-list .item-count {
+  font-weight: 300;
+  color: #ccc;
+}
+
 
 .share-code-box {
   background-color: #f5f7fa;
@@ -986,54 +1172,50 @@ onUnmounted(() => {
   margin-bottom: 0.5rem;
 }
 
-.partner-gallery-wrapper {
+.carousel-container {
+  position: relative;
   width: 100%;
   overflow: hidden;
-  position: relative;
 }
 
-.partner-gallery {
+.carousel-track {
   display: flex;
-  gap: 1.5rem;
-  padding: 1rem 0.5rem;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch; /* iOS 부드러운 스크롤 */
+  transition: transform 0.5s ease-in-out;
 }
 
-/* 스크롤바 스타일링 (선택 사항) */
-.partner-gallery::-webkit-scrollbar {
-  height: 8px;
-}
-.partner-gallery::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 10px;
-}
-.partner-gallery::-webkit-scrollbar-thumb {
-  background: #ccc;
-  border-radius: 10px;
-}
-.partner-gallery::-webkit-scrollbar-thumb:hover {
-  background: #aaa;
-}
-
-.partner-card {
-  flex: 0 0 320px; /* 카드의 너비를 고정 */
-  scroll-snap-align: start;
-  background: var(--main-card, #fff);
-  border-radius: var(--main-radius, 16px);
-  box-shadow: var(--main-shadow, 0 2px 8px rgba(0,0,0,0.08));
-  border: 1px solid #e0e0e0;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
+.carousel-slide {
+  flex: 0 0 100%;
+  padding: 0 1rem; /* 슬라이드 간 간격 */
+  box-sizing: border-box;
 }
 
 .partner-card-content {
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
+  /* 기존 스타일 유지 */
+}
+
+.carousel-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(0, 0, 0, 0.3);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 30;
+  transition: background-color 0.2s ease;
+}
+.carousel-nav:hover {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+.carousel-nav.prev {
+  left: -10px;
+}
+.carousel-nav.next {
+  right: -10px;
 }
 
 .partner-image-container {

@@ -2,11 +2,11 @@
   <div
     class="image-item"
     :class="{ 'is-packed': isPacked, 'is-fully-prohibited': isFullyProhibited }"
-    :style="boxStyle"
+    :style="boxStyleWithColor"
     :draggable="!isPacked && !isFullyProhibited"
     @dragstart="onDragStart"
   >
-    <div class="item-label" :class="{ 'is-inside': isNearTop }">{{ item.item_name }}</div>
+    <div v-if="showLabel" class="item-label" :class="{ 'is-inside': isNearTop }">{{ item.item_name }}</div>
     
     <div v-if="isPacked" class="packed-overlay"></div>
 
@@ -24,18 +24,27 @@ const props = defineProps({
   imageSize: { type: Object, required: true },
   isPacked: { type: Boolean, default: false },
   isFullyProhibited: { type: Boolean, default: false },
+  color: { type: String, default: '#f39c12' }, // 색상 prop 추가
+  showLabel: { type: Boolean, default: true }, // 라벨 표시 여부 prop 추가
 });
 
 const emit = defineEmits(['item-dragstart']);
 
+// hex to rgba 변환 헬퍼
+const hexToRgba = (hex, alpha) => {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
+
 const isNearTop = computed(() => {
   if (!props.item.bbox) return false;
   const y_min = props.item.bbox[1];
-  // 박스 상단이 이미지 높이의 상위 5% 내에 위치하면 이름표 위치를 조정합니다.
   return y_min < 0.05;
 });
 
-const boxStyle = computed(() => {
+const boxStyleWithColor = computed(() => {
   const { width, height, offsetX, offsetY } = props.imageSize;
   if (!width || !props.item.bbox) {
     return { display: 'none' };
@@ -53,6 +62,9 @@ const boxStyle = computed(() => {
     top: `${top}px`,
     width: `${boxWidth}px`,
     height: `${boxHeight}px`,
+    '--item-color': props.color,
+    '--item-bg-color': hexToRgba(props.color, 0.2),
+    '--item-bg-hover-color': hexToRgba(props.color, 0.4),
   };
 });
 
@@ -70,21 +82,21 @@ const onDragStart = (event) => {
 <style scoped>
 .image-item {
   position: absolute;
-  border: 2px solid #f39c12; /* 주황색 테마 */
-  background-color: rgba(243, 156, 18, 0.2); /* 주황색 테마 */
+  border: 2px solid var(--item-color);
+  background-color: var(--item-bg-color);
   cursor: grab;
   transition: all 0.3s ease;
 }
 
 .image-item:hover {
-  background-color: rgba(243, 156, 18, 0.4); /* 주황색 테마 */
+  background-color: var(--item-bg-hover-color);
 }
 
 .item-label {
   position: absolute;
   top: -24px;
   left: -2px;
-  background-color: #f39c12; /* 주황색 테마 */
+  background-color: var(--item-color);
   color: white;
   padding: 3px 8px;
   font-size: 13px;
