@@ -76,29 +76,35 @@
         <div class="partner-panel">
           <div class="partner-panel-header">
             <h2>동반 여행자 수하물</h2>
-            <button @click="showAddForm = !showAddForm" class="add-partner-btn">
+          <div class="add-partner-container">
+            <button @click.stop="showAddForm = !showAddForm" class="add-partner-btn">
               <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
               <span>동반자 추가</span>
             </button>
+
+            <transition name="popover-fade">
+              <div v-if="showAddForm" class="add-partner-popover" v-click-outside="() => showAddForm = false">
+                <div class="form-header">
+                  <h3>동반자 연결</h3>
+                  <button @click="showAddForm = false" class="close-btn">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg>
+                  </button>
+                </div>
+                <div class="form-content">
+                    <label>동반자 공유 코드</label>
+                    <input v-model="partnerCode" @keyup.enter="handleConnect" type="text" placeholder="코드 입력 (예: B3X7K5)" maxlength="6" class="code-input" />
+                    <button @click="handleConnect" :disabled="partnerCode.length < 4" class="connect-btn">
+                      연결하기
+                    </button>
+                </div>
+              </div>
+            </transition>
+          </div>
           </div>
 
-          <div v-if="showAddForm" class="add-partner-form card">
-            <div class="form-header">
-              <h3>동반자 연결</h3>
-              <button @click="showAddForm = false" class="close-btn">
-                 <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg>
-              </button>
-            </div>
-            <div class="form-content">
-                <label>동반자 공유 코드</label>
-                <input v-model="partnerCode" @keyup.enter="handleConnect" type="text" placeholder="코드 입력 (예: B3X7K5)" maxlength="6" class="code-input" />
-                <button @click="handleConnect" :disabled="partnerCode.length < 4" class="connect-btn">
-                  연결하기
-                </button>
-            </div>
-          </div>
 
-          <div v-if="partners.length === 0 && !showAddForm" class="partner-empty-state">
+
+          <div v-if="partners.length === 0" class="partner-empty-state">
             <div class="empty-icon-wrapper">
               <svg class="icon-users-large" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
             </div>
@@ -202,6 +208,20 @@ const isLoading = ref(true);
 const analysisImageRef = ref(null);
 const imageSize = ref({ width: 0, height: 0, offsetX: 0, offsetY: 0 });
 
+
+const vClickOutside = {
+  beforeMount(el, binding) {
+    el.clickOutsideEvent = (event) => {
+      if (!(el === event.target || el.contains(event.target))) {
+        binding.value(event);
+      }
+    };
+    document.addEventListener('click', el.clickOutsideEvent);
+  },
+  unmounted(el) {
+    document.removeEventListener('click', el.clickOutsideEvent);
+  },
+};
 
 // --- COMPUTED ---
 // 현재 선택된 분석 기록의 기본 정보
@@ -579,15 +599,15 @@ onUnmounted(() => {
   color: #888;
 }
 
-/* --- Loading Overlay --- */
+/* --- 로딩 오버레이 V2 --- */
 .page-loading-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -599,21 +619,46 @@ onUnmounted(() => {
   text-align: center;
 }
 
-.spinner {
-  width: 50px;
-  height: 50px;
-  border: 4px solid rgba(0, 0, 0, 0.1);
-  border-top: 4px solid var(--main-blue, #2196f3);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto 1.5rem auto;
+.loading-spinner .spinner {
+  width: 60px;
+  height: 60px;
+  animation: spin 1.5s linear infinite;
+  color: white;
 }
 
 .loading-text {
   font-size: 1.1rem;
   font-weight: 500;
-  color: #333;
+  color: white;
+  margin-top: 1rem;
 }
+
+/* --- 동반자 추가 팝업 --- */
+.add-partner-container {
+  position: relative;
+}
+
+.add-partner-popover {
+  position: absolute;
+  top: calc(100% + 10px); /* 버튼 아래 10px 간격 */
+  right: 0;
+  width: 300px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  border: 1px solid #e0e0e0;
+  z-index: 100;
+  padding: 1.5rem;
+}
+
+.popover-fade-enter-active, .popover-fade-leave-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.popover-fade-enter-from, .popover-fade-leave-to {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
 
 @keyframes spin {
   0% { transform: rotate(0deg); }
@@ -684,12 +729,14 @@ onUnmounted(() => {
 }
 
 .share-main-content {
-  display: flex;
+  display: grid;
+  grid-template-columns: 2fr 3fr;
   gap: 2rem;
+  align-items: flex-start;
 }
 
 .host-panel {
-  width: 350px;
+  /* width: 350px; <-- 고정 너비 제거 */
   flex-shrink: 0;
 }
 
@@ -884,9 +931,9 @@ onUnmounted(() => {
   border: 1px solid #ccc;
   border-radius: 6px;
   font-family: monospace;
-  font-size: 1.2rem;
+  font-size: 1rem;
   text-align: center;
-  letter-spacing: 1px;
+  letter-spacing: 2px;
   margin-bottom: 1rem;
 }
 .connect-btn {
