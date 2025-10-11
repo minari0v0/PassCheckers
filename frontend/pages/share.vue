@@ -1,13 +1,5 @@
 <template>
   <div class="share-page-container">
-    <!-- 추가 완료 토스트 -->
-    <transition name="toast-fade">
-      <div v-if="showSuccessToast" class="success-toast">
-        <svg class="check-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-        <span>추가 완료!</span>
-      </div>
-    </transition>
-
     <!-- 로딩 오버레이 -->
     <div v-if="isLoading" class="page-loading-overlay">
       <div class="loading-container">
@@ -77,8 +69,10 @@
               </transition>
 
               <!-- 목록 토글 버튼 -->
-              <button @click="showHostItemList = !showHostItemList" class="list-toggle-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+              <button @click="showHostItemList = !showHostItemList" class="list-toggle-btn hamburger-menu" :class="{ active: showHostItemList }">
+                <span class="line"></span>
+                <span class="line"></span>
+                <span class="line"></span>
               </button>
             </div>
             <div class="share-code-box">
@@ -99,35 +93,49 @@
 
         <!-- 오른쪽 - 동반자 -->
         <div class="partner-panel">
-          <div class="partner-panel-header">
-            <h2>동반 여행자 수하물</h2>
-          <div class="add-partner-container">
-            <button @click.stop="showAddForm = !showAddForm" class="add-partner-btn">
-              <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
-              <span>동반자 추가</span>
-            </button>
-
-            <transition name="popover-fade">
-              <div v-if="showAddForm" class="add-partner-popover" v-click-outside="() => showAddForm = false">
-                <div class="form-header">
-                  <h3>동반자 연결</h3>
-                  <button @click="showAddForm = false" class="close-btn">
-                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg>
-                  </button>
-                </div>
-                <div class="form-content">
-                    <label>동반자 공유 코드</label>
-                    <input v-model="partnerCode" @keyup.enter="handleConnect" type="text" placeholder="코드 입력 (예: B3X7K5)" maxlength="6" class="code-input" />
-                    <button @click="handleConnect" :disabled="partnerCode.length < 4" class="connect-btn">
-                      연결하기
-                    </button>
-                </div>
+          <!-- 중앙 토스트 컨테이너 -->
+          <div class="toast-container-center">
+            <!-- 추가 완료 토스트 -->
+            <transition name="toast-fade">
+              <div v-if="showSuccessToast" class="success-toast">
+                <svg class="check-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                <span>추가 완료!</span>
               </div>
             </transition>
           </div>
+          <div class="partner-panel-header">
+            <h2>동반 여행자 수하물</h2>
+            <div class="add-partner-container">
+              <button @click.stop="showAddForm = !showAddForm" class="add-partner-btn">
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+                <span>동반자 추가</span>
+              </button>
+
+              <transition name="popover-fade">
+                <div v-if="showAddForm" class="add-partner-popover" v-click-outside="() => { showAddForm = false; connectError = ''; }">
+                  <div class="form-header">
+                    <h3>동반자 연결</h3>
+                    <button @click="showAddForm = false; connectError = ''" class="close-btn">
+                      <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg>
+                    </button>
+                  </div>
+                  <div class="form-content">
+                      <label>동반자 공유 코드</label>
+                      <div class="input-wrapper">
+                        <input v-model="partnerCode" @keyup.enter="handleConnect" @input="connectError = ''" type="text" placeholder="코드 입력 (예: B3X7K5)" maxlength="6" class="code-input" />
+                        <button v-if="partnerCode.length > 0" @click="partnerCode = ''" class="clear-input-btn">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                        </button>
+                      </div>
+                      <p v-if="connectError" class="error-message">{{ connectError }}</p>
+                      <button @click="handleConnect" :disabled="partnerCode.length < 4" class="connect-btn">
+                        연결하기
+                      </button>
+                  </div>
+                </div>
+              </transition>
+            </div>
           </div>
-
-
 
           <div v-if="partners.length === 0" class="partner-empty-state">
             <div class="empty-icon-wrapper">
@@ -172,18 +180,39 @@
                     </transition>
 
                     <!-- 목록 토글 버튼 -->
-                    <button v-if="index === currentPartnerIndex" @click="partner.showItemList = !partner.showItemList" class="list-toggle-btn">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                    <button v-if="index === currentPartnerIndex" @click="partner.showItemList = !partner.showItemList" class="list-toggle-btn hamburger-menu" :class="{ active: partner.showItemList }">
+                      <span class="line"></span>
+                      <span class="line"></span>
+                      <span class="line"></span>
                     </button>
-                  </div>
-                  <div class="partner-info">
-                    <span class="partner-code">{{ partner.code }}</span>
-                    <span class="partner-name">{{ partner.analysis.destination || `분석 #${partner.analysis.id}` }}</span>
                   </div>
                 </div>
               </div>
             </div>
-            <!-- 캐러셀 네비게이션 -->
+
+            <!-- 고정된 정보 및 네비게이션 -->
+            <div class="carousel-fixed-footer">
+              <div class="partner-info">
+                <span class="partner-nav-preview prev">{{ prevPartnerName }}</span>
+                <div class="partner-info-main">
+                  <span class="partner-code">{{ currentPartner.code }}</span>
+                  <span class="partner-name">{{ currentPartner.analysis.destination || `분석 #${currentPartner.analysis.id}` }}</span>
+                </div>
+                <span class="partner-nav-preview next">{{ nextPartnerName }}</span>
+              </div>
+            
+              <div class="carousel-dots">
+                <button 
+                  v-for="(_, index) in partners" 
+                  :key="`dot-${index}`" 
+                  :class="{ active: index === currentPartnerIndex }" 
+                  @click="currentPartnerIndex = index"
+                  class="dot"
+                ></button>
+              </div>
+            </div>
+
+            <!-- 캐러셀 네비게이션 버튼 -->
             <button v-if="partners.length > 1" @click="prevPartner" class="carousel-nav prev">&#8249;</button>
             <button v-if="partners.length > 1" @click="nextPartner" class="carousel-nav next">&#8250;</button>
           </div>
@@ -252,10 +281,13 @@ const showAddForm = ref(false); // 동반자 추가 폼 표시 여부
 const isLoading = ref(true);
 const showHostItemList = ref(false); // 호스트 아이템 목록 표시 여부
 const showSuccessToast = ref(false); // 동반자 추가 성공 토스트 표시 여부
+const connectError = ref(''); // 동반자 연결 실패 메시지
+const isConnecting = ref(false); // 동반자 연결 로딩 상태
 
 // 파트너 캐러셀 관련 상태
 const currentPartnerIndex = ref(0);
-const partnerColors = ['#6A8EAE', '#F08A5D', '#B83B5E', '#6A2C70', '#00B8A9', '#F6416C'];
+const partnerColorPalette = ['#e57373', '#7986cb', '#4db6ac', '#ba68c8', '#90a4ae', '#f06292']; // 최종 색상 팔레트
+const availableColors = ref([...partnerColorPalette]);
 
 // 이미지 및 바운딩 박스 관련 상태
 const analysisImageRef = ref(null);
@@ -278,6 +310,26 @@ const selectedRecord = computed(() => {
 const groupedHostItems = computed(() => {
   if (!detailedRecord.value || !detailedRecord.value.items) return [];
   return groupItems(detailedRecord.value.items);
+});
+
+// 이전 파트너 이름 미리보기
+const prevPartnerName = computed(() => {
+  if (partners.value.length < 2) return '';
+  const prevIndex = (currentPartnerIndex.value - 1 + partners.value.length) % partners.value.length;
+  return partners.value[prevIndex].analysis.destination || `분석 #${partners.value[prevIndex].analysis.id}`;
+});
+
+// 다음 파트너 이름 미리보기
+const nextPartnerName = computed(() => {
+  if (partners.value.length < 2) return '';
+  const nextIndex = (currentPartnerIndex.value + 1) % partners.value.length;
+  return partners.value[nextIndex].analysis.destination || `분석 #${partners.value[nextIndex].analysis.id}`;
+});
+
+// 현재 선택된 파트너 객체
+const currentPartner = computed(() => {
+  if (partners.value.length === 0) return null;
+  return partners.value[currentPartnerIndex.value];
 });
 
 // --- METHODS ---
@@ -413,14 +465,23 @@ async function handleCopyCode() {
 async function handleConnect() {
   if (partnerCode.value.length < 4) return;
   isLoading.value = true;
+  connectError.value = ''; // 이전 에러 메시지 초기화
   try {
     const url = getApiUrl(`/api/share/${partnerCode.value.toUpperCase()}`);
     const { data, error } = await useFetch(url);
 
     if (error.value) {
       console.error('공유 코드 조회 실패:', error.value);
-      alert('유효하지 않은 코드입니다.');
+      connectError.value = '유효하지 않은 코드이거나, 이미 추가된 동반자입니다.';
     } else {
+      // 사용 가능한 색상 풀이 비었으면 다시 채움
+      if (availableColors.value.length === 0) {
+        availableColors.value = [...partnerColorPalette];
+      }
+      // 랜덤 인덱스로 색상 선택 및 풀에서 제거
+      const colorIndex = Math.floor(Math.random() * availableColors.value.length);
+      const selectedColor = availableColors.value.splice(colorIndex, 1)[0];
+
       // 새로운 동반자 데이터 구조
       const newPartner = {
         code: data.value.analysis.share_code,
@@ -429,7 +490,7 @@ async function handleConnect() {
         imageSize: { width: 0, height: 0, offsetX: 0, offsetY: 0 },
         imageRef: ref(null),
         showItemList: false,
-        color: partnerColors[partners.value.length % partnerColors.length], // 파트너 색상 할당
+        color: selectedColor, // 랜덤으로 선택된 색상 할당
       };
       partners.value.push(newPartner);
       partnerCode.value = '';
@@ -443,7 +504,7 @@ async function handleConnect() {
     }
   } catch (e) {
     console.error('동반자 연결 중 예외 발생:', e);
-    alert('연결 중 오류가 발생했습니다.');
+    connectError.value = '연결 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
   } finally {
     isLoading.value = false;
   }
@@ -585,12 +646,20 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-/* --- 추가 완료 토스트 --- */
-.success-toast {
-  position: fixed;
-  top: 20px;
+/* --- 추가 완료/실패 토스트 --- */
+.toast-container-center {
+  position: absolute;
+  top: 50%;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.success-toast, .failure-toast {
   background-color: rgba(0, 0, 0, 0.7);
   color: white;
   padding: 12px 24px;
@@ -598,23 +667,30 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 10px;
-  z-index: 10000;
   font-weight: 500;
+  pointer-events: auto;
+}
+
+.failure-toast {
+  background-color: #D32F2F; /* 짙은 빨간색 배경 */
 }
 
 .success-toast .check-icon {
   color: #4caf50; /* 초록색 체크 아이콘 */
 }
 
+.failure-toast .error-icon {
+  color: white;
+}
+
 .toast-fade-enter-active,
 .toast-fade-leave-active {
-  transition: opacity 0.5s ease, transform 0.5s ease;
+  transition: opacity 0.5s ease;
 }
 
 .toast-fade-enter-from,
 .toast-fade-leave-to {
   opacity: 0;
-  transform: translate(-50%, -20px);
 }
 
 
@@ -863,6 +939,7 @@ onUnmounted(() => {
 
 .partner-panel {
   flex-grow: 1;
+  position: relative;
 }
 
 .share-card {
@@ -929,8 +1006,47 @@ onUnmounted(() => {
   z-index: 20;
   transition: background-color 0.2s ease;
 }
-.list-toggle-btn:hover {
-  background-color: rgba(0, 0, 0, 0.6);
+.list-toggle-btn.hamburger-menu {
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hamburger-menu .line {
+  width: 20px;
+  height: 2px;
+  background-color: white;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.hamburger-menu.active .line:nth-child(1) {
+  transform: translateY(6px) rotate(45deg);
+}
+
+.hamburger-menu.active .line:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburger-menu.active .line:nth-child(3) {
+  transform: translateY(-6px) rotate(-45deg);
+}
+
+.item-list-overlay::-webkit-scrollbar {
+  width: 8px;
+}
+
+.item-list-overlay::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.item-list-overlay::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.item-list-overlay::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.5);
 }
 
 .item-list-overlay {
@@ -944,15 +1060,19 @@ onUnmounted(() => {
   -webkit-backdrop-filter: blur(8px);
   z-index: 15;
   color: white;
-  padding: 2rem;
+  padding: 4rem 2rem 2rem 2rem; /* 상단 여백을 늘려 버튼과의 겹침 방지 */
   overflow-y: auto;
   border-radius: 8px; /* 부모 컨테이너와 동일하게 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .item-list {
   list-style: none;
   padding: 0;
   margin: 0;
+  width: 100%;
 }
 
 .item-list li {
@@ -1111,16 +1231,50 @@ onUnmounted(() => {
   font-size: 0.9rem;
   color: #555;
 }
+.input-wrapper {
+  position: relative;
+  margin-bottom: 1rem;
+}
+
 .code-input {
   width: 100%;
-  padding: 0.75rem 1rem;
+  padding: 0.75rem 2.5rem 0.75rem 1rem; /* Add padding-right for the button */
   border: 1px solid #ccc;
   border-radius: 6px;
   font-family: monospace;
   font-size: 1rem;
   text-align: center;
   letter-spacing: 2px;
-  margin-bottom: 1rem;
+  /* margin-bottom removed, moved to wrapper */
+}
+
+.code-input::placeholder {
+  font-size: 0.8rem;
+  color: #aaa;
+  transition: color 0.2s ease;
+}
+
+.code-input:focus::placeholder {
+  color: transparent;
+}
+
+.clear-input-btn {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+}
+
+.clear-input-btn:hover {
+  color: #333;
 }
 .connect-btn {
   width: 100%;
@@ -1140,6 +1294,15 @@ onUnmounted(() => {
 .connect-btn:disabled {
   background: #ccc;
   cursor: not-allowed;
+}
+
+.error-message {
+  color: #D32F2F;
+  font-size: 0.875rem;
+  margin-top: -0.5rem;
+  margin-bottom: 0.75rem;
+  text-align: center;
+  word-break: keep-all;
 }
 
 .partner-empty-state {
@@ -1184,7 +1347,8 @@ onUnmounted(() => {
 }
 
 .carousel-slide {
-  flex: 0 0 100%;
+  width: 100%;
+  flex-shrink: 0;
   padding: 0 1rem; /* 슬라이드 간 간격 */
   box-sizing: border-box;
 }
@@ -1229,8 +1393,27 @@ onUnmounted(() => {
 }
 
 .partner-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   text-align: center;
 }
+
+.partner-info-main {
+  flex-grow: 1;
+}
+
+.partner-nav-preview {
+  flex: 0 0 100px; /* 양 옆 미리보기 공간 */
+  font-size: 0.8rem;
+  color: #aaa;
+  opacity: 0.7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.partner-nav-preview.prev { text-align: left; }
+.partner-nav-preview.next { text-align: right; }
 
 .partner-code {
   font-family: monospace;
@@ -1247,6 +1430,28 @@ onUnmounted(() => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.carousel-dots {
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #ccc;
+  border: none;
+  padding: 0;
+  margin: 0 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.dot.active {
+  background-color: var(--main-blue, #2196f3);
 }
 
 </style>
