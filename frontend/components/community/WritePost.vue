@@ -239,3 +239,12 @@ const searchLocations = () => {
   }, 50) // 매우 짧은 디바운스 (50ms)
 }
 
+// 드롭다운에서 여행지를 선택하는 함수
+const selectLocation = (location) => {
+  locationSearch.value = location.label
+  formData.value.location = location.value
+  showLocationDropdown.value = false
+  locationResults.value = []
+  console.log('Selected location:', location.value)
+}
+
