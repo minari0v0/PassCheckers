@@ -137,3 +137,29 @@
   </div>
 </template>
 
+<script setup>
+import { ref, onMounted, onBeforeUnmount } from 'vue'
+
+const emit = defineEmits(['close', 'submit'])
+
+const { apiUrl } = useApiUrl()
+const { getToken } = useAuth()
+
+const formData = ref({
+  title: '',
+  content: '',
+  location: '',
+  tags: []
+})
+
+const imageFile = ref(null)
+const imagePreview = ref(null)
+const imageInput = ref(null)
+const locationSearch = ref('')
+const locationResults = ref([])
+const showLocationDropdown = ref(false)
+const tagInput = ref('')
+const isSubmitting = ref(false)
+
+let searchTimeout = null
+
