@@ -248,3 +248,12 @@ const selectLocation = (location) => {
   console.log('Selected location:', location.value)
 }
 
+// 태그를 추가하는 함수 (최대 5개)
+const addTag = () => {
+  const tag = tagInput.value.trim()
+  if (tag && formData.value.tags.length < 5 && !formData.value.tags.includes(tag)) {
+    formData.value.tags.push(tag)
+    tagInput.value = ''
+  }
+}
+
