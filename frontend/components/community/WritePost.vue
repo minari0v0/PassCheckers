@@ -48,3 +48,37 @@
           </div>
         </div>
 
+        <!-- 여행지 선택 -->
+        <div class="form-group">
+          <label for="location">여행지 <span class="required">*</span></label>
+          <div class="location-search">
+            <input
+              id="location"
+              v-model="locationSearch"
+              type="text"
+              placeholder="국가 또는 도시를 검색하세요 (예: 일본, 도쿄)"
+              autocomplete="off"
+              @input="searchLocations"
+              @focus="handleLocationFocus"
+              @click.stop
+            />
+            
+            <div v-if="showLocationDropdown && locationResults.length > 0" class="location-dropdown">
+              <div
+                v-for="location in locationResults"
+                :key="location.value"
+                class="location-option"
+                @click="selectLocation(location)"
+              >
+                {{ location.label }}
+              </div>
+            </div>
+            
+            <div v-else-if="showLocationDropdown && locationSearch && locationResults.length === 0" class="location-dropdown">
+              <div class="location-option-empty">
+                검색 결과가 없습니다
+              </div>
+            </div>
+          </div>
+        </div>
+
