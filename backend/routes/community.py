@@ -382,3 +382,37 @@ def update_post(post_id):
         cursor.close()
         conn.close()
 
+@community_bp.route('/posts/<int:post_id>', methods=['DELETE'])
+@jwt_required()
+def delete_post(post_id):
+    """게시물 삭제 API - soft delete 방식 (is_deleted 플래그)"""
+    current_user_id = get_jwt_identity()
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # 본인 게시물인지 확인
+        cursor.execute("SELECT user_id FROM posts WHERE id = %s", (post_id,))
+        post = cursor.fetchone()
+        
+        if not post:
+            return jsonify({'error': '게시물을 찾을 수 없습니다'}), 404
+        
+        if post['user_id'] != current_user_id:
+            return jsonify({'error': '권한이 없습니다'}), 403
+        
+        # Soft delete
+        cursor.execute("UPDATE posts SET is_deleted = TRUE WHERE id = %s", (post_id,))
+        
+        conn.commit()
+        
+        return jsonify({'message': '게시물이 삭제되었습니다'}), 200
+        
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
