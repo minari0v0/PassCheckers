@@ -100,7 +100,7 @@
             <div class="recommendation-list">
               <q-card flat bordered class="q-mb-lg" v-for="group in packingList" :key="group.group_name">
                 <q-card-section>
-                  <div class="text-h6">{{ group.group_name }}</div>
+                  <div class="text-h6">{{ getGroupTitle(group) }}</div>
                 </q-card-section>
                 <q-separator />
                 <q-list separator>
@@ -168,8 +168,7 @@
               <div class="weather-chart-container">
                 <q-card flat bordered v-if="historicalWeather">
                   <q-card-section>
-                    <div class="text-h6">월별 날씨 요약</div>
-                    <div class="text-subtitle2">{{ finalSelections.destination }}</div>
+                    <div class="text-h6">월별 날씨 요약 - {{ finalSelections.destination }}</div>
                   </q-card-section>
                   <q-separator />
                   <q-card-section style="height: 400px;">
@@ -207,6 +206,65 @@ const expandedGroups = ref({}); // 그룹별 확장 상태 관리
 
 const toggleGroup = (groupName) => {
   expandedGroups.value[groupName] = !expandedGroups.value[groupName];
+};
+
+const getGroupTitle = (group) => {
+  const groupName = group.group_name;
+  const selections = finalSelections.value;
+
+  if (!selections) return groupName;
+
+  switch (groupName) {
+    case '날씨':
+      if (isHistorical.value) {
+        return '월별 날씨 요약';
+      } else if (tripForecast.value && tripForecast.value.length > 0) {
+        const totalDays = tripForecast.value.length;
+        const avgTemp = Math.round(
+          tripForecast.value.reduce((sum, day) => sum + (day.temperature_2m_max + day.temperature_2m_min) / 2, 0) / totalDays
+        );
+        const avgPrecip = Math.round(
+          tripForecast.value.reduce((sum, day) => sum + day.precipitation_probability_mean, 0) / totalDays
+        );
+        return `평균 ${avgTemp}°C, 강수확률 ${avgPrecip}%`;
+      }
+      return '날씨 기반 추천';
+
+    case '동반자':
+      if (selections.companion) {
+        const companionMap = {
+          solo: '나홀로 떠나는 여행',
+          couple: '연인과 함께하는 여행',
+          family: '가족과 함께하는 여행',
+          friends: '친구와 함께하는 여행',
+          with_children: '아이와 함께하는 여행'
+        };
+        return companionMap[selections.companion] || '동반자 맞춤 추천';
+      }
+      return '동반자 맞춤 추천';
+
+    case '테마':
+      if (selections.themes && selections.themes.length > 0) {
+        const themeNameMap = {
+          healing: '힐링/휴양',
+          food: '미식',
+          shopping: '쇼핑',
+          activity: '액티비티',
+          culture: '문화/역사'
+        };
+        const mappedNames = selections.themes.map(t => themeNameMap[t]).filter(Boolean);
+        if (mappedNames.length > 0) {
+          return `${mappedNames.join(' & ')}를 즐기기 위한 준비물`;
+        }
+      }
+      return '테마 맞춤 추천';
+
+    case '항공편':
+      return '장거리 비행을 위한 준비';
+
+    default:
+      return groupName;
+  }
 };
 
 const tripForecast = computed(() => {
@@ -408,18 +466,20 @@ const handleSurveyComplete = async (surveyData) => {
 
 .forecast-grid-horizontal {
   display: flex;
-  overflow-x: auto;
+  flex-wrap: wrap;
   gap: 1rem;
-  padding-bottom: 1rem; /* For scrollbar */
 }
 
 .forecast-day-col {
-  flex: 0 0 90px; /* Fixed width for each day column */
+  flex-grow: 0; /* 마지막 줄에서 아이템이 늘어나는 것을 방지 */
+  flex-basis: calc(25% - 0.75rem); /* 4개 아이템과 gap을 고려한 너비 */
+  min-width: 110px; /* 최소 너비 지정 */
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 0.75rem 0.5rem;
   border-radius: 8px;
   background-color: #f8f9fa;
+  box-sizing: border-box;
 }
 </style>

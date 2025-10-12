@@ -46,24 +46,6 @@ const chartData = computed(() => {
   const avgMaxTemps = props.weatherData.map(d => d.avg_max_temp);
   const precipitation = props.weatherData.map(d => d.monthly_precipitation_mm);
 
-  const highlightColor = 'rgba(52, 152, 219, 0.8)';
-  const defaultColor = 'rgba(155, 155, 155, 0.5)';
-
-  const backgroundColors = props.weatherData.map(d => {
-    if (!props.travelDates || !props.travelDates.start || !props.travelDates.end) {
-      return defaultColor;
-    }
-    const month = d.month;
-    const startMonth = new Date(props.travelDates.start).getMonth() + 1;
-    const endMonth = new Date(props.travelDates.end).getMonth() + 1;
-
-    if (startMonth <= endMonth) {
-      return (month >= startMonth && month <= endMonth) ? highlightColor : defaultColor;
-    } else { // e.g., December to February
-      return (month >= startMonth || month <= endMonth) ? highlightColor : defaultColor;
-    }
-  });
-
   return {
     labels,
     datasets: [
@@ -87,8 +69,9 @@ const chartData = computed(() => {
         type: 'bar',
         label: '월 강수량 (mm)',
         data: precipitation,
-        backgroundColor: backgroundColors,
+        backgroundColor: 'rgba(155, 155, 155, 0.7)',
         yAxisID: 'y_precip',
+        borderRadius: 4,
       },
     ],
   };
@@ -120,7 +103,7 @@ const chartOptions = {
         text: '강수량 (mm)',
       },
       grid: {
-        drawOnChartArea: false, // only draw grid for temp axis
+        drawOnChartArea: false,
       },
     },
   },
