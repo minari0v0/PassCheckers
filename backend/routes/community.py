@@ -289,3 +289,96 @@ def create_post():
         cursor.close()
         conn.close()
 
+@community_bp.route('/posts/<int:post_id>', methods=['PUT'])
+@jwt_required()
+def update_post(post_id):
+    """작성자 본인만 가능한 게시물 수정 API"""
+    current_user_id = get_jwt_identity()
+    
+    # FormData에서 데이터 가져오기
+    title = request.form.get('title')
+    content = request.form.get('content')
+    summary = request.form.get('summary', '')
+    location = request.form.get('location', '')
+    tags_json = request.form.get('tags', '[]')
+    
+    # 태그 파싱
+    import json
+    try:
+        tags = json.loads(tags_json) if tags_json else []
+    except:
+        tags = []
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        conn.begin()
+        
+        # 본인 게시물인지 확인
+        cursor.execute("SELECT user_id, image_id FROM posts WHERE id = %s", (post_id,))
+        post = cursor.fetchone()
+        
+        if not post:
+            return jsonify({'error': '게시물을 찾을 수 없습니다'}), 404
+        
+        if post['user_id'] != current_user_id:
+            return jsonify({'error': '권한이 없습니다'}), 403
+        
+        image_id = post['image_id']
+        
+        # 새 이미지 업로드 처리
+        if 'image' in request.files:
+            file = request.files['image']
+            if file and file.filename:
+                img_bytes = file.read()
+                try:
+                    image = Image.open(io.BytesIO(img_bytes))
+                    img_width, img_height = image.size
+                    # 새 이미지를 DB에 저장
+                    image_id = insert_image(current_user_id, img_bytes, img_width, img_height, conn)
+                except Exception as e:
+                    print(f"[ERROR] Failed to process image: {e}")
+        
+        # 게시물 업데이트
+        cursor.execute("""
+            UPDATE posts 
+            SET title = %s, content = %s, summary = %s, location = %s, image_id = %s
+            WHERE id = %s
+        """, (
+            title,
+            content,
+            summary,
+            location,
+            image_id,
+            post_id
+        ))
+        
+        # 기존 태그 삭제
+        cursor.execute("DELETE FROM post_tags WHERE post_id = %s", (post_id,))
+        
+        # 새 태그 추가
+        if tags:
+            for tag_name in tags:
+                cursor.execute("""
+                    INSERT INTO tags (name) VALUES (%s)
+                    ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id)
+                """, (tag_name,))
+                
+                tag_id = cursor.lastrowid
+                
+                cursor.execute("""
+                    INSERT INTO post_tags (post_id, tag_id) VALUES (%s, %s)
+                """, (post_id, tag_id))
+        
+        conn.commit()
+        
+        return jsonify({'message': '게시물이 수정되었습니다'}), 200
+        
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
