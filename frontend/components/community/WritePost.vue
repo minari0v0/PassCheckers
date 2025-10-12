@@ -200,3 +200,42 @@ const handleLocationFocus = () => {
   }
 }
 
+// 여행지를 검색하는 함수 (디바운스 적용)
+const searchLocations = () => {
+  if (searchTimeout) {
+    clearTimeout(searchTimeout)
+  }
+  
+  const searchValue = locationSearch.value.trim()
+  
+  // 검색어가 없으면 드롭다운 숨김
+  if (searchValue.length === 0) {
+    locationResults.value = []
+    showLocationDropdown.value = false
+    return
+  }
+  
+  // 검색 중에도 드롭다운 표시
+  showLocationDropdown.value = true
+  
+  // 즉시 검색 (매우 짧은 디바운스)
+  searchTimeout = setTimeout(async () => {
+    try {
+      const response = await fetch(`${apiUrl}/community/countries?search=${encodeURIComponent(searchValue)}`)
+      const data = await response.json()
+      
+      if (data.locations && data.locations.length > 0) {
+        locationResults.value = data.locations
+        showLocationDropdown.value = true
+      } else {
+        locationResults.value = []
+        // 검색 결과가 없어도 드롭다운은 표시 (빈 메시지 위해)
+        showLocationDropdown.value = true
+      }
+    } catch (error) {
+      console.error('Failed to search locations:', error)
+      locationResults.value = []
+    }
+  }, 50) // 매우 짧은 디바운스 (50ms)
+}
+
