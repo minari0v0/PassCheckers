@@ -10,261 +10,263 @@
       </div>
     </div>
 
-    <!-- 공유 보기 상태 -->
-    <div v-if="selectedRecord" class="sharing-view-container">
-      <!-- 공유 헤더 -->
-      <header class="share-header">
-          <button @click="goBack" class="back-button">
-            <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
-            <span>뒤로</span>
-          </button>
-          <div class="header-divider" />
-          <div class="header-title-group">
-            <svg class="icon-luggage" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20h0a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h0"/><path d="M8 18V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v14"/></svg>
-            <h1 class="header-title">{{ selectedRecord.destination || `분석 #${selectedRecord.id}` }}</h1>
-          </div>
-          <div class="partner-status">
-            <svg class="icon-users" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            <span>
-              {{ partners.length === 0 ? "연결된 동반자 없음" : `${partners.length}명 연결됨` }}
-            </span>
-          </div>
-      </header>
-
-      <!-- 공유 메인 콘텐츠 -->
-      <main class="share-main-content">
-        <!-- 왼쪽 - 내 수하물 -->
-        <div class="host-panel">
-          <div class="share-card">
-            <div class="share-card-header">
-              <h2>내 수하물</h2>
-              <span class="host-badge">호스트</span>
+    <transition name="view-fade" mode="out-in">
+      <!-- 공유 보기 상태 -->
+      <div v-if="selectedRecord" class="sharing-view-container" key="sharing-view">
+        <!-- 공유 헤더 -->
+        <header class="share-header">
+            <button @click="goBack" class="back-button">
+              <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+              <span>뒤로</span>
+            </button>
+            <div class="header-divider" />
+            <div class="header-title-group">
+              <svg class="icon-luggage" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20h0a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h0"/><path d="M8 18V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v14"/></svg>
+              <h1 class="header-title">{{ selectedRecord.destination || `분석 #${selectedRecord.id}` }}</h1>
             </div>
-            <!-- 이미지 컨테이너 -->
-            <div v-if="selectedRecord" class="image-container">
-              <img 
-                ref="analysisImageRef"
-                :src="getApiUrl(selectedRecord.image_url)" 
-                alt="내 수하물 분석" 
-                class="analysis-image"
-                @load="updateImageSize"
-              />
-              <ImageItem 
-                v-for="item in detailedRecord.items" 
-                :key="`host-${item.id}`"
-                :item="item"
-                :image-size="imageSize"
-              />
-
-              <!-- 아이템 목록 오버레이 -->
-              <transition name="fade">
-                <div v-if="showHostItemList" class="item-list-overlay">
-                  <ul class="item-list">
-                    <li v-for="item in groupedHostItems" :key="item.name">
-                      <span class="item-name">{{ item.name }}</span>
-                      <span class="item-count">x{{ item.count }}</span>
-                    </li>
-                  </ul>
-                </div>
-              </transition>
-
-              <!-- 목록 토글 버튼 -->
-              <button @click="showHostItemList = !showHostItemList" class="list-toggle-btn hamburger-menu" :class="{ active: showHostItemList }">
-                <span class="line"></span>
-                <span class="line"></span>
-                <span class="line"></span>
-              </button>
+            <div class="partner-status">
+              <svg class="icon-users" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              <span>
+                {{ partners.length === 0 ? "연결된 동반자 없음" : `${partners.length}명 연결됨` }}
+              </span>
             </div>
-            <div class="share-code-box">
-              <label>내 공유 코드</label>
-              <div class="share-code-input-wrapper">
-                <div class="share-code-display">{{ shareCode }}</div>
-                <button @click="handleCopyCode" class="copy-button">
-                  <transition name="fade" mode="out-in">
-                    <svg v-if="copied" key="copied" class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-                    <svg v-else key="copy" class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
-                  </transition>
-                </button>
+        </header>
+
+        <!-- 공유 메인 콘텐츠 -->
+        <main class="share-main-content">
+          <!-- 왼쪽 - 내 수하물 -->
+          <div class="host-panel">
+            <div class="share-card">
+              <div class="share-card-header">
+                <h2>내 수하물</h2>
+                <span class="host-badge">호스트</span>
               </div>
-              <p class="share-code-desc">이 코드를 동반 여행자와 공유하세요</p>
-            </div>
-          </div>
-        </div>
+              <!-- 이미지 컨테이너 -->
+              <div v-if="selectedRecord" class="image-container">
+                <img 
+                  ref="analysisImageRef"
+                  :src="getApiUrl(selectedRecord.image_url)" 
+                  alt="내 수하물 분석" 
+                  class="analysis-image"
+                  @load="updateImageSize"
+                />
+                <ImageItem 
+                  v-for="item in detailedRecord.items" 
+                  :key="`host-${item.id}`"
+                  :item="item"
+                  :image-size="imageSize"
+                />
 
-        <!-- 오른쪽 - 동반자 -->
-        <div class="partner-panel">
-          <!-- 중앙 토스트 컨테이너 -->
-          <div class="toast-container-center">
-            <!-- 추가 완료 토스트 -->
-            <transition name="toast-fade">
-              <div v-if="showSuccessToast" class="success-toast">
-                <svg class="check-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-                <span>추가 완료!</span>
-              </div>
-            </transition>
-          </div>
-          <div class="partner-panel-header">
-            <h2>동반 여행자 수하물</h2>
-            <div class="add-partner-container">
-              <button @click.stop="showAddForm = !showAddForm" class="add-partner-btn">
-                <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
-                <span>동반자 추가</span>
-              </button>
-
-              <transition name="popover-fade">
-                <div v-if="showAddForm" class="add-partner-popover" v-click-outside="() => { showAddForm = false; connectError = ''; }">
-                  <div class="form-header">
-                    <h3>동반자 연결</h3>
-                    <button @click="showAddForm = false; connectError = ''" class="close-btn">
-                      <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg>
-                    </button>
-                  </div>
-                  <div class="form-content">
-                      <label>동반자 공유 코드</label>
-                      <div class="input-wrapper">
-                        <input 
-                          ref="partnerCodeInputRef"
-                          v-model="partnerCode" 
-                          @keyup.enter="handleConnect" 
-                          @input="connectError = ''" 
-                          @focus="connectError = ''"
-                          type="text" 
-                          placeholder="코드 입력 (예: B3X7K5)" 
-                          maxlength="6" 
-                          class="code-input" 
-                        />
-                        <button v-if="partnerCode.length > 0" @click="clearAndFocusInput" class="clear-input-btn">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                        </button>
-                      </div>
-                      <p v-if="connectError" class="error-message">{{ connectError }}</p>
-                      <button @click="handleConnect" :disabled="partnerCode.length < 4 || isConnecting" class="connect-btn">
-                        <span v-if="!isConnecting">연결하기</span>
-                        <div v-else class="button-spinner"></div>
-                      </button>
-                  </div>
-                </div>
-              </transition>
-            </div>
-          </div>
-
-          <div v-if="partners.length === 0" class="partner-empty-state">
-            <div class="empty-icon-wrapper">
-              <svg class="icon-users-large" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            </div>
-            <h3>아직 연결된 동반자가 없습니다</h3>
-            <p>동반자 추가 버튼을 눌러 여행 동반자를 연결하세요</p>
-          </div>
-          
-          <div v-else-if="partners.length > 0" class="carousel-container">
-            <div class="carousel-track" :style="{ transform: `translateX(-${currentSlideIndex * 100}%)`, transition: noTransition ? 'none' : 'transform 0.5s ease-in-out' }">
-              <!-- 각 동반자 카드 (복제 포함) -->
-              <div v-for="(partner, index) in carouselPartners" :key="`${partner.code}-${index}`" class="carousel-slide">
-                <div class="partner-card-content">
-                  <div class="partner-image-container">
-                    <img 
-                      :ref="el => partner.imageRef = el" 
-                      :src="getApiUrl(partner.analysis.image_url)" 
-                      :alt="`${partner.code} 수하물`" 
-                      class="analysis-image"
-                      @load="updatePartnerImageSize(partner)"
-                    />
-                    <ImageItem 
-                      v-for="item in partner.items" 
-                      :key="`partner-${partner.code}-${item.id}`"
-                      :item="item"
-                      :image-size="partner.imageSize"
-                      :color="partner.color"
-                      :show-label="index === currentSlideIndex"
-                    />
-
-                    <!-- 아이템 목록 오버레이 -->
-                    <transition name="fade">
-                      <div v-if="partner.showItemList && index === currentSlideIndex" class="item-list-overlay">
-                        <ul class="item-list">
-                          <li v-for="item in groupItems(partner.items)" :key="item.name">
-                            <span class="item-name">{{ item.name }}</span>
-                            <span class="item-count">x{{ item.count }}</span>
-                          </li>
-                        </ul>
-                      </div>
-                    </transition>
-
-                    <!-- 목록 토글 버튼 -->
-                    <button v-if="index === currentSlideIndex" @click="partner.showItemList = !partner.showItemList" class="list-toggle-btn hamburger-menu" :class="{ active: partner.showItemList }">
-                      <span class="line"></span>
-                      <span class="line"></span>
-                      <span class="line"></span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- 고정된 정보 및 네비게이션 -->
-            <div class="carousel-fixed-footer">
-              <div class="partner-info">
-                <span class="partner-nav-preview prev">{{ prevPartnerName }}</span>
-                <transition name="fade-info" mode="out-in">
-                  <div class="partner-info-main" :key="currentPartnerIndex">
-                    <span class="partner-code">{{ currentPartner.code }}</span>
-                    <span class="partner-name">{{ currentPartner.analysis.destination || `분석 #${currentPartner.analysis.id}` }}</span>
+                <!-- 아이템 목록 오버레이 -->
+                <transition name="fade">
+                  <div v-if="showHostItemList" class="item-list-overlay">
+                    <ul class="item-list">
+                      <li v-for="item in groupedHostItems" :key="item.name">
+                        <span class="item-name">{{ item.name }}</span>
+                        <span class="item-count">x{{ item.count }}</span>
+                      </li>
+                    </ul>
                   </div>
                 </transition>
-                <span class="partner-nav-preview next">{{ nextPartnerName }}</span>
+
+                <!-- 목록 토글 버튼 -->
+                <button @click="showHostItemList = !showHostItemList" class="list-toggle-btn hamburger-menu" :class="{ active: showHostItemList }">
+                  <span class="line"></span>
+                  <span class="line"></span>
+                  <span class="line"></span>
+                </button>
               </div>
+              <div class="share-code-box">
+                <label>내 공유 코드</label>
+                <div class="share-code-input-wrapper">
+                  <div class="share-code-display">{{ shareCode }}</div>
+                  <button @click="handleCopyCode" class="copy-button">
+                    <transition name="fade" mode="out-in">
+                      <svg v-if="copied" key="copied" class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                      <svg v-else key="copy" class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                    </transition>
+                  </button>
+                </div>
+                <p class="share-code-desc">이 코드를 동반 여행자와 공유하세요</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 오른쪽 - 동반자 -->
+          <div class="partner-panel">
+            <!-- 중앙 토스트 컨테이너 -->
+            <div class="toast-container-center">
+              <!-- 추가 완료 토스트 -->
+              <transition name="toast-fade">
+                <div v-if="showSuccessToast" class="success-toast">
+                  <svg class="check-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                  <span>추가 완료!</span>
+                </div>
+              </transition>
+            </div>
+            <div class="partner-panel-header">
+              <h2>동반 여행자 수하물</h2>
+              <div class="add-partner-container">
+                <button @click.stop="showAddForm = !showAddForm" class="add-partner-btn">
+                  <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
+                  <span>동반자 추가</span>
+                </button>
+
+                <transition name="popover-fade">
+                  <div v-if="showAddForm" class="add-partner-popover" v-click-outside="() => { showAddForm = false; connectError = ''; }">
+                    <div class="form-header">
+                      <h3>동반자 연결</h3>
+                      <button @click="showAddForm = false; connectError = ''" class="close-btn">
+                        <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg>
+                      </button>
+                    </div>
+                    <div class="form-content">
+                        <label>동반자 공유 코드</label>
+                        <div class="input-wrapper">
+                          <input 
+                            ref="partnerCodeInputRef"
+                            v-model="partnerCode" 
+                            @keyup.enter="handleConnect" 
+                            @input="connectError = ''" 
+                            @focus="connectError = ''"
+                            type="text" 
+                            placeholder="코드 입력 (예: B3X7K5)" 
+                            maxlength="6" 
+                            class="code-input" 
+                          />
+                          <button v-if="partnerCode.length > 0" @click="clearAndFocusInput" class="clear-input-btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                          </button>
+                        </div>
+                        <p v-if="connectError" class="error-message">{{ connectError }}</p>
+                        <button @click="handleConnect" :disabled="partnerCode.length < 4 || isConnecting" class="connect-btn">
+                          <span v-if="!isConnecting">연결하기</span>
+                          <div v-else class="button-spinner"></div>
+                        </button>
+                    </div>
+                  </div>
+                </transition>
+              </div>
+            </div>
+
+            <div v-if="partners.length === 0" class="partner-empty-state">
+              <div class="empty-icon-wrapper">
+                <svg class="icon-users-large" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              </div>
+              <h3>아직 연결된 동반자가 없습니다</h3>
+              <p>동반자 추가 버튼을 눌러 여행 동반자를 연결하세요</p>
+            </div>
             
-              <div class="carousel-dots">
-                <button 
-                  v-for="(_, index) in partners" 
-                  :key="`dot-${index}`" 
-                  :class="{ active: index === currentPartnerIndex }" 
-                  @click="goToSlide(index)"
-                  class="dot"
-                ></button>
+            <div v-else-if="partners.length > 0" class="carousel-container">
+              <div class="carousel-track" :style="{ transform: `translateX(-${currentSlideIndex * 100}%)`, transition: noTransition ? 'none' : 'transform 0.5s ease-in-out' }">
+                <!-- 각 동반자 카드 (복제 포함) -->
+                <div v-for="(partner, index) in carouselPartners" :key="`${partner.code}-${index}`" class="carousel-slide">
+                  <div class="partner-card-content">
+                    <div class="partner-image-container">
+                      <img 
+                        :ref="el => partner.imageRef = el" 
+                        :src="getApiUrl(partner.analysis.image_url)" 
+                        :alt="`${partner.code} 수하물`" 
+                        class="analysis-image"
+                        @load="updatePartnerImageSize(partner)"
+                      />
+                      <ImageItem 
+                        v-for="item in partner.items" 
+                        :key="`partner-${partner.code}-${item.id}`"
+                        :item="item"
+                        :image-size="partner.imageSize"
+                        :color="partner.color"
+                        :show-label="index === currentSlideIndex"
+                      />
+
+                      <!-- 아이템 목록 오버레이 -->
+                      <transition name="fade">
+                        <div v-if="partner.showItemList && index === currentSlideIndex" class="item-list-overlay">
+                          <ul class="item-list">
+                            <li v-for="item in groupItems(partner.items)" :key="item.name">
+                              <span class="item-name">{{ item.name }}</span>
+                              <span class="item-count">x{{ item.count }}</span>
+                            </li>
+                          </ul>
+                        </div>
+                      </transition>
+
+                      <!-- 목록 토글 버튼 -->
+                      <button v-if="index === currentSlideIndex" @click="partner.showItemList = !partner.showItemList" class="list-toggle-btn hamburger-menu" :class="{ active: partner.showItemList }">
+                        <span class="line"></span>
+                        <span class="line"></span>
+                        <span class="line"></span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 고정된 정보 및 네비게이션 -->
+              <div class="carousel-fixed-footer">
+                <div class="partner-info">
+                  <span class="partner-nav-preview prev">{{ prevPartnerName }}</span>
+                  <transition name="fade-info" mode="out-in">
+                    <div class="partner-info-main" :key="currentPartnerIndex">
+                      <span class="partner-code">{{ currentPartner.code }}</span>
+                      <span class="partner-name">{{ currentPartner.analysis.destination || `분석 #${currentPartner.analysis.id}` }}</span>
+                    </div>
+                  </transition>
+                  <span class="partner-nav-preview next">{{ nextPartnerName }}</span>
+                </div>
+              
+                <div class="carousel-dots">
+                  <button 
+                    v-for="(_, index) in partners" 
+                    :key="`dot-${index}`" 
+                    :class="{ active: index === currentPartnerIndex }" 
+                    @click="goToSlide(index)"
+                    class="dot"
+                  ></button>
+                </div>
+              </div>
+
+              <!-- 캐러셀 네비게이션 버튼 -->
+              <button v-if="partners.length > 1" @click="prevPartner" class="carousel-nav prev">&#8249;</button>
+              <button v-if="partners.length > 1" @click="nextPartner" class="carousel-nav next">&#8250;</button>
+            </div>
+          </div>
+        </main>
+      </div>
+
+      <!-- 기록 선택 상태 -->
+      <div v-else class="selection-view-container" key="selection-view">
+        <header class="selection-header">
+          <h1 class="page-title">수하물 공유</h1>
+          <p class="page-desc">동반 여행자와 공유하고 싶은 분석 기록을 선택해주세요.</p>
+        </header>
+        <main>
+          <div v-if="records.length > 0" class="records-grid">
+            <div v-for="record in records" :key="record.id" @click="selectRecord(record.id)" class="record-card">
+              <div class="card-image-wrapper">
+                <img :src="record.imageUrl" :alt="record.name" class="card-image"/>
+              </div>
+              <div class="card-content">
+                <h3 class="card-title">{{ record.name }}</h3>
+                <div class="card-meta">
+                  <div class="meta-item">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+                    <span>{{ new Date(record.date).toLocaleDateString("ko-KR") }}</span>
+                  </div>
+                  <div class="meta-item">
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v2"/><path d="m7 10 5 3 5-3"/><path d="M7 10v4a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-4"/><path d="M3 12v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4"/><path d="M21 10-7.5 17.5"/><path d="m3.5 17.5 15-10"/></svg>
+                    <span>{{ record.itemCount }}개 항목</span>
+                  </div>
+                </div>
               </div>
             </div>
-
-            <!-- 캐러셀 네비게이션 버튼 -->
-            <button v-if="partners.length > 1" @click="prevPartner" class="carousel-nav prev">&#8249;</button>
-            <button v-if="partners.length > 1" @click="nextPartner" class="carousel-nav next">&#8250;</button>
           </div>
-        </div>
-      </main>
-    </div>
-
-    <!-- 기록 선택 상태 -->
-    <div v-else class="selection-view-container">
-      <header class="selection-header">
-        <h1 class="page-title">수하물 공유</h1>
-        <p class="page-desc">동반 여행자와 공유하고 싶은 분석 기록을 선택해주세요.</p>
-      </header>
-      <main>
-        <div v-if="records.length > 0" class="records-grid">
-          <div v-for="record in records" :key="record.id" @click="selectRecord(record.id)" class="record-card">
-            <div class="card-image-wrapper">
-              <img :src="record.imageUrl" :alt="record.name" class="card-image"/>
-            </div>
-            <div class="card-content">
-              <h3 class="card-title">{{ record.name }}</h3>
-              <div class="card-meta">
-                <div class="meta-item">
-                  <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
-                  <span>{{ new Date(record.date).toLocaleDateString("ko-KR") }}</span>
-                </div>
-                <div class="meta-item">
-                  <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v2"/><path d="m7 10 5 3 5-3"/><path d="M7 10v4a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-4"/><path d="M3 12v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4"/><path d="M21 10-7.5 17.5"/><path d="m3.5 17.5 15-10"/></svg>
-                  <span>{{ record.itemCount }}개 항목</span>
-                </div>
-              </div>
-            </div>
+          <div v-else-if="!isLoading" class="empty-state">
+            <p>아직 분석 기록이 없습니다.</p>
           </div>
-        </div>
-        <div v-else-if="!isLoading" class="empty-state">
-          <p>아직 분석 기록이 없습니다.</p>
-        </div>
-      </main>
-    </div>
+        </main>
+      </div>
+    </transition>
   </div>
 </template>
 
@@ -1545,6 +1547,21 @@ onUnmounted(() => {
 
 .dot.active {
   background-color: var(--main-blue, #2196f3);
+}
+
+.view-fade-enter-active,
+.view-fade-leave-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.view-fade-enter-from {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.view-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
 }
 
 </style>
