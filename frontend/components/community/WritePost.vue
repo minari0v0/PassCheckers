@@ -192,3 +192,11 @@ const removeImage = () => {
   }
 }
 
+// 여행지 입력 필드에 포커스가 갈 때 처리하는 함수
+const handleLocationFocus = () => {
+  if (locationSearch.value.trim().length > 0) {
+    showLocationDropdown.value = true
+    searchLocations()
+  }
+}
+
