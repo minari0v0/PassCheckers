@@ -701,3 +701,50 @@ def get_comments(post_id):
         cursor.close()
         conn.close()
 
+@community_bp.route('/posts/<int:post_id>/comments', methods=['POST'])
+@jwt_required()
+def create_comment(post_id):
+    """게시물에 댓글 또는 답글 작성 API"""
+    current_user_id = get_jwt_identity()
+    data = request.get_json()
+    
+    if not data or not data.get('content'):
+        return jsonify({'error': '댓글 내용은 필수입니다'}), 400
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # 댓글 삽입
+        cursor.execute("""
+            INSERT INTO comments (post_id, user_id, content, parent_comment_id)
+            VALUES (%s, %s, %s, %s)
+        """, (
+            post_id,
+            current_user_id,
+            data['content'],
+            data.get('parent_id', None)
+        ))
+        
+        comment_id = cursor.lastrowid
+        
+        # 게시물의 댓글 수 증가
+        cursor.execute("""
+            UPDATE posts SET comments_count = comments_count + 1 
+            WHERE id = %s
+        """, (post_id,))
+        
+        conn.commit()
+        
+        return jsonify({
+            'message': '댓글이 작성되었습니다',
+            'comment_id': comment_id
+        }), 201
+        
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
