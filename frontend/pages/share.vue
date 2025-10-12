@@ -55,12 +55,15 @@
                   class="analysis-image"
                   @load="updateImageSize"
                 />
-                <ImageItem 
-                  v-for="item in detailedRecord.items" 
-                  :key="`host-${item.id}`"
-                  :item="item"
-                  :image-size="imageSize"
-                />
+                <transition-group name="fade">
+                  <ImageItem 
+                    v-if="showHostBboxes"
+                    v-for="item in detailedRecord.items" 
+                    :key="`host-${item.id}`"
+                    :item="item"
+                    :image-size="imageSize"
+                  />
+                </transition-group>
 
                 <!-- 아이템 목록 오버레이 -->
                 <transition name="fade">
@@ -74,25 +77,51 @@
                   </div>
                 </transition>
 
-                <!-- 목록 토글 버튼 -->
-                <button @click="showHostItemList = !showHostItemList" class="list-toggle-btn hamburger-menu" :class="{ active: showHostItemList }">
-                  <span class="line"></span>
-                  <span class="line"></span>
-                  <span class="line"></span>
-                </button>
-              </div>
-              <div class="share-code-box">
-                <label>내 공유 코드</label>
-                <div class="share-code-input-wrapper">
-                  <div class="share-code-display">{{ shareCode }}</div>
-                  <button @click="handleCopyCode" class="copy-button">
-                    <transition name="fade" mode="out-in">
-                      <svg v-if="copied" key="copied" class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-                      <svg v-else key="copy" class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
-                    </transition>
+                <!-- 이미지 위 버튼 컨테이너 -->
+                <div class="image-btn-container">
+                  <transition name="fade">
+                    <button v-if="!showHostItemList" @click="showHostBboxes = !showHostBboxes" class="bbox-toggle-btn" title="아이템 표시/숨기기">
+                      <transition name="fade" mode="out-in">
+                          <svg v-if="showHostBboxes" key="eye" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                          <svg v-else key="eye-off" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+                      </transition>
+                    </button>
+                  </transition>
+                  <button @click="showHostItemList = !showHostItemList" class="list-toggle-btn hamburger-menu" :class="{ active: showHostItemList }">
+                    <span class="line"></span>
+                    <span class="line"></span>
+                    <span class="line"></span>
                   </button>
                 </div>
-                <p class="share-code-desc">이 코드를 동반 여행자와 공유하세요</p>
+              </div>
+              <!-- 연결 상태에 따라 다른 정보 표시 -->
+              <div>
+                <!-- 연결된 파트너가 없을 때: 공유 코드 표시 -->
+                <div v-if="partners.length === 0" class="share-code-box">
+                  <label>내 공유 코드</label>
+                  <div class="share-code-input-wrapper">
+                    <div class="share-code-display">{{ shareCode }}</div>
+                    <button @click="handleCopyCode" class="copy-button">
+                      <transition name="fade" mode="out-in">
+                        <svg v-if="copied" key="copied" class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                        <svg v-else key="copy" class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                      </transition>
+                    </button>
+                  </div>
+                  <p class="share-code-desc">이 코드를 동반 여행자와 공유하세요</p>
+                </div>
+
+                <!-- 연결된 파트너가 있을 때: 동반자 목록 표시 -->
+                <div v-else class="connected-partners-box">
+                  <label>연결된 동반자</label>
+                  <ul class="connected-partners-list">
+                    <li v-for="participant in allParticipants" :key="participant.analysis.id">
+                      <span class="partner-nickname">{{ participant.analysis.nickname }}</span>
+                      <span v-if="participant.is_self" class="self-label">나</span>
+                      <span v-else-if="participant.is_group_host" class="host-badge-mini" title="이 그룹의 호스트입니다.">호스트</span>
+                    </li>
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
@@ -214,14 +243,17 @@
                         class="analysis-image"
                         @load="updatePartnerImageSize(partner)"
                       />
-                      <ImageItem 
-                        v-for="item in partner.items" 
-                        :key="`partner-${partner.analysis.id}-${item.id}`"
-                        :item="item"
-                        :image-size="partner.imageSize"
-                        :color="partner.color"
-                        :show-label="index === currentSlideIndex"
-                      />
+                      <transition-group name="fade">
+                        <ImageItem 
+                          v-if="partner.showBboxes"
+                          v-for="item in partner.items" 
+                          :key="`partner-${partner.analysis.id}-${item.id}`"
+                          :item="item"
+                          :image-size="partner.imageSize"
+                          :color="partner.color"
+                          :show-label="index === currentSlideIndex"
+                        />
+                      </transition-group>
 
                       <!-- 아이템 목록 오버레이 -->
                       <transition name="fade">
@@ -235,12 +267,22 @@
                         </div>
                       </transition>
 
-                      <!-- 목록 토글 버튼 -->
-                      <button v-if="index === currentSlideIndex" @click="partner.showItemList = !partner.showItemList" class="list-toggle-btn hamburger-menu" :class="{ active: partner.showItemList }">
-                        <span class="line"></span>
-                        <span class="line"></span>
-                        <span class="line"></span>
-                      </button>
+                      <!-- 이미지 위 버튼 컨테이너 -->
+                      <div v-if="index === currentSlideIndex" class="image-btn-container">
+                        <transition name="fade">
+                          <button v-if="!partner.showItemList" @click="partner.showBboxes = !partner.showBboxes" class="bbox-toggle-btn" title="아이템 표시/숨기기">
+                            <transition name="fade" mode="out-in">
+                                <svg v-if="partner.showBboxes" key="eye" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                                <svg v-else key="eye-off" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+                            </transition>
+                          </button>
+                        </transition>
+                        <button @click="partner.showItemList = !partner.showItemList" class="list-toggle-btn hamburger-menu" :class="{ active: partner.showItemList }">
+                          <span class="line"></span>
+                          <span class="line"></span>
+                          <span class="line"></span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -252,11 +294,15 @@
                   <transition name="fade-info" mode="out-in">
                     <div class="partner-info-main" :key="currentPartnerIndex">
                       <div class="partner-title-wrapper">
-                        <span v-if="!currentPartner.is_host" class="host-badge partner" title="이 연결을 시작한 호스트입니다.">호스트</span>
+                        <div class="left-slot">
+                          <span v-if="currentPartner.is_group_host" class="host-badge partner" title="이 그룹의 호스트입니다.">호스트</span>
+                        </div>
                         <span class="partner-name">{{ currentPartner.analysis.nickname || currentPartner.analysis.destination || `분석 #${currentPartner.analysis.id}` }}</span>
-                        <button v-if="!isClientSession && currentPartner.is_host" @click="openDisconnectConfirm(currentPartner)" class="disconnect-btn" title="이 동반자와의 연결을 해제합니다.">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-                        </button>
+                        <div class="right-slot">
+                          <button v-if="!isClientSession && currentPartner.is_host" @click="openDisconnectConfirm(currentPartner)" class="disconnect-btn" title="이 동반자와의 연결을 해제합니다.">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                          </button>
+                        </div>
                       </div>
                       <span class="partner-code">공유코드: {{ currentPartner.code }}</span>
                     </div>
@@ -349,6 +395,7 @@ const partners = ref([]); // 연결된 동반자 목록
 const showAddForm = ref(false); // 동반자 추가 폼 표시 여부
 const isLoading = ref(true);
 const showHostItemList = ref(false); // 호스트 아이템 목록 표시 여부
+const showHostBboxes = ref(true); // 호스트 BBox 표시 여부
 const showSuccessToast = ref(false); // 동반자 추가 성공 토스트 표시 여부
 const connectError = ref(''); // 동반자 연결 실패 메시지
 const isConnecting = ref(false); // 동반자 연결 로딩 상태
@@ -401,6 +448,26 @@ const partnerStatusClass = computed(() => {
 const isClientSession = computed(() => {
   // 내가 호스트가 아닌 연결이 하나라도 있으면 '파트너 세션'으로 간주
   return partners.value.some(p => !p.is_host);
+});
+
+// 나를 포함한 모든 참가자 목록 (왼쪽 동반자 목록 표시에 사용)
+const allParticipants = computed(() => {
+  const self = {
+    is_self: true, // 나 자신임을 나타내는 플래그
+    analysis: {
+      id: detailedRecord.value?.analysis.id,
+      nickname: user.value?.nickname || '나',
+    },
+    // 내가 클라이언트 세션이 아니라면, 나는 이 그룹의 호스트임
+    is_group_host: !isClientSession.value,
+  };
+  return [self, ...partners.value].sort((a, b) => {
+    // 호스트를 항상 맨 위에 표시
+    if (a.is_group_host && !b.is_group_host) return -1;
+    if (!a.is_group_host && b.is_group_host) return 1;
+    // 그 외에는 닉네임 순으로 정렬
+    return a.analysis.nickname.localeCompare(b.analysis.nickname);
+  });
 });
 
 // 호스트의 아이템 목록을 그룹화하고 개수를 세는 computed 속성
@@ -491,6 +558,7 @@ function addPartner(partnerData) {
       imageSize: { width: 0, height: 0, offsetX: 0, offsetY: 0 },
       imageRef: ref(null),
       showItemList: false,
+      showBboxes: true, // 파트너 BBox 표시 여부
       color: selectedColor,
     };
     partners.value.push(newPartner);
@@ -1202,7 +1270,7 @@ onUnmounted(() => {
   align-items: center;
   padding: 1.25rem 0; /* 여백 추가 */
   border-bottom: 1px solid #e0e0e0;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .back-button {
@@ -1323,10 +1391,16 @@ onUnmounted(() => {
   display: block;
 }
 
-.list-toggle-btn {
+.image-btn-container {
   position: absolute;
   top: 12px;
   right: 12px;
+  z-index: 20;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.bbox-toggle-btn {
   background-color: rgba(0, 0, 0, 0.4);
   color: white;
   border: none;
@@ -1337,7 +1411,28 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 20;
+  transition: background-color 0.2s ease;
+}
+.bbox-toggle-btn:hover {
+  background-color: rgba(0, 0, 0, 0.6);
+}
+.bbox-toggle-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+.list-toggle-btn {
+  /* position, top, right, z-index 속성 제거 -> .image-btn-container로 이동 */
+  background-color: rgba(0, 0, 0, 0.4);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: background-color 0.2s ease;
 }
 .list-toggle-btn.hamburger-menu {
@@ -1494,12 +1589,77 @@ onUnmounted(() => {
   opacity: 0;
 }
 
+.fade-move {
+  transition: none; /* 캐러셀 이동 시 BBox 애니메이션 비활성화 */
+}
+
 
 .share-code-desc {
   font-size: 0.8rem;
   color: #888;
   margin-top: 0.75rem;
   text-align: center;
+}
+
+/* --- 연결된 동반자 목록 박스 --- */
+.connected-partners-box {
+  background-color: #f5f7fa;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.connected-partners-box label {
+  display: block;
+  font-size: 0.9rem;
+  color: #777;
+  margin-bottom: 0.75rem;
+}
+
+.connected-partners-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 150px; /* 목록이 너무 길어질 경우 스크롤 */
+  overflow-y: auto;
+}
+
+.connected-partners-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.connected-partners-list li:not(:last-child) {
+  margin-bottom: 0.5rem;
+}
+
+.connected-partners-list li:hover {
+  background-color: #e9ecef;
+}
+
+.partner-nickname {
+  font-weight: 500;
+  color: #343a40;
+}
+
+.host-badge-mini {
+  font-size: 0.7rem;
+  font-weight: bold;
+  color: var(--main-blue, #2196f3);
+  background-color: rgba(33, 150, 243, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.self-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #343a40;
+  padding: 2px 6px;
 }
 
 .partner-panel-header {
@@ -1931,11 +2091,27 @@ onUnmounted(() => {
 
 /* --- Partner Carousel Enhancements --- */
 .partner-title-wrapper {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  justify-content: center;
   gap: 0.5rem;
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.5rem; /* 간격 조정 */
+}
+
+.partner-name {
+  grid-column: 2;
+}
+
+.left-slot {
+  grid-column: 1;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.right-slot {
+  grid-column: 3;
+  display: flex;
+  justify-content: flex-start;
 }
 
 .disconnect-btn {
@@ -1958,11 +2134,6 @@ onUnmounted(() => {
   height: 16px;
 }
 
-.host-badge.partner {
-  background-color: #f39c12; /* 주황색 */
-  color: white;
-  font-size: 0.75rem;
-}
 
 .partner-code {
   font-family: monospace;

@@ -145,55 +145,67 @@ def connect_partner():
 
 @share_bp.route("/api/share/connections/<share_code>", methods=["GET"])
 def get_all_connections(share_code):
-    """특정 분석 기록에 연결된 모든 동반자 정보와 닉네임을 조회합니다."""
+    """'그룹 공유' 모델에 따라, 현재 사용자와 관련된 모든 동반자 정보를 조회합니다."""
     conn = get_db_connection()
     try:
         with conn.cursor() as cursor:
-            # 1. 현재 보고 있는 분석의 ID 찾기
+            # 1. 현재 뷰어의 analysis_id 찾기
             cursor.execute("SELECT id FROM analysis_results WHERE share_code = %s", (share_code,))
-            current_analysis_result = cursor.fetchone()
-            if not current_analysis_result:
+            viewer_result = cursor.fetchone()
+            if not viewer_result:
                 return jsonify({"error": "유효하지 않은 공유 코드입니다."}), 404
-            current_analysis_id = current_analysis_result['id']
+            viewer_id = viewer_result['id']
 
-            # 2. 현재 분석 ID와 연결된 모든 관계(connections) 찾기
-            cursor.execute('''
-                SELECT id, host_analysis_id, partner_analysis_id 
-                FROM share_connections
-                WHERE host_analysis_id = %s OR partner_analysis_id = %s
-            ''', (current_analysis_id, current_analysis_id))
+            # 3. 뷰어가 파트너로 참여중인 '메인 호스트' 찾기 (있을 경우)
+            cursor.execute("SELECT host_analysis_id FROM share_connections WHERE partner_analysis_id = %s", (viewer_id,))
+            # 그룹은 하나의 호스트만 가진다고 가정
+            main_host_id_result = cursor.fetchone()
+            main_host_id = main_host_id_result['host_analysis_id'] if main_host_id_result else None
+
+            # 4. 뷰어와 관련된 모든 참가자 ID를 수집할 집합(set)
+            participant_ids = set()
+
+            if main_host_id:
+                # '파트너 세션'인 경우: 호스트와, 그 호스트의 다른 모든 파트너를 추가
+                participant_ids.add(main_host_id) # 호스트 추가
+                cursor.execute("SELECT partner_analysis_id FROM share_connections WHERE host_analysis_id = %s", (main_host_id,))
+                for partner_conn in cursor.fetchall():
+                    participant_ids.add(partner_conn['partner_analysis_id'])
             
-            connections = cursor.fetchall()
-            
-            # 3. 파트너 정보들을 담을 리스트 준비
+            # 5. 뷰어가 직접 호스팅하는 파트너들도 추가
+            cursor.execute("SELECT partner_analysis_id FROM share_connections WHERE host_analysis_id = %s", (viewer_id,))
+            for partner_conn in cursor.fetchall():
+                participant_ids.add(partner_conn['partner_analysis_id'])
+
+            # 6. 최종 목록에서 뷰어 자신의 ID는 제거
+            participant_ids.discard(viewer_id)
+
+            # 7. 각 참가자의 상세 정보 조회
             partners_data = []
-            if not connections:
-                return jsonify({"partners": partners_data}), 200
+            if not participant_ids:
+                return jsonify({"partners": []}), 200
 
-            # 4. 각 관계에서 상대방의 analysis_id와 호스트 여부 찾기
-            for conn_row in connections:
-                is_host = (conn_row['host_analysis_id'] == current_analysis_id)
+            for p_id in participant_ids:
+                # 뷰어가 해당 참가자(p_id)와의 관계에서 '연결의 호스트'인지 확인 (x버튼 권한용)
+                cursor.execute("SELECT COUNT(*) as count FROM share_connections WHERE host_analysis_id = %s AND partner_analysis_id = %s", (viewer_id, p_id))
+                is_connection_host = cursor.fetchone()['count'] > 0
                 
-                if is_host:
-                    partner_id = conn_row['partner_analysis_id']
-                else: # 내가 파트너일 경우, 상대방은 호스트
-                    partner_id = conn_row['host_analysis_id']
+                # 해당 참가자가 '그룹의 메인 호스트'인지 확인 (뱃지 표시용)
+                is_group_host = (p_id == main_host_id)
 
-                # 5. 상대방의 상세 정보 (분석 정보 + 사용자 닉네임) 조회
+                # 참가자의 분석 정보와 사용자 닉네임 조회
                 cursor.execute('''
                     SELECT ar.*, u.nickname
                     FROM analysis_results ar
                     JOIN users u ON ar.user_id = u.id
                     WHERE ar.id = %s
-                ''', (partner_id,))
-                partner_analysis_info = cursor.fetchone()
+                ''', (p_id,))
+                analysis_info = cursor.fetchone()
 
-                if partner_analysis_info:
-                    # 6. 상대방의 분석 아이템 목록 조회
-                    cursor.execute("SELECT * FROM analysis_items WHERE analysis_id = %s ORDER BY id", (partner_id,))
+                if analysis_info:
+                    # 참가자의 아이템 목록 조회
+                    cursor.execute("SELECT * FROM analysis_items WHERE analysis_id = %s ORDER BY id", (p_id,))
                     items = cursor.fetchall()
-                    
-                    # 프론트엔드 형식에 맞게 아이템 데이터 가공
                     for item in items:
                         item['item_id'] = item.pop('id')
                         item['item_name'] = item.pop('item_name_ko')
@@ -203,16 +215,16 @@ def get_all_connections(share_code):
                         ]
 
                     partners_data.append({
-                        "connection_id": conn_row['id'], # 연결 자체의 ID (삭제 시 사용 가능)
-                        "analysis": partner_analysis_info,
+                        "analysis": analysis_info,
                         "items": items,
-                        "is_host": is_host # 현재 사용자가 이 연결의 호스트인지 여부
+                        "is_host": is_connection_host, # 내가 이 '연결'의 호스트인가? (x버튼 권한)
+                        "is_group_host": is_group_host # 이 사람이 '그룹'의 호스트인가? (뱃지 표시)
                     })
-
+            
             return jsonify({"partners": partners_data}), 200
 
     except Exception as e:
-        print(f"[GET CONNECTIONS ERROR] {e}")
+        print(f"[GET GROUP CONNECTIONS ERROR] {e}")
         return jsonify({"error": "연결된 동반자 정보 조회 중 오류가 발생했습니다."}), 500
     finally:
         if conn:
