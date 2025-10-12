@@ -39,7 +39,7 @@
             <div class="share-card">
               <div class="share-card-header">
                 <h2>내 수하물</h2>
-                <span class="host-badge">호스트</span>
+                <span v-if="isHostOfAnyConnection" class="host-badge">호스트</span>
               </div>
               <!-- 이미지 컨테이너 -->
               <div v-if="selectedRecord" class="image-container">
@@ -334,6 +334,11 @@ const selectedRecord = computed(() => {
   }
   // 그렇지 않으면 목록에서 찾아서 반환
   return records.value.find(r => r.id === selectedRecordId.value);
+});
+
+const isHostOfAnyConnection = computed(() => {
+  // 내가 시작한 연결(is_host가 true인 경우)이 하나라도 있는지 확인
+  return partners.value.some(p => p.is_host);
 });
 
 // 호스트의 아이템 목록을 그룹화하고 개수를 세는 computed 속성
@@ -764,11 +769,29 @@ function goToSlide(index) {
 }
 
 // 동반자 목록 변경 감지
-watch(partners, (newPartners, oldPartners) => {
+watch(partners, async (newPartners, oldPartners) => {
   if (newPartners.length > oldPartners.length) {
     // 새 동반자가 추가되었을 때 해당 슬라이드로 이동
     const newPartnerIndex = newPartners.length - 1;
     goToSlide(newPartnerIndex);
+
+    // [버그 수정] 새로 추가된 파트너의 UI가 즉시 업데이트되지 않는 문제 해결
+    await nextTick(); // DOM 업데이트를 기다립니다.
+    
+    const newPartner = newPartners[newPartnerIndex];
+    // 파트너 객체와 이미지 참조(ref)가 유효한지 확인합니다.
+    if (newPartner && newPartner.imageRef) {
+       const imageEl = newPartner.imageRef;
+       // 이미지가 이미 로드되었는지 확인하고, 그렇지 않다면 로드 이벤트를 기다립니다.
+       if (imageEl.complete && imageEl.naturalWidth > 0) {
+         updatePartnerImageSize(newPartner);
+       } else {
+         imageEl.onload = () => {
+           updatePartnerImageSize(newPartner);
+         };
+       }
+    }
+
   } else if (newPartners.length < oldPartners.length) {
     // 동반자가 제거되었을 때 인덱스 조정
     if (currentPartnerIndex.value >= newPartners.length) {
