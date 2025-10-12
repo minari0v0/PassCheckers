@@ -619,3 +619,35 @@ def get_popular_tags():
         cursor.close()
         conn.close()
 
+@community_bp.route('/locations/popular', methods=['GET'])
+def get_popular_locations():
+    """게시물 수가 많은 인기 여행지 조회 API"""
+    limit = request.args.get('limit', 10, type=int)
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute("""
+            SELECT 
+                location as name,
+                COUNT(*) as count
+            FROM posts
+            WHERE is_deleted = FALSE 
+                AND location IS NOT NULL 
+                AND location != ''
+            GROUP BY location
+            ORDER BY count DESC
+            LIMIT %s
+        """, (limit,))
+        
+        locations = cursor.fetchall()
+        
+        return jsonify({'locations': locations}), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
