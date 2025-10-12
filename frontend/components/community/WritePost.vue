@@ -183,3 +183,12 @@ const handleImageSelect = (event) => {
   }
 }
 
+// 선택한 이미지를 제거하는 함수
+const removeImage = () => {
+  imageFile.value = null
+  imagePreview.value = null
+  if (imageInput.value) {
+    imageInput.value.value = ''
+  }
+}
+
