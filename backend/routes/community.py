@@ -536,3 +536,54 @@ def get_bookmark_status(post_id):
         cursor.close()
         conn.close()
 
+@community_bp.route('/posts/<int:post_id>/bookmark', methods=['POST'])
+@jwt_required()
+def toggle_bookmark(post_id):
+    """게시물 북마크 추가/제거 토글 API"""
+    current_user_id = get_jwt_identity()
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # 이미 북마크했는지 확인
+        cursor.execute("""
+            SELECT id FROM post_bookmarks 
+            WHERE post_id = %s AND user_id = %s
+        """, (post_id, current_user_id))
+        
+        existing_bookmark = cursor.fetchone()
+        
+        if existing_bookmark:
+            # 북마크 취소
+            cursor.execute("""
+                DELETE FROM post_bookmarks 
+                WHERE post_id = %s AND user_id = %s
+            """, (post_id, current_user_id))
+            
+            message = '북마크가 취소되었습니다'
+            bookmarked = False
+        else:
+            # 북마크 추가
+            cursor.execute("""
+                INSERT INTO post_bookmarks (post_id, user_id) 
+                VALUES (%s, %s)
+            """, (post_id, current_user_id))
+            
+            message = '북마크가 추가되었습니다'
+            bookmarked = True
+        
+        conn.commit()
+        
+        return jsonify({
+            'message': message,
+            'bookmarked': bookmarked
+        }), 200
+        
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
