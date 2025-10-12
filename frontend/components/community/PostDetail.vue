@@ -10,7 +10,14 @@
           <div class="post-info">
             <!-- 작성자 정보 -->
             <div class="author-section">
-              <div class="author-avatar">{{ post.author.charAt(0) }}</div>
+              <div class="author-avatar">
+                <img 
+                  :src="getAuthorProfileImage(post.author_id, post.profile_image)" 
+                  @error="onProfileImageError"
+                  alt="프로필"
+                  class="profile-image"
+                />
+              </div>
               <div class="author-details">
                 <div class="author-name">{{ post.author }}</div>
                 <div class="post-meta">
@@ -21,10 +28,21 @@
                   <span class="date">{{ formatDate(post.created_at) }}</span>
                 </div>
               </div>
-              <!-- X 버튼을 작성자 정보 우측 상단에 배치 -->
-              <button class="close-btn-top" @click="closeModal">
-                <i class="material-icons">close</i>
-              </button>
+              <!-- 메뉴 버튼과 X 버튼을 작성자 정보 우측 상단에 배치 -->
+              <div class="modal-actions">
+                <button class="menu-btn-top" @click="togglePostMenu" v-if="isPostAuthor">
+                  <i class="material-icons">more_vert</i>
+                </button>
+                <div v-if="showPostMenu" class="menu-dropdown-top" @click.stop>
+                  <button class="menu-item delete-item" @click="deletePost">
+                    <i class="material-icons">delete</i>
+                    삭제
+                  </button>
+                </div>
+                <button class="close-btn-top" @click="closeModal">
+                  <i class="material-icons">close</i>
+                </button>
+              </div>
             </div>
 
           <!-- 제목 -->
@@ -75,7 +93,14 @@
                  <!-- 댓글 목록 -->
                  <div class="comments-list">
                    <div v-for="comment in comments" :key="comment.id" class="comment-item">
-                     <div class="comment-avatar">{{ comment.author.charAt(0) }}</div>
+                     <div class="comment-avatar">
+                       <img 
+                         :src="getAuthorProfileImage(comment.author_id, comment.profile_image)" 
+                         @error="onProfileImageError"
+                         alt="프로필"
+                         class="profile-image"
+                       />
+                     </div>
                      <div class="comment-content">
                        <div class="comment-header">
                          <span class="comment-author">{{ comment.author }}</span>
@@ -132,7 +157,14 @@
                        <!-- 답글 목록 -->
                        <div v-if="comment.replies && comment.replies.length > 0" class="replies-list">
                          <div v-for="reply in comment.replies" :key="reply.id" class="reply-item">
-                           <div class="reply-avatar">{{ reply.author.charAt(0) }}</div>
+                           <div class="reply-avatar">
+                             <img 
+                               :src="getAuthorProfileImage(reply.author_id, reply.profile_image)" 
+                               @error="onProfileImageError"
+                               alt="프로필"
+                               class="profile-image"
+                             />
+                           </div>
                            <div class="reply-content">
                              <div class="reply-header">
                                <span class="reply-author">{{ reply.author }}</span>
@@ -231,7 +263,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 
 const props = defineProps({
   postId: {
@@ -257,6 +289,8 @@ const replyText = ref('')
 const showComments = ref(true) // 댓글 섹션 표시 여부
 const editingCommentId = ref(null) // 수정 중인 댓글 ID
 const editingCommentText = ref('') // 수정 중인 댓글 내용
+const showPostMenu = ref(false) // 게시글 메뉴 표시 여부
+const isPostAuthor = ref(false) // 게시글 작성자인지 여부
 
 // 게시글 상세 정보를 서버에서 불러오는 함수
 const loadPost = async () => {
@@ -269,6 +303,17 @@ const loadPost = async () => {
       // 태그 문자열을 배열로 변환
       if (typeof data.tags === 'string') {
         post.value.tags = data.tags ? data.tags.split(',') : []
+      }
+      
+      // 게시글 작성자인지 확인
+      const token = getToken()
+      if (token) {
+        try {
+          const tokenPayload = JSON.parse(atob(token.split('.')[1]))
+          isPostAuthor.value = tokenPayload.sub === data.user_id
+        } catch (e) {
+          isPostAuthor.value = false
+        }
       }
     }
   } catch (error) {
@@ -321,6 +366,35 @@ const getImageUrl = (imageId) => {
 // 이미지 로드 실패 시 기본 이미지로 대체하는 함수
 const handleImageError = (event) => {
   event.target.src = '/images/default_wallpaper.png'
+}
+
+// 프로필 이미지 캐시 버스팅을 위한 타임스탬프 저장
+const profileImageTimestamps = ref({})
+
+// 작성자 프로필 이미지 URL 생성 함수
+const getAuthorProfileImage = (authorId, profileImage) => {
+  if (!authorId) {
+    return '/images/default_profile.png'
+  }
+  const timestamp = profileImageTimestamps.value[authorId] || Date.now()
+  return `${apiUrl}/users/${authorId}/profile-image?t=${timestamp}`
+}
+
+// 특정 사용자의 프로필 이미지 갱신
+const refreshProfileImage = (userId) => {
+  profileImageTimestamps.value[userId] = Date.now()
+  // 게시글 및 댓글을 강제로 리렌더링
+  if (post.value && post.value.author_id === userId) {
+    post.value = { ...post.value }
+  }
+  if (comments.value) {
+    comments.value = [...comments.value]
+  }
+}
+
+// 프로필 이미지 로드 실패 시 기본 이미지로 대체하는 함수
+const onProfileImageError = (event) => {
+  event.target.src = '/images/default_profile.png'
 }
 
 // 날짜를 상대적 시간 형식으로 변환하는 함수 (예: "3시간 전")
@@ -540,6 +614,48 @@ const getTotalCommentCount = () => {
   return total
 }
 
+// 게시글 메뉴 토글 함수
+const togglePostMenu = () => {
+  showPostMenu.value = !showPostMenu.value
+  showMenuFor.value = null // 댓글 메뉴 닫기
+}
+
+// 게시글 삭제 함수
+const deletePost = async () => {
+  if (!confirm('게시글을 삭제하시겠습니까?')) {
+    return
+  }
+
+  try {
+    const token = getToken()
+    if (!token) {
+      alert('로그인이 필요합니다')
+      return
+    }
+
+    const response = await fetch(`${apiUrl}/community/posts/${props.postId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+
+    if (response.ok) {
+      alert('게시글이 삭제되었습니다')
+      showPostMenu.value = false
+      closeModal()
+      // 커뮤니티 페이지에 변경사항 알림
+      emit('update')
+    } else {
+      const errorData = await response.json()
+      alert(`게시글 삭제 실패: ${errorData.error}`)
+    }
+  } catch (error) {
+    console.error('Failed to delete post:', error)
+    alert('게시글 삭제 중 오류가 발생했습니다')
+  }
+}
+
 // 댓글 섹션을 표시/숨김 토글하는 함수
 const toggleComments = () => {
   showComments.value = !showComments.value
@@ -699,10 +815,28 @@ onMounted(async () => {
   
   // 메뉴 외부 클릭 시 닫기
   document.addEventListener('click', (e) => {
-    if (!e.target.closest('.comment-menu') && !e.target.closest('.reply-menu')) {
+    if (!e.target.closest('.comment-menu') && !e.target.closest('.reply-menu') && !e.target.closest('.menu-btn-top')) {
       showMenuFor.value = null
+      showPostMenu.value = false
     }
   })
+  
+  // 프로필 이미지 업데이트 이벤트 리스너 등록
+  if (process.client) {
+    window.addEventListener('profileImageUpdated', (event) => {
+      const userId = event.detail?.userId
+      if (userId) {
+        console.log('게시글 상세 페이지 - 프로필 이미지 업데이트 이벤트 수신, 사용자 ID:', userId)
+        refreshProfileImage(userId)
+      }
+    })
+  }
+})
+
+onUnmounted(() => {
+  if (process.client) {
+    window.removeEventListener('profileImageUpdated', () => {})
+  }
 })
 </script>
 
@@ -797,24 +931,97 @@ onMounted(async () => {
 .author-avatar {
   width: 48px;
   height: 48px;
-  background: #2196f3;
-  color: #fff;
   border-radius: 50%;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: bold;
-  font-size: 1.2rem;
+  border: 2px solid #e0e0e0;
+}
+
+.author-avatar .profile-image {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  object-position: center !important;
+  display: block !important;
 }
 
 .author-details {
   flex: 1;
 }
 
-.close-btn-top {
+.modal-actions {
   position: absolute;
   top: 0;
   right: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 10;
+}
+
+.menu-btn-top {
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.menu-btn-top:hover {
+  background: #f5f5f5;
+  color: #2196f3;
+}
+
+.menu-btn-top .material-icons {
+  font-size: 24px;
+}
+
+.menu-dropdown-top {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  min-width: 120px;
+}
+
+.menu-dropdown-top .menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border: none;
+  background: none;
+  color: #333;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: background-color 0.2s;
+}
+
+.menu-dropdown-top .menu-item:hover {
+  background-color: #f5f5f5;
+}
+
+.menu-dropdown-top .delete-item {
+  color: #f44336;
+}
+
+.menu-dropdown-top .delete-item:hover {
+  background-color: #ffebee;
+}
+
+.close-btn-top {
   background: none;
   border: none;
   color: #666;
@@ -1011,14 +1218,20 @@ onMounted(async () => {
 .comment-avatar {
   width: 36px;
   height: 36px;
-  background: #2196f3;
-  color: #fff;
   border-radius: 50%;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: bold;
-  font-size: 0.9rem;
+  border: 2px solid #e0e0e0;
+}
+
+.comment-avatar .profile-image {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  object-position: center !important;
+  display: block !important;
   flex-shrink: 0;
 }
 
@@ -1304,13 +1517,19 @@ onMounted(async () => {
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: #2196f3;
-  color: #fff;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.7rem;
-  font-weight: 500;
+  border: 1px solid #e0e0e0;
+}
+
+.reply-avatar .profile-image {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  object-position: center !important;
+  display: block !important;
   flex-shrink: 0;
 }
 
