@@ -346,3 +346,55 @@ def get_liked_posts():
         print(f"Error in get_liked_posts: {e}")
         return jsonify({'posts': []}), 200
 
+@user_bp.route('/bookmarked-posts', methods=['GET'])
+@jwt_required()
+def get_bookmarked_posts():
+    """사용자가 저장한 게시글 목록"""
+    current_user_id = get_jwt_identity()
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # 테이블 존재 여부 확인
+        cursor.execute("""
+            SELECT COUNT(*) as count 
+            FROM information_schema.tables 
+            WHERE table_schema = DATABASE() 
+            AND table_name = 'post_bookmarks'
+        """)
+        table_exists = cursor.fetchone()['count'] > 0
+        
+        if not table_exists:
+            cursor.close()
+            conn.close()
+            return jsonify({'posts': []}), 200
+        
+        cursor.execute("""
+            SELECT p.id, p.title, p.created_at, pb.created_at as bookmarked_at
+            FROM posts p
+            JOIN post_bookmarks pb ON p.id = pb.post_id
+            WHERE pb.user_id = %s AND p.is_deleted = FALSE
+            GROUP BY p.id, p.title, p.created_at, pb.created_at
+            ORDER BY pb.created_at DESC
+        """, (current_user_id,))
+        
+        posts = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        
+        formatted_posts = []
+        for post in posts:
+            formatted_posts.append({
+                'id': post['id'],
+                'title': post['title'],
+                'created_at': post['created_at'].isoformat()
+            })
+        
+        return jsonify({'posts': formatted_posts}), 200
+        
+    except Exception as e:
+        cursor.close()
+        conn.close()
+        print(f"Error in get_bookmarked_posts: {e}")
+        return jsonify({'posts': []}), 200
+
