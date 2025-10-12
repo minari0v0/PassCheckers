@@ -117,3 +117,37 @@ def update_user_profile():
         conn.close()
         return jsonify({'error': '프로필 수정 중 오류가 발생했습니다'}), 500
 
+@user_bp.route('/verify-password', methods=['POST'])
+@jwt_required()
+def verify_password():
+    """현재 비밀번호 확인"""
+    current_user_id = get_jwt_identity()
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        data = request.get_json()
+        password = data.get('password')
+        
+        if not password:
+            return jsonify({'error': '비밀번호를 입력해주세요'}), 400
+        
+        cursor.execute("SELECT password_hash FROM users WHERE id = %s", (current_user_id,))
+        user = cursor.fetchone()
+        
+        if not user:
+            return jsonify({'error': '사용자를 찾을 수 없습니다'}), 404
+        
+        if not bcrypt.checkpw(password.encode('utf-8'), user['password_hash'].encode('utf-8')):
+            return jsonify({'error': '비밀번호가 올바르지 않습니다'}), 401
+        
+        cursor.close()
+        conn.close()
+        
+        return jsonify({'message': '비밀번호가 확인되었습니다'}), 200
+        
+    except Exception as e:
+        cursor.close()
+        conn.close()
+        return jsonify({'error': '비밀번호 확인 중 오류가 발생했습니다'}), 500
+
