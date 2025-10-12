@@ -247,7 +247,13 @@
           <p class="page-desc">동반 여행자와 공유하고 싶은 분석 기록을 선택해주세요.</p>
         </header>
         <main>
-          <div v-if="records.length > 0" class="records-grid">
+          <div v-if="isLoading" class="records-loading-state">
+            <div class="loading-spinner">
+              <div class="spinner"></div>
+            </div>
+            <p>분석 기록을 불러오는 중...</p>
+          </div>
+          <div v-else-if="records.length > 0" class="records-grid">
             <div v-for="record in records" :key="record.id" @click="selectRecord(record.id)" class="record-card">
               <div class="card-image-wrapper">
                 <img :src="record.imageUrl" :alt="record.name" class="card-image"/>
@@ -267,7 +273,7 @@
               </div>
             </div>
           </div>
-          <div v-else-if="!isLoading" class="empty-state">
+          <div v-else class="empty-state">
             <p>아직 분석 기록이 없습니다.</p>
           </div>
         </main>
@@ -974,20 +980,42 @@ onUnmounted(() => {
 
 .loading-container {
   text-align: center;
+  color: white; /* 텍스트와 스피너 색상을 여기서 지정 */
 }
 
 .loading-spinner .spinner {
   width: 60px;
   height: 60px;
   animation: spin 1.5s linear infinite;
-  color: white;
+  /* color: white; <-- 부모인 .loading-container로 이동 */
 }
 
 .loading-text {
   font-size: 1.1rem;
   font-weight: 500;
-  color: white;
   margin-top: 1rem;
+}
+
+/* --- 인라인 로딩 상태 --- */
+.records-loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 0;
+  gap: 1rem;
+  color: #888; /* 인라인 로딩 텍스트 색상 */
+}
+
+.records-loading-state .loading-spinner .spinner {
+  width: 48px;
+  height: 48px;
+  color: var(--main-blue, #2196f3); /* 인라인 로딩 스피너 색상 */
+}
+
+.records-loading-state p {
+  font-size: 1rem;
+  font-weight: 500;
 }
 
 /* --- 동반자 추가 팝업 --- */
