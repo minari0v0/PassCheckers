@@ -122,3 +122,18 @@
           <p class="help-text">태그는 최대 5개까지 추가할 수 있습니다</p>
         </div>
 
+        <!-- 버튼 -->
+        <div class="form-actions">
+          <button type="button" class="cancel-btn" @click="closeModal">
+            취소
+          </button>
+          <button type="submit" class="submit-btn" :disabled="isSubmitting">
+            <span v-if="!isSubmitting">작성 완료</span>
+            <span v-else>작성 중...</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</template>
+
