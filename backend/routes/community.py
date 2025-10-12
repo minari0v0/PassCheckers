@@ -850,3 +850,40 @@ def delete_comment(comment_id):
         cursor.close()
         conn.close()
 
+@community_bp.route('/recent', methods=['GET'])
+def get_recent_posts():
+    """최신 게시글 목록 조회 API (작성일 기준 내림차순)"""
+    limit = request.args.get('limit', 5, type=int)
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute("""
+            SELECT 
+                p.id,
+                p.title,
+                p.created_at,
+                u.nickname as author
+            FROM posts p
+            LEFT JOIN users u ON p.user_id = u.id
+            WHERE p.is_deleted = FALSE
+            ORDER BY p.created_at DESC
+            LIMIT %s
+        """, (limit,))
+        
+        posts = cursor.fetchall()
+        
+        # 날짜 포맷 변환
+        for post in posts:
+            if post['created_at']:
+                post['date'] = post['created_at'].strftime('%Y-%m-%d')
+        
+        return jsonify({'posts': posts}), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
