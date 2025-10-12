@@ -231,6 +231,38 @@
           </div>
         </div>
 
+        <!-- 계정 탈퇴 섹션 -->
+        <div v-if="activeSection === 'deletion'" class="content-section">
+          <div class="section-header">
+            <h1 class="text-negative">계정 탈퇴</h1>
+            <p class="text-negative">계정을 완전히 삭제합니다. 이 작업은 되돌릴 수 없습니다.</p>
+          </div>
+          
+          <div class="deletion-warning">
+            <div class="warning-card">
+              <div class="warning-header">
+                <i class="material-icons">warning</i>
+                <h3>주의사항</h3>
+              </div>
+              <ul class="warning-list">
+                <li>계정과 관련된 모든 데이터가 영구적으로 삭제됩니다.</li>
+                <li>분석 결과, 게시글, 댓글 등이 모두 삭제됩니다.</li>
+                <li>이 작업은 되돌릴 수 없습니다.</li>
+              </ul>
+              <q-btn 
+                color="negative" 
+                @click="openDeletionModal"
+                class="deletion-btn"
+              >
+                <i class="material-icons">delete_forever</i>
+                계정 탈퇴하기
+              </q-btn>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '~/composables/useAuth'
@@ -512,6 +544,50 @@ const formatDate = (dateString) => {
     month: 'long',
     day: 'numeric'
   })
+}
+
+// 계정 탈퇴 모달 열기
+const openDeletionModal = () => {
+  showDeletionModal.value = true
+}
+
+// 계정 탈퇴 처리
+const handleAccountDeletion = async (password) => {
+  try {
+    const token = getToken()
+    if (!token) return
+
+    const response = await fetch(`${apiUrl}/api/user/delete-account`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ password })
+    })
+
+    if (response.ok) {
+      alert('계정이 성공적으로 삭제되었습니다')
+      showDeletionModal.value = false
+      // 로그아웃 처리
+      localStorage.removeItem('access_token')
+      localStorage.removeItem('refresh_token')
+      router.push('/login')
+    } else {
+      const errorData = await response.json()
+      console.log('Delete account error:', response.status, errorData)
+      
+      // 비밀번호 오류인 경우 특별한 메시지 표시
+      if (response.status === 401 || errorData.error?.includes('password') || errorData.error?.includes('비밀번호')) {
+        alert('비밀번호가 일치하지 않습니다')
+      } else {
+        alert(`계정 삭제 실패: ${errorData.error}`)
+      }
+    }
+  } catch (error) {
+    console.error('Failed to delete account:', error)
+    alert('계정 삭제 중 오류가 발생했습니다')
+  }
 }
 
 // 게시글로 이동
