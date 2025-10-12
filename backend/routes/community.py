@@ -38,7 +38,7 @@ def get_posts():
     cursor = conn.cursor()
     
     try:
-        # 기본 쿼리 - 태그 필터링을 서브쿼리로 처리, 실제 댓글 수 계산
+        # 기본 쿼리 - 태그 필터링을 서브쿼리로 처리, 실제 댓글 수 계산, 작성자 프로필 이미지 포함
         query = """
             SELECT 
                 p.id,
@@ -52,6 +52,7 @@ def get_posts():
                 (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id AND c.is_deleted = FALSE) as comments_count,
                 p.views_count,
                 u.nickname as author,
+                u.id as author_id,
                 GROUP_CONCAT(DISTINCT t.name) as tags
             FROM posts p
             LEFT JOIN users u ON p.user_id = u.id
@@ -147,7 +148,7 @@ def get_post(post_id):
         # 조회수 증가
         cursor.execute("UPDATE posts SET views_count = views_count + 1 WHERE id = %s", (post_id,))
         
-        # 게시물 조회 (실제 댓글 수 계산)
+        # 게시물 조회 (실제 댓글 수 계산, 작성자 프로필 이미지 포함)
         cursor.execute("""
             SELECT 
                 p.id,
@@ -164,6 +165,7 @@ def get_post(post_id):
                 p.views_count,
                 p.is_deleted,
                 u.nickname as author,
+                u.id as author_id,
                 GROUP_CONCAT(DISTINCT t.name) as tags
             FROM posts p
             LEFT JOIN users u ON p.user_id = u.id
@@ -674,7 +676,8 @@ def get_comments(post_id):
                 c.created_at,
                 c.updated_at,
                 c.user_id,
-                u.nickname as author
+                u.nickname as author,
+                u.id as author_id
             FROM comments c
             LEFT JOIN users u ON c.user_id = u.id
             WHERE c.post_id = %s AND c.is_deleted = FALSE
