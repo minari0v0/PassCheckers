@@ -293,6 +293,11 @@
   </template>
   
   <script setup>
+// 로그인 검증 미들웨어 적용
+  definePageMeta({
+    middleware: 'auth'
+})
+
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '~/composables/useAuth'
