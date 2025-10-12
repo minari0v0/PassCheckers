@@ -546,6 +546,45 @@ const formatDate = (dateString) => {
   })
 }
 
+// 비밀번호 변경 처리 (현재 비밀번호 확인 + 새 비밀번호 변경)
+const handlePasswordChange = async (data) => {
+  try {
+    const token = getToken()
+    if (!token) return
+
+    const { getApiBaseUrl } = useApiUrl()
+    const baseUrl = getApiBaseUrl()
+
+    const response = await fetch(`${baseUrl}/api/user/change-password`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        current_password: data.currentPassword,
+        new_password: data.newPassword,
+        confirm_password: data.confirmPassword
+      })
+    })
+
+    if (response.ok) {
+      alert('비밀번호가 변경되었습니다')
+      showPasswordChangeModal.value = false
+    } else {
+      const errorData = await response.json()
+      if (response.status === 401 || errorData.error?.includes('비밀번호')) {
+        alert('현재 비밀번호가 올바르지 않습니다')
+      } else {
+        alert(`비밀번호 변경 실패: ${errorData.error}`)
+      }
+    }
+  } catch (error) {
+    console.error('Failed to change password:', error)
+    alert('비밀번호 변경 중 오류가 발생했습니다')
+  }
+}
+
 // 계정 탈퇴 모달 열기
 const openDeletionModal = () => {
   showDeletionModal.value = true
