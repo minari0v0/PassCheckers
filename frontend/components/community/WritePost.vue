@@ -163,3 +163,8 @@ const isSubmitting = ref(false)
 
 let searchTimeout = null
 
+// 파일 입력 창을 열어 이미지 업로드를 트리거하는 함수
+const triggerImageUpload = () => {
+  imageInput.value?.click()
+}
+
