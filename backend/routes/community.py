@@ -200,3 +200,92 @@ def get_post(post_id):
         cursor.close()
         conn.close()
 
+@community_bp.route('/posts', methods=['POST'])
+@jwt_required()
+def create_post():
+    """이미지와 태그를 포함한 게시물 작성 API (인증 필요)"""
+    current_user_id = get_jwt_identity()
+    
+    # FormData에서 데이터 가져오기
+    title = request.form.get('title')
+    content = request.form.get('content')
+    summary = request.form.get('summary', '')
+    location = request.form.get('location', '')
+    tags_json = request.form.get('tags', '[]')
+    
+    if not title or not content:
+        return jsonify({'error': '제목과 내용은 필수입니다'}), 400
+    
+    # 태그 파싱
+    import json
+    try:
+        tags = json.loads(tags_json) if tags_json else []
+    except:
+        tags = []
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        conn.begin()
+        
+        image_id = None
+        
+        # 이미지 업로드 처리
+        if 'image' in request.files:
+            file = request.files['image']
+            if file and file.filename:
+                img_bytes = file.read()
+                try:
+                    image = Image.open(io.BytesIO(img_bytes))
+                    img_width, img_height = image.size
+                    # 이미지를 DB에 저장
+                    image_id = insert_image(current_user_id, img_bytes, img_width, img_height, conn)
+                except Exception as e:
+                    print(f"[ERROR] Failed to process image: {e}")
+        
+        # 게시물 삽입
+        cursor.execute("""
+            INSERT INTO posts (user_id, title, content, summary, location, image_id)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (
+            current_user_id,
+            title,
+            content,
+            summary,
+            location,
+            image_id
+        ))
+        
+        post_id = cursor.lastrowid
+        
+        # 태그 처리
+        if tags:
+            for tag_name in tags:
+                # 태그가 없으면 생성
+                cursor.execute("""
+                    INSERT INTO tags (name) VALUES (%s)
+                    ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id)
+                """, (tag_name,))
+                
+                tag_id = cursor.lastrowid
+                
+                # post_tags에 연결
+                cursor.execute("""
+                    INSERT INTO post_tags (post_id, tag_id) VALUES (%s, %s)
+                """, (post_id, tag_id))
+        
+        conn.commit()
+        
+        return jsonify({
+            'message': '게시물이 작성되었습니다',
+            'post_id': post_id
+        }), 201
+        
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
