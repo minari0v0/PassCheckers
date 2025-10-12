@@ -322,3 +322,19 @@ const submitPost = async () => {
   }
 }
 
+// 외부 클릭 시 여행지 드롭다운을 닫는 함수
+const handleClickOutside = (event) => {
+  if (!event.target.closest('.location-search')) {
+    showLocationDropdown.value = false
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
+</script>
+
