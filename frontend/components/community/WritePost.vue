@@ -168,3 +168,18 @@ const triggerImageUpload = () => {
   imageInput.value?.click()
 }
 
+// 선택한 이미지 파일을 처리하고 미리보기를 생성하는 함수
+const handleImageSelect = (event) => {
+  const file = event.target.files[0]
+  if (file) {
+    imageFile.value = file
+    
+    // 미리보기 생성
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      imagePreview.value = e.target.result
+    }
+    reader.readAsDataURL(file)
+  }
+}
+
