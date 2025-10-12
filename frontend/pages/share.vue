@@ -114,21 +114,37 @@
             <transition name="fade">
               <div v-if="showDisconnectConfirm" class="modal-overlay">
                 <div class="confirm-dialog" v-click-outside="() => showDisconnectConfirm = false">
-                  <h3 class="dialog-title">연결 해제</h3>
-                  <p v-if="partnerToDisconnect" class="dialog-message">
-                    정말로 <strong>'{{ partnerToDisconnect.analysis.nickname }}'</strong>님과의 연결을 해제하시겠습니까?
-                  </p>
-                  <div class="dialog-actions">
-                    <button @click="showDisconnectConfirm = false" class="btn-cancel">취소</button>
-                    <button @click="confirmDisconnect" class="btn-confirm">해제</button>
-                  </div>
+                  <transition name="fade" mode="out-in">
+                    <!-- 성공 상태 -->
+                    <div v-if="disconnectSuccess" key="success" class="dialog-state-feedback">
+                      <svg class="check-icon" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                      <p class="dialog-message">성공적으로 연결을 해제했습니다.</p>
+                    </div>
+                    <!-- 로딩 상태 -->
+                    <div v-else-if="isDisconnecting" key="loading" class="dialog-state-feedback">
+                      <div class="button-spinner"></div>
+                      <p class="dialog-message">연결을 해제하는 중...</p>
+                    </div>
+                    <!-- 기본 확인 상태 -->
+                    <div v-else key="confirm">
+                      <h3 class="dialog-title">연결 해제</h3>
+                      <p v-if="partnerToDisconnect" class="dialog-message">
+                        정말로 <strong>'{{ partnerToDisconnect.analysis.nickname }}'</strong>님과의 연결을 해제하시겠습니까?
+                      </p>
+                      <div class="dialog-actions">
+                        <button @click="showDisconnectConfirm = false" class="btn-cancel">취소</button>
+                        <button @click="confirmDisconnect" class="btn-confirm">해제</button>
+                      </div>
+                    </div>
+                  </transition>
                 </div>
               </div>
             </transition>
 
             <div class="partner-panel-header">
               <h2>동반 여행자 수하물</h2>
-              <div class="add-partner-container">
+              <!-- 호스트 세션일 경우: 동반자 추가 버튼 -->
+              <div v-if="!isClientSession" class="add-partner-container">
                 <button @click.stop="showAddForm = !showAddForm" class="add-partner-btn">
                   <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></svg>
                   <span>동반자 추가</span>
@@ -168,6 +184,12 @@
                     </div>
                   </div>
                 </transition>
+              </div>
+              <!-- 파트너 세션일 경우: 연결 해제 버튼 -->
+              <div v-else>
+                <button @click="leaveSession" class="leave-session-btn">
+                  <span>연결 해제</span>
+                </button>
               </div>
             </div>
 
@@ -227,20 +249,18 @@
               <!-- 고정된 정보 및 네비게이션 -->
               <div class="carousel-fixed-footer">
                 <div class="partner-info">
-                  <span class="partner-nav-preview prev">{{ prevPartnerName }}</span>
                   <transition name="fade-info" mode="out-in">
                     <div class="partner-info-main" :key="currentPartnerIndex">
                       <div class="partner-title-wrapper">
                         <span v-if="!currentPartner.is_host" class="host-badge partner" title="이 연결을 시작한 호스트입니다.">호스트</span>
                         <span class="partner-name">{{ currentPartner.analysis.nickname || currentPartner.analysis.destination || `분석 #${currentPartner.analysis.id}` }}</span>
-                        <button @click="openDisconnectConfirm(currentPartner)" class="disconnect-btn" title="이 동반자와의 연결을 해제합니다.">
+                        <button v-if="!isClientSession && currentPartner.is_host" @click="openDisconnectConfirm(currentPartner)" class="disconnect-btn" title="이 동반자와의 연결을 해제합니다.">
                           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
                         </button>
                       </div>
                       <span class="partner-code">공유코드: {{ currentPartner.code }}</span>
                     </div>
                   </transition>
-                  <span class="partner-nav-preview next">{{ nextPartnerName }}</span>
                 </div>
               
                 <div class="carousel-dots">
@@ -339,6 +359,8 @@ const isCarouselVisible = ref(true);
 
 const showDisconnectConfirm = ref(false); // 동반자 연결 해제 확인 팝업
 const partnerToDisconnect = ref(null); // 연결 해제할 동반자 정보
+const isDisconnecting = ref(false); // 연결 해제 로딩 상태
+const disconnectSuccess = ref(false); // 연결 해제 성공 상태
 const statusChange = ref(null); // 동반자 수 변경 애니메이션 상태 ('added' 또는 'removed')
 const statusColorClass = ref(''); // 동반자 수 상태의 동적 클래스
 
@@ -373,6 +395,12 @@ const isHostOfAnyConnection = computed(() => {
 
 const partnerStatusClass = computed(() => {
   return partners.value.length > 0 ? 'status-connected' : 'status-default';
+});
+
+// 현재 세션이 다른 사람에 의해 초대된 '파트너 세션'인지 여부
+const isClientSession = computed(() => {
+  // 내가 호스트가 아닌 연결이 하나라도 있으면 '파트너 세션'으로 간주
+  return partners.value.some(p => !p.is_host);
 });
 
 // 호스트의 아이템 목록을 그룹화하고 개수를 세는 computed 속성
@@ -483,6 +511,8 @@ function openDisconnectConfirm(partner) {
 async function confirmDisconnect() {
   if (!partnerToDisconnect.value) return;
 
+  isDisconnecting.value = true;
+
   try {
     const url = getApiUrl(`/api/share/disconnect`);
     const { error } = await useFetch(url, {
@@ -500,17 +530,43 @@ async function confirmDisconnect() {
     if (error.value) {
       console.error('연결 해제 실패:', error.value);
       alert('연결 해제 중 오류가 발생했습니다.');
+      showDisconnectConfirm.value = false;
+      partnerToDisconnect.value = null;
     } else {
-      alert('연결이 해제되었습니다.');
+      disconnectSuccess.value = true; // 성공 상태로 변경
       await fetchConnections(); // 목록 새로고침
+      
+      // 1.5초 후 팝업을 닫고 상태를 완전히 초기화
+      setTimeout(() => {
+        showDisconnectConfirm.value = false;
+        // 트랜지션이 끝난 후 상태를 리셋해야 깜빡임이 없음
+        setTimeout(() => {
+          disconnectSuccess.value = false;
+          partnerToDisconnect.value = null;
+        }, 300);
+      }, 1500);
     }
   } catch (e) {
     console.error('연결 해제 중 예외 발생:', e);
     alert('연결 해제 중 오류가 발생했습니다.');
-  } finally {
-    // 팝업 닫기 및 상태 초기화
     showDisconnectConfirm.value = false;
     partnerToDisconnect.value = null;
+  } finally {
+    isDisconnecting.value = false;
+  }
+}
+
+/**
+ * '파트너 세션'일 때, 스스로 연결을 해제합니다.
+ */
+async function leaveSession() {
+  // 호스트는 내가 아닌 파트너, 즉 is_host가 false인 파트너입니다.
+  const hostPartner = partners.value.find(p => !p.is_host);
+  if (hostPartner) {
+    // 기존의 연결 해제 확인 팝업을 재사용합니다.
+    openDisconnectConfirm(hostPartner);
+  } else {
+    alert('연결된 호스트 정보를 찾을 수 없습니다.');
   }
 }
 
@@ -1341,9 +1397,6 @@ onUnmounted(() => {
   padding: 4rem 2rem 2rem 2rem; /* 상단 여백을 늘려 버튼과의 겹침 방지 */
   overflow-y: auto;
   border-radius: 8px; /* 부모 컨테이너와 동일하게 */
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .item-list {
@@ -1479,6 +1532,25 @@ onUnmounted(() => {
 .add-partner-btn:hover {
   background: #1976d2;
   box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2);
+}
+
+.leave-session-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #e74c3c; /* Red color */
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.leave-session-btn:hover {
+  background: #c0392b;
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.2);
 }
 
 .add-partner-form.card {
@@ -1675,44 +1747,48 @@ onUnmounted(() => {
   margin-bottom: 1rem;
 }
 
+.carousel-fixed-footer {
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 12px;
+  margin-top: 1rem; /* 여백 줄임 */
+  border: 1px solid #e9ecef;
+}
+
 .partner-info {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   text-align: center;
 }
 
 .partner-info-main {
-  flex-grow: 1;
+  padding: 0 1rem;
 }
 
-.partner-nav-preview {
-  flex: 0 0 100px; /* 양 옆 미리보기 공간 */
-  font-size: 0.8rem;
-  color: #aaa;
-  opacity: 0.7;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.partner-nav-preview.prev { text-align: left; }
-.partner-nav-preview.next { text-align: right; }
-
-.partner-code {
-  font-family: monospace;
-  font-weight: bold;
-  font-size: 1.1rem;
-  color: var(--main-blue, #2196f3);
-  display: block;
-  margin-bottom: 0.25rem;
+.partner-title-wrapper {
+  margin-bottom: 0.5rem; /* 간격 조정 */
 }
 
 .partner-name {
+  font-size: 1.25rem; /* 크기 증가 */
+  font-weight: 600; /* 굵게 */
+  color: #343a40;
+}
+
+.disconnect-btn {
+  color: #adb5bd; /* 기본 색상 변경 */
+  transition: all 0.2s ease;
+}
+.disconnect-btn:hover {
+  color: #e74c3c;
+  transform: scale(1.1);
+}
+
+.partner-code {
+  font-family: monospace;
   font-size: 0.9rem;
-  color: #555;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  color: #868e96;
+  background-color: #e9ecef;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
 }
 
 .fade-info-enter-active,
@@ -1731,19 +1807,21 @@ onUnmounted(() => {
 
 .dot {
   display: inline-block;
-  width: 10px;
-  height: 10px;
+  width: 8px; /* 크기 약간 줄임 */
+  height: 8px;
   border-radius: 50%;
-  background-color: #ccc;
+  background-color: #dee2e6;
   border: none;
   padding: 0;
-  margin: 0 5px;
+  margin: 0 4px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
 }
 
 .dot.active {
   background-color: var(--main-blue, #2196f3);
+  width: 24px; /* 활성 점은 길게 */
+  border-radius: 8px;
 }
 
 .view-fade-enter-active,
@@ -1961,6 +2039,23 @@ onUnmounted(() => {
 }
 .btn-confirm:hover {
   background-color: #c0392b;
+}
+
+.dialog-state-feedback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  min-height: 150px; /* 높이가 급격히 변하는 것을 방지 */
+}
+
+.dialog-state-feedback .check-icon {
+  color: #2ecc71;
+}
+
+.dialog-state-feedback .button-spinner {
+  border-top-color: var(--main-blue, #2196f3);
 }
 
 </style>
