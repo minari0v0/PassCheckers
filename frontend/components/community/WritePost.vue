@@ -287,3 +287,38 @@ const submitPost = async () => {
       return
     }
     
+    // FormData 생성
+    const postData = new FormData()
+    postData.append('title', formData.value.title)
+    postData.append('content', formData.value.content)
+    postData.append('location', formData.value.location)
+    postData.append('summary', formData.value.content.substring(0, 200)) // 내용 앞 200자를 요약으로
+    postData.append('tags', JSON.stringify(formData.value.tags))
+    
+    if (imageFile.value) {
+      postData.append('image', imageFile.value)
+    }
+    
+    const response = await fetch(`${apiUrl}/community/posts`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      body: postData
+    })
+    
+    if (response.ok) {
+      emit('submit')
+      closeModal()
+    } else {
+      const error = await response.json()
+      alert(error.error || '게시글 작성에 실패했습니다')
+    }
+  } catch (error) {
+    console.error('Failed to submit post:', error)
+    alert('게시글 작성 중 오류가 발생했습니다')
+  } finally {
+    isSubmitting.value = false
+  }
+}
+
