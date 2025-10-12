@@ -1,144 +1,182 @@
 <template>
   <div class="page-container">
     <!-- 1. 소개 화면 -->
-    <div v-if="!isStarted" class="intro-container">
-      <!-- 배경 장식 요소 -->
-      <div class="absolute inset-0 overflow-hidden pointer-events-none">
-        <div class="bg-shape1"></div>
-        <div class="bg-shape2"></div>
-        <div class="bg-shape3"></div>
-        <div class="bg-shape4"></div>
+    <div v-if="!isStarted" style="min-height: 100vh;">
+      <!-- 상단 안내문구 -->
+      <section style="text-align:center; margin-top:48px; margin-bottom:32px;">
+        <h1 style="font-size:2.2rem; font-weight:bold;">
+          스마트 패킹리스트
+        </h1>
+        <p style="color:#888; margin-top:8px;">
+          여행지, 날짜만 알려주시면 AI가 날씨와 현지 상황을 분석해 완벽한 여행 준비물을 추천해 드립니다.
+        </p>
+      </section>
+
+      <!-- 메인 카드: 주요 특징 -->
+      <div class="page-section" style="background:#f8fbff; border:1px solid #e3f0fa; margin-bottom: 24px;">
+        <div style="text-align:center; font-weight:600; font-size:1.2rem; margin-bottom:16px; display:flex; align-items:center; justify-content:center; gap:8px;">
+          <q-icon name="auto_awesome" color="primary" size="28px" />
+          스마트 추천 기능
+        </div>
+        
+        <!-- 특징 카드들 -->
+        <div style="display:flex; gap:24px; justify-content:center; margin-top:32px; flex-wrap:wrap;">
+          <!-- 스마트 추천 카드 -->
+          <q-card flat bordered style="flex:1 1 220px; max-width:320px; min-width:220px; border-radius:16px; padding:32px 20px; text-align:center; display:flex; flex-direction:column; align-items:center; box-shadow: none;">
+            <q-icon name="smart_toy" color="primary" size="36px" style="margin-bottom:12px;" />
+            <div style="font-weight:600; margin-bottom:8px;">스마트 추천</div>
+            <div style="color:#888; font-size:0.98rem;">실시간 날씨, 여행 기간, 현지 특성을 종합 분석해 당신에게 꼭 필요한 준비물만 추천해드려요.</div>
+          </q-card>
+          <!-- 항공 규정 안내 카드 -->
+          <q-card flat bordered style="flex:1 1 220px; max-width:320px; min-width:220px; border-radius:16px; padding:32px 20px; text-align:center; display:flex; flex-direction:column; align-items:center; box-shadow: none;">
+            <q-icon name="gavel" color="primary" size="36px" style="margin-bottom:12px;" />
+            <div style="font-weight:600; margin-bottom:8px;">항공 규정 안내</div>
+            <div style="color:#888; font-size:0.98rem;">헷갈리는 기내 반입, 위탁 수하물 규정을 각 물품별로 알기 쉽게 표시해 드립니다.</div>
+          </q-card>
+          <!-- 비행 정보 연동 카드 -->
+          <q-card flat bordered style="flex:1 1 220px; max-width:320px; min-width:220px; border-radius:16px; padding:32px 20px; text-align:center; display:flex; flex-direction:column; align-items:center; box-shadow: none;">
+            <q-icon name="flight_land" color="primary" size="36px" style="margin-bottom:12px;" />
+            <div style="font-weight:600; margin-bottom:8px;">비행 정보 연동</div>
+            <div style="color:#888; font-size:0.98rem;">항공편 정보를 입력하면 장거리 비행 필수품이나 시차 적응 아이템까지 꼼꼼하게 챙겨드려요.</div>
+          </q-card>
+        </div>
       </div>
 
-      <main class="hero-content">
-        <!-- 히어로 섹션 -->
-        <div class="mb-16">
-          <div class="flex justify-center mb-8">
-            <div class="relative">
-              <div class="w-24 h-24 hero-icon-globe flex items-center justify-center">
-                <q-icon name="public" size="3.5rem" color="white" />
-              </div>
-              <div class="absolute -top-2 -right-2 w-8 h-8 hero-icon-sparkle flex items-center justify-center">
-                <q-icon name="auto_awesome" size="1rem" color="white" />
-              </div>
-            </div>
-          </div>
-
-          <h1 class="main-title">
-            AI 스마트 패킹리스트
-          </h1>
-
-          <p class="subtitle">
-            여행지, 날짜만 알려주시면 AI가 날씨와 현지 상황을 분석해 완벽한 여행 준비물을 추천해 드립니다.
-          </p>
-
-          <!-- 주요 특징 -->
-          <div class="features-grid">
-            <div class="feature-card">
-              <div class="card-icon-wrapper icon-bg-1">
-                <q-icon name="smart_toy" size="2rem" />
-              </div>
-              <h3 class="card-title">스마트 추천</h3>
-              <p class="card-description">
-                실시간 날씨, 여행 기간, 현지 특성을 종합 분석해 당신에게 꼭 필요한 준비물만 추천해드려요.
-              </p>
-            </div>
-
-            <div class="feature-card">
-              <div class="card-icon-wrapper icon-bg-2">
-                <q-icon name="gavel" size="2rem" />
-              </div>
-              <h3 class="card-title">항공 규정 안내</h3>
-              <p class="card-description">
-                헷갈리는 기내 반입, 위탁 수하물 규정을 각 물품별로 알기 쉽게 표시해 드립니다.
-              </p>
-            </div>
-
-            <div class="feature-card">
-              <div class="card-icon-wrapper icon-bg-3">
-                <q-icon name="flight_land" size="2rem" />
-              </div>
-              <h3 class="card-title">비행 정보 연동</h3>
-              <p class="card-description">
-                항공편 정보를 입력하면 장거리 비행 필수품이나 시차 적응 아이템까지 꼼꼼하게 챙겨드려요.
-              </p>
-            </div>
-          </div>
+      <!-- CTA 카드 -->
+      <div class="page-section" style="background:#ffffff; border:1px solid #e0e0e0;">
+        <h2 style="font-size: 1.8rem; font-weight: 700; color: #333; text-align: center; margin-bottom: 8px;">나만의 패킹리스트 만들기</h2>
+        <p style="color:#888; text-align: center; margin-bottom: 24px;">
+          간단한 질문으로 당신만의 특별한 여행 준비를 시작하세요.
+        </p>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 24px; color: #546e7a;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;"><q-icon name="schedule" /><span>소요시간: 약 30초</span></div>
+            <div style="width: 4px; height: 4px; background: #b0bec5; border-radius: 50%;"></div>
+            <div style="display: flex; align-items: center; gap: 0.5rem;"><q-icon name="grade" /><span>무료 서비스</span></div>
         </div>
-
-        <!-- CTA 섹션 -->
-        <div class="cta-card">
-          <h2 class="cta-title">나만의 패킹리스트 만들기</h2>
-          <p class="cta-subtitle">
-            간단한 질문으로 당신만의 특별한 여행 준비를 시작하세요.
-          </p>
-
-          <div class="cta-info">
-            <div class="info-item"><q-icon name="schedule" /><span>소요시간: 약 30초</span></div>
-            <div class="info-divider"></div>
-            <div class="info-item"><q-icon name="grade" /><span>무료 서비스</span></div>
-          </div>
-
-          <q-btn
+        <div style="text-align:center;">
+          <q-btn 
+            color="primary" 
+            label="패킹리스트 생성 시작" 
+            unelevated 
             @click="startSurvey"
-            size="lg"
-            class="start-btn"
-            unelevated
-          >
-            <q-icon name="auto_awesome" class="mr-2 h-5 w-5" />
-            패킹리스트 생성 시작
-            <q-icon name="arrow_forward" class="ml-2 h-5 w-5" />
-          </q-btn>
+            style="border-radius: 12px; padding: 12px 24px; font-size: 1.1rem;"
+          />
         </div>
-      </main>
+      </div>
     </div>
 
     <!-- 2. 설문조사 및 결과 화면 -->
     <div v-else class="survey-container-wide">
+      <!-- Survey Header -->
+      <div style="padding: 2rem 0; text-align: center;">
+        <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 8px;">나만의 여행 준비물 찾기</h1>
+        <p style="font-size: 1.1rem; color: #888;">몇 가지 질문에 답변하고 완벽한 패킹리스트를 받아보세요.</p>
+      </div>
+
       <SurveyStepper v-if="!showResults" @survey-complete="handleSurveyComplete" />
 
       <!-- 결과 표시 -->
       <div v-else class="results-wrapper">
         <div class="form-header">
           <q-btn flat round icon="arrow_back" @click="goBackToSurvey" />
-          <h2 class="form-title">AI 추천 패킹리스트</h2>
+          <h2 class="form-title">나만의 패킹리스트</h2>
         </div>
 
-        <q-card class="output-card" flat bordered>
+        <q-banner v-if="isHistorical" inline-actions rounded class="bg-blue-1 text-primary q-mb-md">
+          <template v-slot:avatar>
+            <q-icon name="info" />
+          </template>
+          일기 예보를 확인하기 어려운 먼 날짜이므로, 과거 날씨 통계를 기반으로 추천해 드렸어요.
+        </q-banner>
+
+        <q-card class="output-card" flat bordered style="padding: 1.5rem;">
           <div v-if="isLoading" class="loading-state">
             <q-spinner-gears size="xl" color="primary" />
-            <p class="q-mt-md text-subtitle1">AI가 날씨와 여행지 정보를 분석 중입니다...</p>
+            <p class="q-mt-md text-subtitle1">결과를 분석 중입니다...</p>
           </div>
 
           <div v-else class="result-grid">
+            <!-- Left Column: Recommendation List -->
             <div class="recommendation-list">
-              <div v-for="group in packingList" :key="group.group_name" class="q-mb-lg">
+              <q-card flat bordered class="q-mb-lg" v-for="group in packingList" :key="group.group_name">
+                <q-card-section>
+                  <div class="text-h6">{{ group.group_name }}</div>
+                </q-card-section>
+                <q-separator />
                 <q-list separator>
-                    <q-item-label header>{{ group.group_name }}</q-item-label>
-                    <q-item v-for="item in group.items" :key="item.name">
-                        <q-item-section avatar><q-icon :name="item.icon" /></q-item-section>
+                    <q-item v-for="item in (expandedGroups[group.group_name] ? group.items : group.items.slice(0, 3))" :key="item.name" class="q-py-md">
                         <q-item-section>
-                            <q-item-label>{{ item.name }}</q-item-label>
+                            <div class="row items-baseline no-wrap">
+                                <span class="text-subtitle1 text-weight-medium q-mr-sm">{{ item.name }}</span>
+                                <span class="text-caption text-grey-7" v-if="item.reason">{{ item.reason }}</span>
+                            </div>
                         </q-item-section>
+
                         <q-item-section side>
-                            <q-icon :name="item.regulation === 'carry-on' ? 'flight_takeoff' : 'luggage'" :color="item.regulation === 'carry-on' ? 'blue' : 'deep-orange'">
-                                <q-tooltip>{{ item.regulation }}</q-tooltip>
-                            </q-icon>
+                            <div class="row items-center q-gutter-x-sm">
+                                <q-icon v-if="item.regulation.includes('기내')" name="backpack" color="blue">
+                                    <q-tooltip>기내 반입</q-tooltip>
+                                </q-icon>
+                                <q-icon v-if="item.regulation.includes('위탁')" name="inventory_2" color="deep-orange">
+                                    <q-tooltip>위탁 수하물</q-tooltip>
+                                </q-icon>
+                                <q-icon name="info_outline" color="grey-6" v-if="item.notes && item.notes.trim() !== '' && item.notes.trim() !== '제한 없음'">
+                                    <q-tooltip max-width="250px" style="font-size: 12px;">
+                                        {{ item.notes }}
+                                    </q-tooltip>
+                                </q-icon>
+                            </div>
                         </q-item-section>
                     </q-item>
                 </q-list>
-              </div>
-            </div>
-            <div class="weather-chart-container">
-              <q-card flat bordered v-if="historicalWeather">
-                <q-card-section>
-                  <div class="text-h6">월별 날씨 요약</div>
-                  <div class="text-subtitle2">{{ finalSelections.destination }}</div>
-                </q-card-section>
-                <q-card-section style="height: 400px;">
-                  <WeatherChart :weather-data="historicalWeather" />
-                </q-card-section>
+                <q-card-actions align="center" v-if="group.items.length > 3" style="border-top: 1px solid rgba(0, 0, 0, 0.12);">
+                  <q-btn 
+                    flat 
+                    color="primary" 
+                    :label="expandedGroups[group.group_name] ? '간략히 보기' : '더보기'" 
+                    @click="toggleGroup(group.group_name)" 
+                    :icon-right="expandedGroups[group.group_name] ? 'expand_less' : 'expand_more'"
+                  />
+                </q-card-actions>
               </q-card>
+            </div>
+            
+            <!-- Right Column: Weather Info -->
+            <div class="weather-column">
+              <!-- Real-time Forecast Display -->
+              <div class="forecast-container q-mb-lg" v-if="forecastData">
+                <q-card flat bordered>
+                  <q-card-section>
+                    <div class="text-h6">주간 예보 - {{ finalSelections.destination }}</div>
+                  </q-card-section>
+                  <q-separator />
+                  <div class="forecast-grid-horizontal q-pa-md">
+                    <div v-for="day in tripForecast" :key="day.time" class="forecast-day-col">
+                        <div class="text-weight-medium">{{ new Date(day.time).toLocaleDateString('ko-KR', { weekday: 'short' }) }}</div>
+                        <div class="text-caption text-grey">{{ new Date(day.time).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' }) }}</div>
+                        <div class="text-h5 q-my-sm">{{ day.weather_icon }}</div>
+                        <div class="text-caption text-grey-7" v-if="day.precipitation_probability_mean > 0">({{ day.precipitation_probability_mean }}%)</div>
+                        <div class="text-weight-bold q-mt-xs">
+                            <span class="text-red">{{ Math.round(day.temperature_2m_max) }}°</span> / <span class="text-blue">{{ Math.round(day.temperature_2m_min) }}°</span>
+                        </div>
+                    </div>
+                  </div>
+                </q-card>
+              </div>
+
+              <!-- Historical Weather Chart -->
+              <div class="weather-chart-container">
+                <q-card flat bordered v-if="historicalWeather">
+                  <q-card-section>
+                    <div class="text-h6">월별 날씨 요약</div>
+                    <div class="text-subtitle2">{{ finalSelections.destination }}</div>
+                  </q-card-section>
+                  <q-separator />
+                  <q-card-section style="height: 400px;">
+                    <WeatherChart :weather-data="historicalWeather" :travel-dates="finalSelections.dates" />
+                  </q-card-section>
+                </q-card>
+              </div>
             </div>
           </div>
         </q-card>
@@ -161,7 +199,63 @@ const isLoading = ref(false);
 const packingList = ref([]);
 const finalSelections = ref(null);
 const historicalWeather = ref(null);
-const { getApiUrl } = useApiUrl();
+const forecastData = ref(null); // 실시간 예보 데이터
+const isHistorical = ref(false);
+const { getApiUrl } = useApiUrl(); // getApiUrl 정의가 누락되어 추가합니다.
+
+const expandedGroups = ref({}); // 그룹별 확장 상태 관리
+
+const toggleGroup = (groupName) => {
+  expandedGroups.value[groupName] = !expandedGroups.value[groupName];
+};
+
+const tripForecast = computed(() => {
+  if (!forecastData.value || !finalSelections.value || !finalSelections.value.dates) {
+    return [];
+  }
+
+  const startDate = new Date(finalSelections.value.dates.from);
+  const endDate = new Date(finalSelections.value.dates.to);
+
+  // 시간 정보를 0으로 설정하여 날짜만 비교합니다.
+  startDate.setHours(0, 0, 0, 0);
+  endDate.setHours(0, 0, 0, 0);
+
+  return forecastData.value.filter(day => {
+    const dayDate = new Date(day.time);
+    dayDate.setHours(0, 0, 0, 0);
+    return dayDate >= startDate && dayDate <= endDate;
+  });
+});
+
+// 날씨 코드를 이모지 아이콘으로 매핑하는 함수
+const mapWeatherCodeToIcon = (code) => {
+  const iconMap = {
+    0: '☀️', // 맑음
+    1: '🌤️', // 대체로 맑음
+    2: '🌥️', // 구름 조금
+    3: '☁️', // 흐림
+    45: '🌫️', // 안개
+    48: '🌫️', // 서리 안개
+    51: '💧', // 이슬비: 약함
+    53: '💧', // 이슬비: 보통
+    55: '💧', // 이슬비: 강함
+    61: '🌧️', // 비: 약함
+    63: '🌧️', // 비: 보통
+    65: '🌧️', // 비: 강함
+    71: '❄️', // 눈: 약함
+    73: '❄️', // 눈: 보통
+    75: '❄️', // 눈: 강함
+    77: '❄️', // 싸락눈
+    80: '🌦️', // 소나기: 약함
+    81: '🌦️', // 소나기: 보통
+    82: '⛈️', // 소나기: 폭우
+    85: '🌨️', // 눈 소나기: 약함
+    86: '🌨️', // 눈 소나기: 강함
+    95: '⚡️', // 뇌우
+  };
+  return iconMap[code] || '❔';
+};
 
 const startSurvey = () => { isStarted.value = true; };
 
@@ -170,6 +264,8 @@ const goBackToSurvey = () => {
   packingList.value = [];
   finalSelections.value = null;
   historicalWeather.value = null;
+  isHistorical.value = false;
+  forecastData.value = null; // 예보 데이터 초기화
 };
 
 const handleSurveyComplete = async (surveyData) => {
@@ -178,6 +274,17 @@ const handleSurveyComplete = async (surveyData) => {
   isLoading.value = true;
   packingList.value = [];
   historicalWeather.value = null;
+  isHistorical.value = false;
+  forecastData.value = null;
+
+  // 여행 시작일이 14일 이후인지 확인
+  const today = new Date();
+  const startDate = new Date(surveyData.dates.from);
+  const diffTime = startDate.getTime() - today.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  if (diffDays > 14) {
+    isHistorical.value = true;
+  }
 
   try {
     const recommendationEndpoint = getApiUrl('/api/packing-recommendation');
@@ -194,6 +301,16 @@ const handleSurveyComplete = async (surveyData) => {
     const data = await response.json();
     packingList.value = data.packing_list;
 
+    // 실시간 예보 데이터 처리
+    if (data.forecast_data) {
+      const processedForecast = data.forecast_data.map(day => ({
+        ...day,
+        weather_icon: mapWeatherCodeToIcon(day.weathercode)
+      }));
+      forecastData.value = processedForecast;
+    }
+
+    // 과거 날씨 데이터 처리 (차트용)
     if (data.location_id) {
       const weatherEndpoint = getApiUrl(`/api/locations/${data.location_id}/weather/historical`);
       const weatherResponse = await fetch(weatherEndpoint);
@@ -216,231 +333,14 @@ const handleSurveyComplete = async (surveyData) => {
 /* 폰트 불러오기 */
 @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;700;800&display=swap');
 
-/* 색상 변수 */
-:root {
-  --travel-primary: #4A55A2; /* Indigo */
-  --travel-secondary: #78909c; /* Blue Grey */
-  --travel-accent: #A0BFE0; /* Light Blue */
-  --travel-border: #E0E0E0;
-  --travel-muted: #546e7a;
-  --travel-text-primary: #212121;
+.page-section { 
+  border-radius: 20px; 
+  padding: 32px; 
+  margin: 0 auto; 
+  max-width: 1200px; 
+  width: 100%; 
+  box-sizing: border-box; 
 }
-
-/* 기본 컨테이너 */
-.page-container {
-  font-family: 'Pretendard', sans-serif;
-  background-color: #f8f9fa;
-  min-height: 90vh;
-}
-
-/* 소개 화면 스타일 */
-.intro-container {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 90vh;
-  padding: 2rem;
-  background: linear-gradient(160deg, #F0F2FF 0%, #EAF5FF 100%);
-  overflow: hidden;
-}
-
-.hero-content {
-  text-align: center;
-  z-index: 10;
-  max-width: 900px;
-  width: 100%;
-}
-
-/* 배경 도형 */
-.bg-shape1,
-.bg-shape2,
-.bg-shape3,
-.bg-shape4 {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(60px);
-  animation: pulse 20s infinite;
-}
-.bg-shape1 { width: 220px; height: 220px; top: 10%; left: 15%; background: rgba(160, 191, 224, 0.4); animation-delay: 0s; }
-.bg-shape2 { width: 160px; height: 160px; top: 60%; right: 20%; background: rgba(120, 144, 156, 0.3); animation-delay: 5s; }
-.bg-shape3 { width: 120px; height: 120px; bottom: 15%; left: 30%; background: rgba(74, 85, 162, 0.2); animation-delay: 10s; }
-.bg-shape4 { width: 140px; height: 140px; top: 30%; right: 40%; background: rgba(160, 191, 224, 0.3); animation-delay: 15s; }
-
-@keyframes pulse {
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 0.6;
-  }
-  50% {
-    transform: scale(1.3);
-    opacity: 0.8;
-  }
-}
-
-/* 히어로 섹션 스타일 */
-.mb-16 { margin-bottom: 4rem; }
-.mb-8 { margin-bottom: 2rem; }
-.flex { display: flex; }
-.justify-center { justify-content: center; }
-.items-center { align-items: center; }
-.relative { position: relative; }
-.w-24 { width: 6rem; }
-.h-24 { height: 6rem; }
-
-.hero-icon-globe {
-  background: linear-gradient(to right, var(--travel-primary), #5C6BC0);
-  border-radius: 9999px;
-  box-shadow: 0 10px 30px rgba(69, 90, 100, 0.4);
-}
-.absolute { position: absolute; }
-.-top-2 { top: -0.5rem; }
-.-right-2 { right: -0.5rem; }
-.w-8 { width: 2rem; }
-.h-8 { height: 2rem; }
-
-.hero-icon-sparkle {
-  background: var(--travel-accent);
-  border-radius: 9999px;
-}
-
-.main-title {
-  font-size: 3.5rem;
-  font-weight: 800;
-  background: linear-gradient(to right, var(--travel-primary), var(--travel-accent));
-  -webkit-background-clip: text;
-  color: transparent;
-  margin-bottom: 1rem;
-  line-height: 1.2;
-}
-
-.subtitle {
-  font-size: 1.25rem;
-  color: var(--travel-muted);
-  max-width: 600px;
-  margin: 0 auto 3rem auto;
-  line-height: 1.6;
-}
-
-/* 특징 그리드 스타일 */
-.features-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem;
-}
-
-.feature-card {
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 1rem;
-  padding: 2rem;
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.08);
-  transition: all 0.3s ease;
-}
-
-.feature-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.12);
-}
-
-.card-icon-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 4rem;
-  height: 4rem;
-  border-radius: 9999px;
-  margin: 0 auto 1.5rem auto;
-  color: white;
-}
-
-.icon-bg-1 { background: linear-gradient(to right, #5c6bc0, #3949ab); }
-.icon-bg-2 { background: linear-gradient(to right, #26a69a, #00897b); }
-.icon-bg-3 { background: linear-gradient(to right, #ffab40, #ff8f00); }
-
-.card-title {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: var(--travel-text-primary);
-  margin-bottom: 0.5rem;
-}
-
-.card-description {
-  font-size: 0.9rem;
-  color: var(--travel-muted);
-  line-height: 1.5;
-}
-
-/* CTA 섹션 스타일 */
-.cta-card {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  border-radius: 1.5rem;
-  padding: 2.5rem;
-  max-w: 720px;
-  margin: 4rem auto 0 auto;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-}
-
-.cta-title {
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--travel-primary);
-  margin-bottom: 0.5rem;
-}
-
-.cta-subtitle {
-  font-size: 1.1rem;
-  color: var(--travel-muted);
-  margin-bottom: 1.5rem;
-}
-
-.cta-info {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  margin-bottom: 2rem;
-  color: var(--travel-muted);
-}
-
-.info-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.info-divider {
-  width: 4px;
-  height: 4px;
-  background: #b0bec5;
-  border-radius: 50%;
-}
-
-.start-btn {
-  border-radius: 9999px;
-  font-weight: 700;
-  padding: 0.8rem 2.5rem;
-  background: linear-gradient(to right, var(--travel-primary), #5C6BC0);
-  color: white;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(69, 90, 100, 0.3);
-}
-
-.start-btn:hover {
-  transform: translateY(-3px) scale(1.05);
-  box-shadow: 0 8px 25px rgba(69, 90, 100, 0.4);
-}
-
-.mr-2 { margin-right: 0.5rem; }
-.ml-2 { margin-left: 0.5rem; }
-.h-5 { height: 1.25rem; }
-.w-5 { width: 1.25rem; }
 
 /* --- 2. 설문 및 결과 뷰 스타일 --- */
 .survey-container-wide {
@@ -451,6 +351,7 @@ const handleSurveyComplete = async (surveyData) => {
 
 .results-wrapper {
   margin-top: 2rem;
+  padding: 0 2rem; /* 좌우 여백 추가 */
 }
 
 .form-header {
@@ -487,8 +388,8 @@ const handleSurveyComplete = async (surveyData) => {
 
 .result-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 2.5rem;
 }
 
 .recommendation-list {
@@ -497,5 +398,28 @@ const handleSurveyComplete = async (surveyData) => {
 
 .weather-chart-container {
   /* styles for the right column */
+}
+
+.weather-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.forecast-grid-horizontal {
+  display: flex;
+  overflow-x: auto;
+  gap: 1rem;
+  padding-bottom: 1rem; /* For scrollbar */
+}
+
+.forecast-day-col {
+  flex: 0 0 90px; /* Fixed width for each day column */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.75rem 0.5rem;
+  border-radius: 8px;
+  background-color: #f8f9fa;
 }
 </style>

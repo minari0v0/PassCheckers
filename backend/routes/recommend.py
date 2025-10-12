@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from datetime import datetime, timedelta
 import traceback
+import pandas as pd # pandas import 추가
 from matching.recommend_matching_service import recommend_matching_service
 # weather_service에서 필요한 함수들을 import 합니다.
 from services.recommendation_service import (
@@ -75,7 +76,17 @@ def packing_recommendation():
         traceback.print_exc()
         return jsonify({"error": f"추천 리스트 생성 중 오류 발생: {e}"}), 500
 
-    return jsonify({
+    response_data = {
         "location_id": loc_id,
         "packing_list": recommendations
-    })
+    }
+
+    # 실시간 예보 데이터가 있는 경우, JSON으로 변환하여 응답에 추가
+    if is_forecast_range and isinstance(weather_data, pd.DataFrame):
+        # DataFrame을 JSON 직렬화 가능한 형태로 변환 (예: 리스트 안의 딕셔너리)
+        # 날짜를 문자열로 변환
+        forecast_df = weather_data.reset_index()
+        forecast_df['time'] = forecast_df['time'].dt.strftime('%Y-%m-%d')
+        response_data["forecast_data"] = forecast_df.to_dict('records')
+
+    return jsonify(response_data)

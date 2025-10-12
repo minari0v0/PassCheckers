@@ -131,7 +131,7 @@ def _get_full_item_details(cursor, item_names):
     if not item_names:
         return []
     placeholders = ', '.join(['%s'] * len(item_names))
-    sql = f"SELECT item_name, carry_on_allowed, checked_baggage_allowed, category FROM items WHERE item_name IN ({placeholders})"
+    sql = f"SELECT item_name, carry_on_allowed, checked_baggage_allowed, category, notes FROM items WHERE item_name IN ({placeholders})"
     cursor.execute(sql, tuple(item_names))
     return cursor.fetchall()
 
@@ -143,8 +143,8 @@ def eval_weather_rule(rule_id, metrics):
     if rule_id == 3: return 5 <= avg_temp < 15
     if rule_id == 4: return avg_temp < 5
     if rule_id == 5: return metrics.get('temp_diff', 0) > 10
-    if rule_id == 6: return metrics.get('avg_rain_chance', 0) > 40
-    if rule_id == 7: return metrics.get('will_snow', False)
+    if rule_id == 6: return metrics.get('is_rainy', False) # '비' 기준 변경
+    if rule_id == 7: return metrics.get('is_snowy', False) # '눈' 기준 변경
     if rule_id == 8: return metrics.get('avg_uv', 0) > 8
     if rule_id == 9: return metrics.get('max_wind_kph', 0) > 30
     if rule_id == 10: return metrics.get('avg_humidity', 0) > 80
@@ -154,144 +154,107 @@ def eval_weather_rule(rule_id, metrics):
 
 def generate_packing_list(lat, lon, weather_data, preferences):
     """모든 조건을 종합하여 최종 패킹 리스트를 생성합니다."""
-    from services.amadeus_service import get_safety_scores # 순환참조 방지
-
     if weather_data is None or (isinstance(weather_data, pd.DataFrame) and weather_data.empty) or (isinstance(weather_data, dict) and not weather_data):
-        return [{"group_name": "오류", "items": [{"name": "날씨 정보 없음", "reason": "날씨 정보를 가져오는 데 실패했습니다.", "regulation": "N/A", "icon": "warning"}]}]
+        return []
 
-    # 1. 날씨 데이터 요약 및 계절 판단
+    # 1. 날씨 데이터 요약
     metrics = {}
     is_forecast = isinstance(weather_data, pd.DataFrame)
     if is_forecast:
         start_date = pd.to_datetime(preferences['dates']['from'])
         end_date = pd.to_datetime(preferences['dates']['to'])
         trip_weather = weather_data.loc[start_date:end_date]
-        if trip_weather.empty:
-            return [{"group_name": "오류", "items": [{"name": "날씨 정보 없음", "reason": "선택하신 날짜에 대한 날씨 정보가 없습니다.", "regulation": "N/A", "icon": "warning"}]}]
+        if trip_weather.empty: return []
+        
         metrics['avg_temp'] = (trip_weather['temperature_2m_max'].mean() + trip_weather['temperature_2m_min'].mean()) / 2
-        metrics['temp_diff'] = (trip_weather['temperature_2m_max'] - trip_weather['temperature_2m_min']).mean()
-        metrics['avg_rain_chance'] = trip_weather['precipitation_probability_mean'].mean()
-        metrics['will_snow'] = ((trip_weather['weathercode'] >= 70) & (trip_weather['weathercode'] < 80)).any()
-        metrics['avg_uv'] = trip_weather['uv_index_max'].mean()
-        metrics['max_wind_kph'] = trip_weather['wind_speed_10m_max'].max()
-        metrics['avg_humidity'] = trip_weather['relative_humidity_2m_mean'].mean()
-    else: # Historical data
+        metrics['is_rainy'] = (trip_weather['precipitation_probability_mean'] > 40).any()
+        metrics['is_snowy'] = ((trip_weather['weathercode'] >= 70) & (trip_weather['weathercode'] < 80) & (trip_weather['temperature_2m_min'] < 3)).any()
+    else: # Historical
         metrics['avg_temp'] = (weather_data.get('avg_max_temp', 0) + weather_data.get('avg_min_temp', 0)) / 2
-        metrics['temp_diff'] = weather_data.get('avg_max_temp', 0) - weather_data.get('avg_min_temp', 0)
-        metrics['avg_rain_chance'] = 50 if weather_data.get('monthly_precipitation_mm', 0) > 70 else 10
-        metrics['will_snow'] = metrics['avg_temp'] < 0
+        metrics['is_rainy'] = weather_data.get('monthly_precipitation_mm', 0) > 100
+        metrics['is_snowy'] = (weather_data.get('avg_min_temp', 99) <= 0) and (weather_data.get('monthly_precipitation_mm', 0) > 30)
 
     season = '여름' if metrics.get('avg_temp', 0) > 15 else '겨울'
     
-    reason_items = defaultdict(set)
+    grouped_item_reasons = defaultdict(lambda: defaultdict(list))
     all_item_names = set()
-    safety_scores = get_safety_scores(lat, lon)
 
-    # 사용자 선택에 따른 그룹 이름 생성을 위한 매핑
-    companion_labels = {"solo": "혼자", "couple": "연인", "family": "가족", "friends": "친구", "with_children": "미성년자 동반"}
+    companion_labels = {"solo": "혼자", "couple": "연인", "family": "가족", "friends": "친구", "with_children": "아이와 함께"}
     theme_labels = {"healing": "힐링/휴양", "food": "맛집탐방", "shopping": "도시/쇼핑", "activity": "자연/액티비티", "culture": "문화/역사"}
 
     conn = get_db_connection()
     try:
         with conn.cursor() as cursor:
-            # 2. 날씨 기반 추천
-            cursor.execute("SELECT rule_id, condition_name, reason FROM weather_rules")
-            weather_rule_map = {rule['rule_id']: rule for rule in cursor.fetchall()}
-            triggered_rules = {rid for rid in weather_rule_map if eval_weather_rule(rid, metrics)}
+            # 날씨 기반 추천
+            cursor.execute("SELECT rule_id, reason FROM weather_rules")
+            weather_rule_reasons = {rule['rule_id']: rule['reason'] for rule in cursor.fetchall()}
+            triggered_rules = {rid for rid in weather_rule_reasons if eval_weather_rule(rid, metrics)}
             if triggered_rules:
-                weather_group_name = f"평균 기온 {metrics.get('avg_temp', 0):.0f}℃의 날씨를 위한 추천"
                 placeholders = ', '.join(['%s'] * len(triggered_rules))
                 cursor.execute(f"SELECT item_name, rule_id FROM rule_items WHERE rule_id IN ({placeholders})", tuple(triggered_rules))
                 for row in cursor.fetchall():
                     item_name = row['item_name']
-                    reason_items[weather_group_name].add(item_name)
-                    all_item_names.add(item_name)
+                    reason = weather_rule_reasons.get(row['rule_id'], '')
+                    if reason:
+                        grouped_item_reasons['날씨'][item_name].append(reason)
+                        all_item_names.add(item_name)
 
-            # 3. 동반자 기반 추천
+            # 동반자 기반 추천
             companion_id = preferences.get('companion')
             if companion_id and companion_id in companion_labels:
-                companion_ko = companion_labels[companion_id]
-                group_name = f"'{companion_ko}'와(과) 함께하는 여행 추천"
-                cursor.execute("SELECT item_name FROM companion_items WHERE companion_type = %s", (companion_ko,))
+                cursor.execute("SELECT item_name, reason FROM companion_items WHERE companion_type = %s", (companion_labels[companion_id],))
                 for row in cursor.fetchall():
-                    item_name = row['item_name']
-                    reason_items[group_name].add(item_name)
-                    all_item_names.add(item_name)
+                    grouped_item_reasons['동반자'][row['item_name']].append(row['reason'])
+                    all_item_names.add(row['item_name'])
 
-            # 4. 테마 기반 추천
-            themes = preferences.get('themes', [])
-            print(f"[DEBUG] User themes: {themes}")
-            print(f"[DEBUG] Current season: {season}")
-            for theme_id in themes:
+            # 테마 기반 추천
+            for theme_id in preferences.get('themes', []):
                 if theme_id in theme_labels:
-                    theme_ko = theme_labels[theme_id]
-                    group_name = f"'{theme_ko}' 테마 여행을 위한 추천"
-                    cursor.execute(f"SELECT item_name FROM theme_items WHERE theme_tag = %s AND season = %s", (theme_id, season))
+                    cursor.execute("SELECT item_name, reason FROM theme_items WHERE theme_tag = %s AND season = %s", (theme_id, season))
                     for row in cursor.fetchall():
-                        item_name = row['item_name']
-                        reason_items[group_name].add(item_name)
-                        all_item_names.add(item_name)
+                        grouped_item_reasons['테마'][row['item_name']].append(row['reason'])
+                        all_item_names.add(row['item_name'])
 
-            # 5. 항공편 기반 추천
+            # 항공편 기반 추천
             flight_info = preferences.get('flight')
             if flight_info and flight_info.get('duration'):
-                hours_match = re.search(r'PT(\d+)H', flight_info['duration'])
-                if hours_match and int(hours_match.group(1)) > 6:
-                    group_name = "장거리 비행을 위한 추천"
-                    cursor.execute("SELECT item_name FROM flight_condition_items WHERE condition_type = '장거리 비행'")
+                if (hours_match := re.search(r'PT(\d+)H', flight_info['duration'])) and int(hours_match.group(1)) > 6:
+                    cursor.execute("SELECT item_name, reason FROM flight_condition_items WHERE condition_type = '장거리 비행'")
                     for row in cursor.fetchall():
-                        item_name = row['item_name']
-                        reason_items[group_name].add(item_name)
-                        all_item_names.add(item_name)
-            
-            # 6. 안전 기반 추천
-            if safety_scores:
-                group_name = "안전한 여행을 위한 추천"
-                has_safety_items = False
-                cursor.execute("SELECT risk_type, score_threshold, item_name FROM safety_recommendations")
-                for rule in cursor.fetchall():
-                    score = safety_scores.get(rule['risk_type'], 0)
-                    if score > rule['score_threshold']:
-                        item_name = rule['item_name']
-                        reason_items[group_name].add(item_name)
-                        all_item_names.add(item_name)
-                        has_safety_items = True
-                if not has_safety_items:
-                    reason_items.pop(group_name, None) # 추가된 아이템이 없으면 그룹 삭제
+                        grouped_item_reasons['항공편'][row['item_name']].append(row['reason'])
+                        all_item_names.add(row['item_name'])
 
-            # 7. 최종 목록 생성
+            # 최종 목록 생성
             if not all_item_names: return []
-            
+
             full_item_details = _get_full_item_details(cursor, list(all_item_names))
             item_details_map = {item['item_name']: item for item in full_item_details}
 
             final_grouped_list = []
-            for reason, items_set in reason_items.items():
-                group = {
-                    "group_name": reason,
-                    "items": []
-                }
+            group_order = ['날씨', '동반자', '테마', '항공편'] 
+            
+            for group_name in group_order:
+                if group_name not in grouped_item_reasons: continue
+
+                items_with_reasons = grouped_item_reasons[group_name]
+                group = {"group_name": group_name, "items": []}
                 
-                for item_name in sorted(list(items_set)):
+                for item_name, reasons in sorted(items_with_reasons.items()):
                     details = item_details_map.get(item_name)
-                    if details:
-                        regulation_parts = []
-                        carry_on = details.get('carry_on_allowed', '')
-                        checked = details.get('checked_baggage_allowed', '')
+                    if not details: continue
 
-                        if carry_on and carry_on.startswith('예'):
-                            regulation_parts.append('기내')
-                        
-                        if checked and checked.startswith('예'):
-                            regulation_parts.append('위탁')
+                    regulation_parts = []
+                    if details.get('carry_on_allowed', '').startswith('예'): regulation_parts.append('기내')
+                    if details.get('checked_baggage_allowed', '').startswith('예'): regulation_parts.append('위탁')
+                    regulation_str = ", ".join(regulation_parts) or "규정 확인 필요"
 
-                        regulation_str = ", ".join(regulation_parts)
-                        
-                        group["items"].append({
-                            "name": item_name,
-                            "regulation": regulation_str,
-                            "icon": details.get('category', 'luggage')
-                        })
+                    item_obj = {
+                        "name": item_name,
+                        "reason": " / ".join(sorted(list(set(reasons)))),
+                        "regulation": regulation_str,
+                        "notes": details.get('notes', ''),
+                    }
+                    group["items"].append(item_obj)
                 
                 if group["items"]:
                     final_grouped_list.append(group)
@@ -305,19 +268,19 @@ def get_packing_list_recommendation(destination, dates, companion, themes, fligh
     """
     Generates a personalized packing list based on user survey data.
     """
-    # 1. Correct the destination name using the matching service
+    # 1. 매칭 서비스를 사용하여 목적지 이름 보정
     corrected_destination = destination
     best_match = recommend_matching_service.find_best_match(destination, 'destinations')
     if best_match:
         corrected_destination = best_match['name']
 
-    # 2. Get location details for the corrected destination
+    # 2. 보정된 목적지의 위치 정보 조회
     lat, lon, location_id = get_location_details(corrected_destination)
 
     if not lat or not lon:
         return [{"name": "위치 정보 없음", "reason": f"'{destination}'에 대한 위치 정보를 찾을 수 없습니다. 도시나 국가 이름을 확인해주세요.", "regulation": "N/A", "icon": "error"}]
 
-    # 3. Determine whether to use forecast or historical weather data
+    # 3. 예보 또는 과거 날씨 데이터 사용 결정
     start_date = datetime.fromisoformat(dates['from'])
     today = datetime.now()
     use_forecast = (start_date - today).days <= 14
@@ -326,14 +289,14 @@ def get_packing_list_recommendation(destination, dates, companion, themes, fligh
     if use_forecast:
         weather_data = get_weather_forecast(lat, lon)
     else:
-        # For simplicity, using a fixed year for historical data. 
-        # A more robust implementation might average several years.
+        # 단순화를 위해 과거 데이터는 고정된 연도를 사용합니다.
+        # 더 견고한 구현을 위해 여러 해를 평균낼 수도 있습니다.
         weather_data = get_historical_weather(location_id, lat, lon, today.year - 1, start_date.month)
 
     if weather_data is None:
          return [{"name": "날씨 정보 없음", "reason": "날씨 정보를 가져오는 데 실패했습니다.", "regulation": "N/A", "icon": "warning"}]
 
-    # 4. Consolidate preferences
+    # 4. 사용자 선호도 통합
     preferences = {
         "dates": dates,
         "companion": companion,
@@ -341,7 +304,7 @@ def get_packing_list_recommendation(destination, dates, companion, themes, fligh
         "flight": flight_info
     }
 
-    # 5. Generate the final packing list
+    # 5. 최종 패킹 리스트 생성
     packing_list = generate_packing_list(lat, lon, weather_data, preferences)
     
     return packing_list

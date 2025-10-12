@@ -105,22 +105,22 @@
                     class="q-mb-md"
                 />
                 <div class="flight-input-group">
-                    <q-input 
-                        v-if="flightSearchType === 'flightNumber'"
-                        filled square
-                        v-model="flightQuery"
-                        label="항공편명 (예: KE85)"
-                        class="custom-input"
-                    />
-                    <div class="input-wrapper">
+                    <div class="input-wrapper" v-if="flightSearchType === 'flightNumber'" style="flex-grow: 1; max-width: none; margin: 0;">
                         <q-input 
-                            v-if="flightSearchType === 'airlineName'"
+                            filled square
+                            v-model="flightQuery"
+                            label="항공편명 (예: KE85)"
+                            class="custom-input"
+                        />
+                    </div>
+                    <div class="input-wrapper" v-if="flightSearchType === 'airlineName'" style="flex-grow: 1; max-width: none; margin: 0;">
+                        <q-input 
                             filled square
                             v-model="flightQuery"
                             label="항공사 이름 (예: 대한항공)"
                             class="custom-input"
                         />
-                        <q-list bordered separator v-if="airlineSuggestions.length > 0 && flightSearchType === 'airlineName'" class="suggestion-list">
+                        <q-list bordered separator v-if="airlineSuggestions.length > 0" class="suggestion-list">
                             <q-item
                             v-for="suggestion in airlineSuggestions"
                             :key="suggestion.name"
@@ -132,7 +132,9 @@
                             </q-item>
                         </q-list>
                     </div>
-                    <q-btn unelevated color="primary" label="항공편 검색" @click="searchFlights" :loading="isSearchingFlights" class="search-btn" />
+                    <div>
+                        <q-btn unelevated color="primary" label="항공편 검색" @click="searchFlights" :loading="isSearchingFlights" class="search-btn" />
+                    </div>
                 </div>
 
                 <q-list bordered separator class="flight-list" v-if="flightList.length > 0">
@@ -155,7 +157,7 @@
       </div>
 
       <div class="navigation-footer">
-        <q-btn flat @click="prevStep" v-if="currentStep > 1" class="nav-btn prev-btn" icon="arrow_back" label="이전" />
+        <q-btn unelevated color="grey-7" size="lg" @click="prevStep" v-if="currentStep > 1" class="nav-btn prev-btn" icon="arrow_back" label="이전" />
         <q-space />
         <q-btn v-if="currentStep < stepDetails.length" label="다음 단계로" unelevated color="primary" size="lg" @click="nextStep" :disable="!canGoToNextStep" class="nav-btn next-btn" icon-right="arrow_forward" />
         <q-btn v-if="currentStep === stepDetails.length" label="패킹리스트 생성" unelevated color="primary" size="lg" @click="submitSurvey" :disable="!canSubmit" class="nav-btn submit-btn" icon-right="inventory" />
@@ -171,18 +173,57 @@
             <h3 class="panel-title">선택한 조건</h3>
           </div>
           <div class="selections-group">
-            <!-- ... existing summary items ... -->
-             <div class="selection-item">
+            <!-- Step 1: Destination -->
+            <div class="selection-item">
+              <q-icon name="place" class="selection-icon" />
+              <div>
+                <div class="selection-label">목적지</div>
+                <div class="selection-value">{{ preferences.destination || '아직 선택 안함' }}</div>
+              </div>
+            </div>
+
+            <!-- Step 2: Dates -->
+            <div class="selection-item">
+              <q-icon name="calendar_month" class="selection-icon" />
+              <div>
+                <div class="selection-label">여행 기간</div>
+                <div class="selection-value">
+                  {{ (preferences.dates && preferences.dates.start) ? `${formatDate(preferences.dates.start)} - ${formatDate(preferences.dates.end)}` : '아직 선택 안함' }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 3: Companion -->
+            <div class="selection-item">
+              <q-icon name="people" class="selection-icon" />
+              <div>
+                <div class="selection-label">동반자</div>
+                <div class="selection-value">{{ preferences.companion ? getLabel(companionOptions, preferences.companion) : '아직 선택 안함' }}</div>
+              </div>
+            </div>
+
+            <!-- Step 4: Themes -->
+            <div class="selection-item">
+              <q-icon name="palette" class="selection-icon" />
+              <div>
+                <div class="selection-label">테마</div>
+                <div class="selection-value">
+                  {{ preferences.themes.length > 0 ? getLabels(themeOptions, preferences.themes).join(', ') : '아직 선택 안함' }}
+                </div>
+              </div>
+            </div>
+            
+            <!-- Step 5: Flight -->
+            <div class="selection-item">
               <q-icon name="flight" class="selection-icon" />
               <div>
                 <div class="selection-label">항공편</div>
-                <div class="selection-value">{{ selectedFlight ? `${selectedFlight.carrierCode}${selectedFlight.flightNumber}` : '선택 안함' }}</div>
+                <div class="selection-value">{{ selectedFlight ? `${selectedFlight.carrierCode}${selectedFlight.flightNumber}` : '아직 선택 안함' }}</div>
               </div>
             </div>
           </div>
         </q-card-section>
       </q-card>
-      <!-- ... existing tips card ... -->
     </div>
   </div>
 </template>
@@ -214,6 +255,7 @@ const searchAttempted = ref(false);
 
 const destinationSuggestions = ref([]);
 let debounceTimer = null;
+let isSuggestionSelected = false; // 추천어 클릭 여부를 판단하는 플래그
 
 const fetchDestinationSuggestions = async () => {
   if (preferences.value.destination.length < 2) {
@@ -249,6 +291,10 @@ const fetchDestinationSuggestions = async () => {
 };
 
 watch(() => preferences.value.destination, (newQuery) => {
+  if (isSuggestionSelected) {
+    isSuggestionSelected = false;
+    return;
+  }
   clearTimeout(debounceTimer);
   debounceTimer = setTimeout(() => {
     if (newQuery) {
@@ -260,6 +306,7 @@ watch(() => preferences.value.destination, (newQuery) => {
 });
 
 const selectSuggestion = (suggestion) => {
+  isSuggestionSelected = true;
   preferences.value.destination = suggestion;
   destinationSuggestions.value = [];
 };
@@ -317,6 +364,10 @@ const fetchAirlineSuggestions = async () => {
 };
 
 watch(() => flightQuery.value, (newQuery) => {
+  if (isSuggestionSelected) {
+    isSuggestionSelected = false;
+    return;
+  }
   clearTimeout(debounceTimer);
   debounceTimer = setTimeout(() => {
     if (newQuery && flightSearchType.value === 'airlineName') {
@@ -328,6 +379,7 @@ watch(() => flightQuery.value, (newQuery) => {
 });
 
 const selectAirlineSuggestion = (suggestion) => {
+  isSuggestionSelected = true;
   flightQuery.value = suggestion;
   airlineSuggestions.value = [];
 };
@@ -450,7 +502,218 @@ const submitSurvey = () => {
 </script>
 
 <style scoped>
-/* ... existing styles ... */
+.survey-layout {
+  display: flex;
+  gap: 24px;
+  padding: 2rem;
+  align-items: flex-start;
+}
+
+.progress-panel-wrapper {
+  flex: 0 0 250px;
+  position: sticky;
+  top: 2rem;
+}
+
+.stepper-container {
+  flex: 1 1 0;
+  min-width: 0;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 16px;
+  padding: 2rem;
+}
+
+.summary-panel-wrapper {
+  flex: 0 0 280px;
+  position: sticky;
+  top: 2rem;
+}
+
+/* Panel header styles */
+.panel-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #eee;
+}
+
+.panel-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+/* Progress steps styles */
+.progress-steps-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.progress-step-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #888;
+  transition: color 0.3s;
+}
+
+.progress-step-item.current .step-title-text {
+  color: var(--q-primary);
+  font-weight: 600;
+}
+
+.progress-step-item.completed .step-title-text {
+  color: #333;
+}
+
+.progress-step-item.completed .step-indicator-icon {
+  color: var(--q-primary);
+}
+
+.step-title-text {
+  font-size: 0.95rem;
+}
+
+/* Summary panel styles */
+.selections-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.selection-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.selection-icon {
+  color: #aaa;
+  margin-top: 2px;
+}
+
+.selection-label {
+  font-size: 0.85rem;
+  color: #888;
+  margin-bottom: 2px;
+}
+
+.selection-value {
+  font-weight: 500;
+  color: #333;
+}
+
+/* General Stepper styles */
+.mb-8 { margin-bottom: 2rem; }
+.text-center { text-align: center; }
+
+.step-indicator-label {
+  font-size: 0.9rem;
+  color: #888;
+  margin-bottom: 0.5rem;
+}
+
+.progress-bar {
+  height: 8px;
+  background: #eee;
+  border-radius: 4px;
+  overflow: hidden;
+  width: 80%;
+  margin: 0 auto;
+}
+
+.progress-indicator {
+  height: 100%;
+  background: var(--q-primary);
+  transition: width 0.3s ease;
+}
+
+.step-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.step-main-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.step-subtitle {
+  font-size: 1rem;
+  color: #888;
+}
+
+
+
+.navigation-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #eee;
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+}
+
+/* Card grid for options */
+.card-grid {
+  display: grid;
+  gap: 1rem;
+}
+.companion-grid {
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+}
+.theme-grid {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.option-card {
+  cursor: pointer;
+  border: 1px solid #ddd;
+  transition: all 0.2s ease;
+}
+.option-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+}
+.option-card.selected {
+  border-color: var(--q-primary);
+  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.2);
+}
+
+.theme-hint {
+  text-align: center;
+  color: #888;
+  font-size: 0.9rem;
+  margin-top: 1rem;
+}
+
+/* Input styles */
+.input-wrapper {
+  position: relative;
+  max-width: 500px;
+  margin: 0 auto;
+}
+.suggestion-list {
+  position: absolute;
+  width: 100%;
+  top: 100%;
+  left: 0;
+  z-index: 10;
+  background: white;
+}
+
+/* Flight search styles */
 .flight-search-container {
     display: flex;
     flex-direction: column;
@@ -461,15 +724,12 @@ const submitSurvey = () => {
     gap: 1rem;
     align-items: center;
 }
-.flight-input-group .custom-input {
-    flex-grow: 1;
-}
 .flight-list {
     margin-top: 1rem;
 }
 .no-results {
     text-align: center;
-    color: var(--travel-muted);
+    color: #888;
     padding: 2rem;
 }
 </style>

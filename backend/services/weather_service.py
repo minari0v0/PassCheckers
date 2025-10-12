@@ -1,8 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-날씨 데이터 조회 및 패킹 아이템 추천 로직을 담당하는 서비스
-"""
-
 import os
 import sys
 import requests

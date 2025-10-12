@@ -60,7 +60,7 @@ class RecommendMatchingService:
             airline_results = self._execute_query("SELECT DISTINCT airline_name_ko, airline_name_en FROM airlines WHERE airline_name_ko IS NOT NULL AND airline_name_en IS NOT NULL")
             airlines = set()
             for row in airline_results:
-                airlines.add(row['airline_n  ame_ko'])
+                airlines.add(row['airline_name_ko'])
                 airlines.add(row['airline_name_en'])
             self.choices['airlines'] = list(airlines)
             
@@ -83,9 +83,25 @@ class RecommendMatchingService:
         self._check_and_refresh_cache()
         
         # WRatio를 사용하여 단어 순서나 일부 단어만 일치해도 점수를 잘 주도록 설정
-        results = process.extract(query, self.choices[choice_type], scorer=fuzz.WRatio, limit=limit, score_cutoff=75)
+        # 1. 점수 기준을 낮춰 더 많은 후보군을 확보합니다. (오타 허용)
+        results = process.extract(query, self.choices[choice_type], scorer=fuzz.WRatio, limit=10, score_cutoff=60)
 
-        return [result[0] for result in results]
+        if not results:
+            return []
+
+        # 2. 1등 점수를 기준으로 동적으로 결과 목록을 필터링합니다.
+        top_score = results[0][1]
+        
+        # 1등 점수와 15점 이상 차이나는 결과는 제외합니다.
+        score_threshold = top_score - 15
+        
+        filtered_results = [res for res in results if res[1] >= score_threshold]
+
+        # 3. 프론트엔드가 요구하는 형식에 맞춰 결과를 포맷팅합니다.
+        return [
+            {"name": match, "score": round(score, 2)}
+            for match, score, _ in filtered_results
+        ]
     
     def find_best_match(self, query, choice_type, threshold=80):
         """입력된 쿼리와 가장 유사한 항목을 찾습니다."""
