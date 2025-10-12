@@ -294,3 +294,55 @@ def delete_analysis_result(result_id):
         conn.close()
         return jsonify({'error': '분석 결과 삭제 중 오류가 발생했습니다'}), 500
 
+@user_bp.route('/liked-posts', methods=['GET'])
+@jwt_required()
+def get_liked_posts():
+    """사용자가 좋아요한 게시글 목록"""
+    current_user_id = get_jwt_identity()
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # 테이블 존재 여부 확인
+        cursor.execute("""
+            SELECT COUNT(*) as count 
+            FROM information_schema.tables 
+            WHERE table_schema = DATABASE() 
+            AND table_name = 'post_likes'
+        """)
+        table_exists = cursor.fetchone()['count'] > 0
+        
+        if not table_exists:
+            cursor.close()
+            conn.close()
+            return jsonify({'posts': []}), 200
+        
+        cursor.execute("""
+            SELECT p.id, p.title, p.created_at, pl.created_at as liked_at
+            FROM posts p
+            JOIN post_likes pl ON p.id = pl.post_id
+            WHERE pl.user_id = %s AND p.is_deleted = FALSE
+            GROUP BY p.id, p.title, p.created_at, pl.created_at
+            ORDER BY pl.created_at DESC
+        """, (current_user_id,))
+        
+        posts = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        
+        formatted_posts = []
+        for post in posts:
+            formatted_posts.append({
+                'id': post['id'],
+                'title': post['title'],
+                'created_at': post['created_at'].isoformat()
+            })
+        
+        return jsonify({'posts': formatted_posts}), 200
+        
+    except Exception as e:
+        cursor.close()
+        conn.close()
+        print(f"Error in get_liked_posts: {e}")
+        return jsonify({'posts': []}), 200
+
