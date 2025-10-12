@@ -61,7 +61,14 @@
             <div class="post-body">
             <div class="post-header">
               <div class="author-info">
-                <div class="author-avatar">{{ post.author.charAt(0) }}</div>
+                <div class="author-avatar">
+                  <img 
+                    :src="getAuthorProfileImage(post.author_id, post.profile_image)" 
+                    @error="onProfileImageError"
+                    alt="프로필"
+                    class="profile-image"
+                  />
+                </div>
                 <span class="author-name">{{ post.author }}</span>
               </div>
             </div>
@@ -210,7 +217,8 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import { useRoute } from 'vue-router'
 import WritePost from '~/components/community/WritePost.vue'
 import PostDetail from '~/components/community/PostDetail.vue'
 
@@ -218,6 +226,7 @@ definePageMeta({
   middleware: 'auth'
 })
 
+const route = useRoute()
 const { apiUrl } = useApiUrl()
 const { getToken } = useAuth()
 
@@ -425,6 +434,30 @@ const handleImageError = (event) => {
   event.target.src = '/images/default_wallpaper.png'
 }
 
+// 프로필 이미지 캐시 버스팅을 위한 타임스탬프 저장
+const profileImageTimestamps = ref({})
+
+// 작성자 프로필 이미지 URL 생성 함수
+const getAuthorProfileImage = (authorId, profileImage) => {
+  if (!authorId) {
+    return '/images/default_profile.png'
+  }
+  const timestamp = profileImageTimestamps.value[authorId] || Date.now()
+  return `${apiUrl}/users/${authorId}/profile-image?t=${timestamp}`
+}
+
+// 특정 사용자의 프로필 이미지 갱신
+const refreshProfileImage = (userId) => {
+  profileImageTimestamps.value[userId] = Date.now()
+  // 게시글 목록을 강제로 리렌더링하기 위해 posts 배열을 업데이트
+  allPosts.value = [...allPosts.value]
+}
+
+// 프로필 이미지 로드 실패 시 기본 이미지로 대체하는 함수
+const onProfileImageError = (event) => {
+  event.target.src = '/images/default_profile.png'
+}
+
 // 이전 페이지로 이동하는 함수
 const goToPreviousPage = () => {
   if (currentPage.value > 1) {
@@ -510,11 +543,36 @@ const loadRecentPosts = async () => {
 }
 
 // 마운트 시 데이터 로드
-onMounted(() => {
-  loadPosts()
+onMounted(async () => {
+  await loadPosts()
   loadPopularTags()
   loadPopularLocations()
   loadRecentPosts()
+  
+  // URL 쿼리 파라미터에서 postId 확인
+  const postId = route.query.postId
+  if (postId) {
+    // 약간의 딜레이 후 게시글 열기
+    await nextTick()
+    selectedPostId.value = parseInt(postId)
+  }
+  
+  // 프로필 이미지 업데이트 이벤트 리스너 등록
+  if (process.client) {
+    window.addEventListener('profileImageUpdated', (event) => {
+      const userId = event.detail?.userId
+      if (userId) {
+        console.log('커뮤니티 페이지 - 프로필 이미지 업데이트 이벤트 수신, 사용자 ID:', userId)
+        refreshProfileImage(userId)
+      }
+    })
+  }
+})
+
+onUnmounted(() => {
+  if (process.client) {
+    window.removeEventListener('profileImageUpdated', () => {})
+  }
 })
 </script>
 
@@ -806,14 +864,20 @@ onMounted(() => {
 .author-avatar {
   width: 32px;
   height: 32px;
-  background: #2196f3;
-  color: #fff;
   border-radius: 50%;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: bold;
-  font-size: 0.9rem;
+  border: 2px solid #e0e0e0;
+}
+
+.author-avatar .profile-image {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  object-position: center !important;
+  display: block !important;
 }
 
 .author-name {

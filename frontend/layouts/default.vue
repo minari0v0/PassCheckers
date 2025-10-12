@@ -62,8 +62,39 @@
           <!-- 인증된 사용자 -->
           <template v-else>
             <div style="display: flex; align-items: center; gap: 8px;">
-              <q-btn round flat dense icon="account_circle" size="23px" @click="goToProfile" style="color: #2196f3 !important;" />
-              <q-btn flat dense no-caps class="profile-btn" label="로그아웃" @click="logout" />
+              <q-btn 
+                round 
+                flat 
+                dense 
+                class="profile-image-btn" 
+                :ripple="false"
+                style="padding: 4px !important; min-width: 48px !important; min-height: 48px !important; width: 48px !important; height: 48px !important; background: transparent !important; position: relative !important;"
+              >
+                <img 
+                  :src="profileImageUrl" 
+                  @error="onProfileImageError" 
+                  alt="프로필" 
+                  class="profile-image"
+                  style="width: 40px !important; height: 40px !important; border-radius: 50% !important; object-fit: cover !important; object-position: center !important; display: block !important; background: white !important; border: 2px solid #2196f3 !important; transition: all 0.3s ease !important;"
+                />
+                <q-menu>
+                  <q-list style="min-width: 150px">
+                    <q-item clickable v-close-popup @click="goToProfile">
+                      <q-item-section avatar>
+                        <q-icon name="account_circle" color="primary" />
+                      </q-item-section>
+                      <q-item-section>내 정보</q-item-section>
+                    </q-item>
+                    <q-separator />
+                    <q-item clickable v-close-popup @click="logout">
+                      <q-item-section avatar>
+                        <q-icon name="logout" color="negative" />
+                      </q-item-section>
+                      <q-item-section>로그아웃</q-item-section>
+                    </q-item>
+                  </q-list>
+                </q-menu>
+              </q-btn>
             </div>
           </template>
         </div>
@@ -102,7 +133,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useApiUrl } from '~/composables/useApiUrl'
 
@@ -126,25 +157,92 @@ const logoutToast = ref(null)
 const pageLoadingOverlay = ref(null)
 
 // useAuth composable 사용
-const { isAuthenticated, user, logout: authLogout, checkAuth, isInitialized } = useAuth()
+const { isAuthenticated, user, logout: authLogout, checkAuth, isInitialized, getToken } = useAuth()
+
+// 프로필 이미지 URL
+const profileImageUrl = ref('/images/default_profile.png')
+const profileImageError = ref(false)
+
+// 프로필 이미지 로드
+const loadProfileImage = async () => {
+  if (!isAuthenticated.value || !user.value) {
+    profileImageUrl.value = '/images/default_profile.png'
+    return
+  }
+  
+  const token = getToken()
+  if (!token) {
+    profileImageUrl.value = '/images/default_profile.png'
+    return
+  }
+  
+  try {
+    const { getApiUrl } = useApiUrl()
+    // 사용자 ID를 사용하여 직접 이미지 URL 생성 (캐시 버스팅 포함)
+    profileImageUrl.value = `${getApiUrl(`/api/users/${user.value.id}/profile-image`)}?t=${Date.now()}`
+  } catch (error) {
+    console.error('프로필 이미지 로드 실패:', error)
+    profileImageUrl.value = '/images/default_profile.png'
+  }
+}
+
+// 프로필 이미지 에러 처리
+const onProfileImageError = () => {
+  if (!profileImageError.value) {
+    profileImageError.value = true
+    profileImageUrl.value = '/images/default_profile.png'
+  }
+}
 
 // 상태 변화 추적
 watch(isAuthenticated, (newValue) => {
   console.log('default.vue - 인증 상태 변화:', newValue)
+  if (newValue) {
+    loadProfileImage()
+  } else {
+    profileImageUrl.value = '/images/default_profile.png'
+  }
 })
 
 watch(user, (newValue) => {
   console.log('default.vue - 사용자 정보 변화:', newValue)
+  if (newValue && isAuthenticated.value) {
+    loadProfileImage()
+  }
 })
 
 watch(isInitialized, (newValue) => {
   console.log('default.vue - 초기화 상태 변화:', newValue)
 })
 
-// 클라이언트에서 마운트 시 인증 상태 재확인
+// 클라이언트에서 마운트 시 인증 상태 재확인 및 이벤트 리스너 등록
 onMounted(async () => {
   if (process.client) {
     await checkAuth()
+    if (isAuthenticated.value) {
+      await loadProfileImage()
+    }
+    
+    // 프로필 이미지 업데이트 이벤트 리스너
+    window.addEventListener('profileImageUpdated', () => {
+      if (isAuthenticated.value) {
+        console.log('프로필 이미지 업데이트 이벤트 수신, 갱신 중...')
+        loadProfileImage()
+      }
+    })
+  }
+})
+
+// 페이지 포커스 시 프로필 이미지 갱신
+onActivated(() => {
+  if (isAuthenticated.value) {
+    loadProfileImage()
+  }
+})
+
+onUnmounted(() => {
+  if (process.client) {
+    window.removeEventListener('profileImageUpdated', () => {})
   }
 })
 
@@ -242,7 +340,7 @@ async function logout() {
 
 function goToProfile() {
   // 내 정보 페이지로 이동
-  $router.push('/info')
+  navigateTo('/profile')
 }
 </script>
 
@@ -260,16 +358,90 @@ function goToProfile() {
   transform: scale(1);
 }
 
-/* 프로필 아이콘 스타일 고정 */
-.q-btn[icon="account_circle"] {
-  color: #2196f3 !important;
-  background-color: transparent !important;
+/* 프로필 이미지 버튼 스타일 - 프로덕션 빌드 호환성 강화 */
+.profile-image-btn {
+  padding: 4px !important;
+  min-width: 48px !important;
+  min-height: 48px !important;
+  width: 48px !important;
+  height: 48px !important;
+  background: transparent !important;
+  position: relative !important;
   border: none !important;
   box-shadow: none !important;
 }
 
-.q-btn[icon="account_circle"]:hover {
-  color: #1976d2 !important;
-  background-color: rgba(33, 150, 243, 0.1) !important;
+.profile-image-btn::before,
+.profile-image-btn::after {
+  display: none !important;
+  content: none !important;
+  background: none !important;
+}
+
+.profile-image-btn .q-btn__content {
+  padding: 0 !important;
+  margin: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.profile-image-btn .q-focus-helper,
+.profile-image-btn .q-ripple {
+  display: none !important;
+  opacity: 0 !important;
+}
+
+.profile-image-btn:hover {
+  background-color: transparent !important;
+  transform: none !important;
+}
+
+.profile-image-btn:hover::before,
+.profile-image-btn:hover::after {
+  display: none !important;
+  content: none !important;
+  background: none !important;
+}
+
+.profile-image {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50% !important;
+  object-fit: cover !important;
+  object-position: center !important;
+  display: block !important;
+  background: white !important;
+  border: 2px solid #2196f3 !important;
+  transition: all 0.3s ease !important;
+  max-width: 40px !important;
+  max-height: 40px !important;
+}
+
+.profile-image-btn:hover .profile-image {
+  border-color: #2196f3 !important;
+  transform: none !important;
+}
+
+/* 드롭다운 메뉴 스타일 */
+.q-menu {
+  border: 1px solid rgba(135, 206, 235, 0.6) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 2px 12px rgba(135, 206, 235, 0.2) !important;
+}
+
+.q-menu .q-list {
+  background: white;
+  border-radius: 7px;
+}
+
+.q-menu .q-item {
+  padding: 12px 16px;
+}
+
+.q-menu .q-item:hover {
+  background-color: rgba(33, 150, 243, 0.1);
 }
 </style>

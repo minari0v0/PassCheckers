@@ -195,7 +195,6 @@
 
 <script setup>
 import { ref, watch, computed, nextTick, onBeforeUpdate } from 'vue'
-import { useQuasar } from 'quasar'
 import { useApiUrl } from '~/composables/useApiUrl'
 
 const props = defineProps({
@@ -222,8 +221,6 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:show', 'save', 'cancel'])
-
-const $q = useQuasar()
 
 // 에디터 상태
 const itemsInEditor = ref([])
@@ -283,7 +280,7 @@ const toggleEditMode = (item) => {
 
 const confirmItemEdit = (item) => {
   if (!item.name_ko) {
-    $q.notify({ message: '물품명을 입력하거나 선택해주세요.', color: 'warning' })
+    alert('물품명을 입력하거나 선택해주세요.')
     return
   }
   item.isEditing = false
@@ -300,12 +297,7 @@ const startRedrawBbox = (item, index) => {
 const activateDrawing = (index) => {
   if (itemsInEditor.value[index].isDeleted) return
   activeDrawIndex.value = index
-  $q.notify({ 
-    message: '이미지 위에서 드래그하여 물품의 위치를 지정하세요.',
-    color: 'info',
-    position: 'top',
-    icon: 'edit_location'
-  })
+  console.log('이미지 위에서 드래그하여 물품의 위치를 지정하세요.')
 }
 
 const handleMouseDown = (e) => {
@@ -426,35 +418,25 @@ const handleNewValue = (inputValue, doneFn) => {
 
 const resolveItem = (item) => {
   if (!item || !item.name_ko) {
-    $q.notify({ message: '물품명을 입력하거나 선택해주세요.', color: 'warning' })
+    alert('물품명을 입력하거나 선택해주세요.')
     return
   }
   
   item.isConfirmed = true
   
-  $q.notify({
-    message: `'${item.name_ko}'(으)로 확정되었습니다. 이제 위치를 지정해주세요.`,
-    color: 'info',
-    icon: 'edit_location',
-    timeout: 2000
-  })
+  console.log(`'${item.name_ko}'(으)로 확정되었습니다. 이제 위치를 지정해주세요.`)
 }
 
 const applyNewItem = (item) => {
   if (!item.bbox) {
-    $q.notify({ message: '위치를 먼저 지정해주세요.', color: 'warning' })
+    alert('위치를 먼저 지정해주세요.')
     return
   }
   
   item.isApplied = true
   item.isNew = false
   
-  $q.notify({
-    message: `'${item.name_ko}' 물품이 성공적으로 추가되었습니다.`,
-    color: 'positive',
-    icon: 'check_circle',
-    timeout: 2000
-  })
+  console.log(`'${item.name_ko}' 물품이 성공적으로 추가되었습니다.`)
 }
 
 const handleEnterKey = async (event, index) => {

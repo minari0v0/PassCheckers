@@ -85,21 +85,101 @@ PassCheckers/
 
 ### 1️⃣ 프론트엔드 실행
 
+#### 🔧 개발 모드 (권장)
+개발 중 테스트 및 디버깅용으로 핫 리로드 기능 포함
+
 ```bash
 cd frontend
 npm install
-npm run dev -- --host
+npm run dev
 ```
+
+- **자동 재시작**: 코드 수정 시 자동으로 새로고침
+- **외부 접속**: 자동으로 `0.0.0.0:80`으로 실행되어 외부 접속 가능
+- **디버깅**: 상세한 에러 메시지 및 경고 표시
+
+#### 🚀 프로덕션 모드 (배포)
+실제 서비스 배포 시 사용 (빌드 후 최적화된 파일 실행)
+
+```bash
+cd frontend
+
+# 1. 프로덕션 빌드
+npm run build
+
+# 2. 프로덕션 서버 실행 (외부 접속 허용)
+# Windows PowerShell
+$env:HOST="0.0.0.0"
+$env:PORT="80"
+npm run start:prod
+
+# Linux/Mac
+HOST=0.0.0.0 PORT=80 npm run start:prod
+```
+
+- **최적화**: 코드 압축 및 최소화 (약 1/3~1/5 크기)
+- **성능**: 더 빠른 로딩 속도
+- **외부 접속**: 환경변수로 `0.0.0.0` 설정 시 외부 IP로 접속 가능
+
+---
 
 ### 2️⃣ 백엔드 실행
 
+#### 🔧 개발 모드 (권장)
+개발 중 테스트 및 디버깅용
+
 ```bash
 cd backend
-source venv/bin/activate
-python3 app.py
+
+# Windows
+.venv\Scripts\activate
+
+# Linux/Mac
+source .venv/bin/activate
+
+# 실행
+python app.py
 ```
 
-- ⚠️ `config.py`의 CORS 설정에서 실제 서버 IP를 적용하세요.
+- **자동 재시작**: 코드 수정 시 자동으로 서버 재시작
+- **디버그 모드**: 상세한 에러 트레이스 표시
+- **포트**: http://0.0.0.0:5001
+
+#### 🚀 프로덕션 모드 (배포)
+실제 서비스 배포 시 사용 - 멀티 워커로 높은 성능 제공
+
+```bash
+cd backend
+
+# Windows
+.venv\Scripts\activate
+pip install -r requirements.txt  # waitress 설치 확인
+
+# Waitress 프로덕션 서버 실행
+waitress-serve --host=0.0.0.0 --port=5001 app:app
+```
+
+**Linux/Mac의 경우 Gunicorn 사용 (더 높은 성능)**:
+```bash
+# Linux/Mac
+source .venv/bin/activate
+pip install -r requirements.txt  # gunicorn 설치 확인
+
+# Gunicorn 실행 (워커 4개)
+gunicorn -w 4 -b 0.0.0.0:5001 app:app
+```
+
+- **Waitress (Windows)**: 안정적인 WSGI 서버
+- **Gunicorn (Linux/Mac)**: 멀티 워커로 동시 요청 처리
+- **성능**: 개발 서버 대비 수백~수천 배 빠름
+- **안정성**: 워커 크래시 시 자동 재시작
+
+⚠️ **주의사항**:
+- `requirements.txt`에 OS별 서버가 자동으로 설치됩니다
+- `config.py`의 CORS 설정에서 실제 서버 IP를 적용하세요
+- 프로덕션에서는 반드시 `DEBUG = False` 설정
+
+---
 
 ### 3️⃣ Redis 확인
 
@@ -109,6 +189,8 @@ keys *
 keys refresh_token:*
 get refresh_token:1
 ```
+
+---
 
 ### 4️⃣ MySQL 설정
 

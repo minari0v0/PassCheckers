@@ -1,9 +1,10 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from flask_jwt_extended import JWTManager, create_access_token, create_refresh_token, jwt_required, get_jwt_identity
 from flask_cors import CORS
 import redis
 import pymysql
 import os
+import io
 from datetime import timedelta
 from config import Config
 from models.user import User
@@ -18,6 +19,7 @@ from routes.locations import locations_bp
 from routes.weight import weight_bp
 from routes.category import category_bp
 from routes.community import community_bp
+from routes.user import user_bp
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -41,6 +43,7 @@ app.register_blueprint(locations_bp)
 app.register_blueprint(weight_bp)
 app.register_blueprint(category_bp)
 app.register_blueprint(community_bp)
+app.register_blueprint(user_bp)
 
 # Redis 연결
 redis_client = redis.from_url(Config.REDIS_URL)
@@ -479,6 +482,89 @@ def get_profile(data=None):
     if not user:
         return jsonify({'error': '사용자를 찾을 수 없습니다'}), 404
     return jsonify({'user': user}), 200
+
+@app.route('/api/profile/image', methods=['GET'])
+@jwt_required()
+def get_my_profile_image():
+    """현재 로그인한 사용자의 프로필 이미지 조회"""
+    current_user_id = get_jwt_identity()
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute("SELECT profile_image FROM users WHERE id = %s", (current_user_id,))
+        result = cursor.fetchone()
+        cursor.close()
+        conn.close()
+        
+        if not result:
+            return jsonify({'error': '사용자를 찾을 수 없습니다'}), 404
+        
+        profile_image = result.get('profile_image')
+        
+        # 프로필 이미지가 없으면 기본 이미지 반환
+        if not profile_image:
+            # 기본 프로필 이미지 경로
+            default_image_path = os.path.join(
+                os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                'frontend', 'public', 'images', 'default_profile.png'
+            )
+            if os.path.exists(default_image_path):
+                return send_file(default_image_path, mimetype='image/png')
+            else:
+                return jsonify({'error': '프로필 이미지가 없습니다'}), 404
+        
+        # BLOB 데이터를 이미지로 반환
+        return send_file(
+            io.BytesIO(profile_image),
+            mimetype='image/png',
+            as_attachment=False
+        )
+    except Exception as e:
+        cursor.close()
+        conn.close()
+        print(f"프로필 이미지 조회 오류: {e}")
+        return jsonify({'error': '프로필 이미지를 불러오는 중 오류가 발생했습니다'}), 500
+
+@app.route('/api/users/<int:user_id>/profile-image', methods=['GET'])
+def get_user_profile_image(user_id):
+    """특정 사용자의 프로필 이미지 조회 (공개)"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute("SELECT profile_image FROM users WHERE id = %s", (user_id,))
+        result = cursor.fetchone()
+        cursor.close()
+        conn.close()
+        
+        if not result:
+            return jsonify({'error': '사용자를 찾을 수 없습니다'}), 404
+        
+        profile_image = result.get('profile_image')
+        
+        # 프로필 이미지가 없으면 기본 이미지 반환
+        if not profile_image:
+            default_image_path = os.path.join(
+                os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                'frontend', 'public', 'images', 'default_profile.png'
+            )
+            if os.path.exists(default_image_path):
+                return send_file(default_image_path, mimetype='image/png')
+            else:
+                return jsonify({'error': '프로필 이미지가 없습니다'}), 404
+        
+        # BLOB 데이터를 이미지로 반환
+        return send_file(
+            io.BytesIO(profile_image),
+            mimetype='image/png',
+            as_attachment=False
+        )
+    except Exception as e:
+        cursor.close()
+        conn.close()
+        print(f"프로필 이미지 조회 오류: {e}")
+        return jsonify({'error': '프로필 이미지를 불러오는 중 오류가 발생했습니다'}), 500
 
 @app.route('/api/protected', methods=['GET'])
 @jwt_required()
