@@ -153,6 +153,84 @@
           </div>
         </div>
 
+        <!-- 내 활동 섹션 -->
+        <div v-if="activeSection === 'activity'" class="content-section">
+          <div class="section-header">
+            <h1>내 활동</h1>
+            <p>커뮤니티에서의 활동 기록을 확인할 수 있습니다.</p>
+          </div>
+          
+          <div class="activity-tabs">
+            <q-tabs v-model="activeTab" class="text-grey-7" active-color="primary">
+              <q-tab name="likes" label="좋아요" />
+              <q-tab name="bookmarks" label="저장" />
+              <q-tab name="comments" label="댓글" />
+            </q-tabs>
+          </div>
+
+          <div class="tab-content">
+            <!-- 좋아요한 게시글 -->
+            <div v-if="activeTab === 'likes'">
+              <div v-if="likedPosts.length === 0" class="empty-state">
+                <i class="material-icons">favorite_border</i>
+                <h3>좋아요한 게시글이 없습니다</h3>
+                <p>아직 좋아요를 누른 게시글이 없습니다.</p>
+              </div>
+              <div v-else class="posts-list">
+                <div 
+                  v-for="post in likedPosts" 
+                  :key="post.id" 
+                  class="post-item"
+                  @click="goToPost(post.id)"
+                >
+                  <h4>{{ post.title }}</h4>
+                  <p>{{ formatDate(post.created_at) }}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- 저장한 게시글 -->
+            <div v-if="activeTab === 'bookmarks'">
+              <div v-if="bookmarkedPosts.length === 0" class="empty-state">
+                <i class="material-icons">bookmark_border</i>
+                <h3>저장한 게시글이 없습니다</h3>
+                <p>아직 저장한 게시글이 없습니다.</p>
+              </div>
+              <div v-else class="posts-list">
+                <div 
+                  v-for="post in bookmarkedPosts" 
+                  :key="post.id" 
+                  class="post-item"
+                  @click="goToPost(post.id)"
+                >
+                  <h4>{{ post.title }}</h4>
+                  <p>{{ formatDate(post.created_at) }}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- 댓글 단 게시글 -->
+            <div v-if="activeTab === 'comments'">
+              <div v-if="commentedPosts.length === 0" class="empty-state">
+                <i class="material-icons">comment</i>
+                <h3>댓글을 단 게시글이 없습니다</h3>
+                <p>아직 댓글을 작성한 게시글이 없습니다.</p>
+              </div>
+              <div v-else class="posts-list">
+                <div 
+                  v-for="post in commentedPosts" 
+                  :key="post.id" 
+                  class="post-item"
+                  @click="goToPost(post.id)"
+                >
+                  <h4>{{ post.title }}</h4>
+                  <p>{{ formatDate(post.created_at) }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '~/composables/useAuth'
@@ -240,6 +318,43 @@ const loadAnalysisResults = async () => {
             }
   } catch (error) {
     console.error('Failed to load analysis results:', error)
+  }
+}
+
+// 내 활동 데이터 로드
+const loadUserActivity = async () => {
+  try {
+    const token = getToken()
+    if (!token) return
+
+    const [likesRes, bookmarksRes, commentsRes] = await Promise.all([
+      fetch(`${apiUrl}/api/user/liked-posts`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      }),
+      fetch(`${apiUrl}/api/user/bookmarked-posts`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      }),
+      fetch(`${apiUrl}/api/user/commented-posts`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+    ])
+
+    if (likesRes.ok) {
+      const data = await likesRes.json()
+      likedPosts.value = data.posts || []
+    }
+
+    if (bookmarksRes.ok) {
+      const data = await bookmarksRes.json()
+      bookmarkedPosts.value = data.posts || []
+    }
+
+    if (commentsRes.ok) {
+      const data = await commentsRes.json()
+      commentedPosts.value = data.posts || []
+    }
+  } catch (error) {
+    console.error('Failed to load user activity:', error)
   }
 }
 
@@ -397,6 +512,11 @@ const formatDate = (dateString) => {
     month: 'long',
     day: 'numeric'
   })
+}
+
+// 게시글로 이동
+const goToPost = (postId) => {
+  router.push(`/community?postId=${postId}`)
 }
 
 // 페이지 로드 시 데이터 가져오기
