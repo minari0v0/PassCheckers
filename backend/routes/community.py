@@ -509,3 +509,30 @@ def toggle_like(post_id):
         cursor.close()
         conn.close()
 
+@community_bp.route('/posts/<int:post_id>/bookmark/status', methods=['GET'])
+@jwt_required()
+def get_bookmark_status(post_id):
+    """현재 사용자의 게시물 북마크 상태 확인"""
+    current_user_id = get_jwt_identity()
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute("""
+            SELECT id FROM post_bookmarks 
+            WHERE post_id = %s AND user_id = %s
+        """, (post_id, current_user_id))
+        
+        existing_bookmark = cursor.fetchone()
+        
+        return jsonify({
+            'bookmarked': existing_bookmark is not None
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
