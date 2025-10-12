@@ -450,3 +450,63 @@ def get_commented_posts():
         print(f"Error in get_commented_posts: {e}")
         return jsonify({'posts': []}), 200
 
+@user_bp.route('/delete-account', methods=['DELETE'])
+@jwt_required()
+def delete_account():
+    """계정 탈퇴"""
+    current_user_id = get_jwt_identity()
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        data = request.get_json()
+        password = data.get('password')
+        
+        if not password:
+            return jsonify({'error': '비밀번호를 입력해주세요'}), 400
+        
+        # 비밀번호 확인
+        cursor.execute("SELECT password_hash FROM users WHERE id = %s", (current_user_id,))
+        user = cursor.fetchone()
+        
+        if not user:
+            return jsonify({'error': '사용자를 찾을 수 없습니다'}), 404
+        
+        if not bcrypt.checkpw(password.encode('utf-8'), user['password_hash'].encode('utf-8')):
+            return jsonify({'error': '비밀번호가 올바르지 않습니다'}), 401
+        
+        # 관련 데이터 삭제 (순서 중요)
+        # 1. 분석 결과 삭제
+        cursor.execute("SELECT id FROM analysis_results WHERE user_id = %s", (current_user_id,))
+        analysis_ids = [row['id'] for row in cursor.fetchall()]
+        
+        if analysis_ids:
+            cursor.execute("DELETE FROM analysis_items WHERE analysis_id IN (%s)" % 
+                         ','.join(['%s'] * len(analysis_ids)), analysis_ids)
+            cursor.execute("DELETE FROM analysis_results WHERE user_id = %s", (current_user_id,))
+        
+        # 2. 게시글 좋아요 삭제
+        cursor.execute("DELETE FROM post_likes WHERE user_id = %s", (current_user_id,))
+        
+        # 3. 게시글 북마크 삭제
+        cursor.execute("DELETE FROM post_bookmarks WHERE user_id = %s", (current_user_id,))
+        
+        # 4. 댓글 삭제
+        cursor.execute("DELETE FROM comments WHERE user_id = %s", (current_user_id,))
+        
+        # 5. 사용자 작성 게시글 삭제 (또는 is_deleted = TRUE로 설정)
+        cursor.execute("UPDATE posts SET is_deleted = TRUE WHERE user_id = %s", (current_user_id,))
+        
+        # 6. 사용자 계정 삭제
+        cursor.execute("DELETE FROM users WHERE id = %s", (current_user_id,))
+        
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        return jsonify({'message': '계정이 삭제되었습니다'}), 200
+        
+    except Exception as e:
+        cursor.close()
+        conn.close()
+        return jsonify({'error': '계정 삭제 중 오류가 발생했습니다'}), 500
