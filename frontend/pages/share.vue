@@ -1,12 +1,12 @@
 <template>
   <div class="share-page-container">
-    <!-- 로딩 오버레이 -->
-    <div v-if="isLoading" class="page-loading-overlay">
+    <!-- 상세 정보 로딩 오버레이 -->
+    <div v-if="isLoading && selectedRecord" class="page-loading-overlay">
       <div class="loading-container">
         <div class="loading-spinner">
           <div class="spinner"></div>
         </div>
-        <p class="loading-text">데이터를 불러오는 중...</p>
+        <p class="loading-text">상세 정보를 불러오는 중...</p>
       </div>
     </div>
 
@@ -160,19 +160,19 @@
             <div v-else-if="partners.length > 0" class="carousel-container">
               <div class="carousel-track" :style="{ transform: `translateX(-${currentSlideIndex * 100}%)`, transition: noTransition ? 'none' : 'transform 0.5s ease-in-out' }">
                 <!-- 각 동반자 카드 (복제 포함) -->
-                <div v-for="(partner, index) in carouselPartners" :key="`${partner.code}-${index}`" class="carousel-slide">
+                <div v-for="(partner, index) in carouselPartners" :key="partner.connection_id || `${partner.analysis.id}-${index}`" class="carousel-slide">
                   <div class="partner-card-content">
                     <div class="partner-image-container">
                       <img 
                         :ref="el => partner.imageRef = el" 
                         :src="getApiUrl(partner.analysis.image_url)" 
-                        :alt="`${partner.code} 수하물`" 
+                        :alt="`${partner.analysis.nickname} 수하물`" 
                         class="analysis-image"
                         @load="updatePartnerImageSize(partner)"
                       />
                       <ImageItem 
                         v-for="item in partner.items" 
-                        :key="`partner-${partner.code}-${item.id}`"
+                        :key="`partner-${partner.analysis.id}-${item.id}`"
                         :item="item"
                         :image-size="partner.imageSize"
                         :color="partner.color"
@@ -208,8 +208,14 @@
                   <span class="partner-nav-preview prev">{{ prevPartnerName }}</span>
                   <transition name="fade-info" mode="out-in">
                     <div class="partner-info-main" :key="currentPartnerIndex">
-                      <span class="partner-code">{{ currentPartner.code }}</span>
-                      <span class="partner-name">{{ currentPartner.analysis.destination || `분석 #${currentPartner.analysis.id}` }}</span>
+                      <div class="partner-title-wrapper">
+                        <span v-if="!currentPartner.is_host" class="host-badge partner" title="이 연결을 시작한 호스트입니다.">호스트</span>
+                        <span class="partner-name">{{ currentPartner.analysis.nickname || currentPartner.analysis.destination || `분석 #${currentPartner.analysis.id}` }}</span>
+                        <button @click="handleDisconnect(currentPartner)" class="disconnect-btn" title="이 동반자와의 연결을 해제합니다.">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                        </button>
+                      </div>
+                      <span class="partner-code">공유코드: {{ currentPartner.code }}</span>
                     </div>
                   </transition>
                   <span class="partner-nav-preview next">{{ nextPartnerName }}</span>
@@ -362,6 +368,94 @@ const carouselPartners = computed(() => {
 
 // --- METHODS ---
 /**
+ * 현재 분석에 연결된 모든 동반자 목록을 가져옵니다.
+ */
+async function fetchConnections() {
+  if (!shareCode.value) return;
+
+  try {
+    const url = getApiUrl(`/api/share/connections/${shareCode.value}`);
+    const { data, error } = await useFetch(url, {
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('access_token')}` }
+    });
+
+    if (error.value) {
+      console.error('연결된 동반자 목록을 가져오는 데 실패했습니다:', error.value);
+      partners.value = [];
+    } else {
+      // 기존 파트너 목록을 초기화합니다.
+      partners.value = [];
+      availableColors.value = [...partnerColorPalette]; // 색상 풀 초기화
+
+      data.value.partners.forEach(p => addPartner(p));
+    }
+  } catch (e) {
+    console.error('동반자 목록 요청 중 예외 발생:', e);
+  }
+}
+
+/**
+ * 동반자를 목록에 추가하고 UI 관련 상태를 설정합니다.
+ * @param {object} partnerData - API로부터 받은 파트너 데이터
+ */
+function addPartner(partnerData) {
+    // 사용 가능한 색상 풀이 비었으면 다시 채움
+    if (availableColors.value.length === 0) {
+      availableColors.value = [...partnerColorPalette];
+    }
+    // 랜덤 인덱스로 색상 선택 및 풀에서 제거
+    const colorIndex = Math.floor(Math.random() * availableColors.value.length);
+    const selectedColor = availableColors.value.splice(colorIndex, 1)[0];
+
+    const newPartner = {
+      ...partnerData,
+      code: partnerData.analysis.share_code, // 캐러셀 key를 위한 code 속성 추가
+      imageSize: { width: 0, height: 0, offsetX: 0, offsetY: 0 },
+      imageRef: ref(null),
+      showItemList: false,
+      color: selectedColor,
+    };
+    partners.value.push(newPartner);
+}
+
+/**
+ * 동반자 연결을 해제합니다.
+ * @param {object} partnerToDisconnect - 연결 해제할 파트너 객체
+ */
+async function handleDisconnect(partnerToDisconnect) {
+  if (!confirm(`'${partnerToDisconnect.analysis.nickname}'님과의 연결을 해제하시겠습니까?`)) {
+    return;
+  }
+
+  try {
+    const url = getApiUrl(`/api/share/disconnect`);
+    const { error } = await useFetch(url, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('access_token')}` 
+      },
+      body: JSON.stringify({
+        my_analysis_id: detailedRecord.value.analysis.id,
+        partner_analysis_id: partnerToDisconnect.analysis.id,
+      })
+    });
+
+    if (error.value) {
+      console.error('연결 해제 실패:', error.value);
+      alert('연결 해제 중 오류가 발생했습니다.');
+    } else {
+      // 성공 시 목록 새로고침
+      await fetchConnections();
+      alert('연결이 해제되었습니다.');
+    }
+  } catch (e) {
+    console.error('연결 해제 중 예외 발생:', e);
+    alert('연결 해제 중 오류가 발생했습니다.');
+  }
+}
+
+/**
  * 아이템 배열을 받아 이름별로 그룹화하고 개수를 셉니다.
  * @param {Array} items - 분석된 아이템 배열
  * @returns {Array} - { name: string, count: number } 형태의 배열
@@ -413,7 +507,7 @@ async function fetchAnalyses() {
 }
 
 /**
- * 특정 분석 기록을 선택하고 상세 정보를 가져옵니다.
+ * 특정 분석 기록을 선택하고 상세 정보 및 연결된 동반자 목록을 가져옵니다.
  * @param {number} id - 분석 기록 ID
  */
 async function selectRecord(id) {
@@ -433,6 +527,10 @@ async function selectRecord(id) {
       selectedRecordId.value = null; // 에러 발생 시 선택 취소
     } else {
       detailedRecord.value = data.value;
+      
+      // 연결된 동반자 목록 가져오기
+      await fetchConnections();
+
       // 상세 정보 로드 후 이미지 사이즈 계산
       await nextTick();
       updateImageSize();
@@ -465,30 +563,17 @@ async function handleCopyCode() {
   try {
     await navigator.clipboard.writeText(shareCode.value);
     copied.value = true;
+    setTimeout(() => {
+      copied.value = false;
+    }, 1500);
   } catch (err) {
-    console.error('클립보드 복사 실패 (최신 API):', err);
-    try {
-      const textarea = document.createElement('textarea');
-      textarea.value = shareCode.value;
-      textarea.style.position = 'fixed';
-      textarea.style.left = '-9999px';
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand('copy');
-      document.body.removeChild(textarea);
-      copied.value = true;
-      setTimeout(() => {
-        copied.value = false;
-      }, 1500);
-    } catch (execErr) {
-      console.error('클립보드 복사 실패 (대체 수단):', execErr);
-      alert('코드를 복사하는데 실패했습니다.');
-    }
+    console.error('클립보드 복사 실패:', err);
+    alert('코드를 복사하는데 실패했습니다.');
   }
 }
 
 /**
- * 입력된 코드로 동반자를 연결합니다.
+ * 입력된 코드로 동반자를 연결합니다. (DB에 저장)
  */
 async function handleConnect() {
   if (partnerCode.value.length < 4) return;
@@ -501,41 +586,35 @@ async function handleConnect() {
 
   isConnecting.value = true;
   connectError.value = ''; // 이전 에러 메시지 초기화
+  
   try {
-    const url = getApiUrl(`/api/share/${partnerCode.value.toUpperCase()}`);
-    const { data, error } = await useFetch(url);
+    const url = getApiUrl('/api/share/connect');
+    const { error } = await useFetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+      },
+      body: JSON.stringify({
+        host_code: shareCode.value,
+        partner_code: partnerCode.value.toUpperCase(),
+      })
+    });
 
     if (error.value) {
-      console.error('공유 코드 조회 실패:', error.value);
-      connectError.value = '유효하지 않은 코드이거나, 이미 추가된 동반자입니다.';
+      console.error('동반자 연결 실패:', error.value);
+      connectError.value = error.value.data?.error || '연결에 실패했습니다. 코드를 확인해주세요.';
     } else {
-      // 사용 가능한 색상 풀이 비었으면 다시 채움
-      if (availableColors.value.length === 0) {
-        availableColors.value = [...partnerColorPalette];
-      }
-      // 랜덤 인덱스로 색상 선택 및 풀에서 제거
-      const colorIndex = Math.floor(Math.random() * availableColors.value.length);
-      const selectedColor = availableColors.value.splice(colorIndex, 1)[0];
-
-      // 새로운 동반자 데이터 구조
-      const newPartner = {
-        code: data.value.analysis.share_code,
-        analysis: data.value.analysis,
-        items: data.value.items,
-        imageSize: { width: 0, height: 0, offsetX: 0, offsetY: 0 },
-        imageRef: ref(null),
-        showItemList: false,
-        color: selectedColor, // 랜덤으로 선택된 색상 할당
-      };
-      partners.value.push(newPartner);
+      // 연결 성공
       partnerCode.value = '';
       showAddForm.value = false;
-
+      
       // 성공 토스트 표시
       showSuccessToast.value = true;
-      setTimeout(() => {
-        showSuccessToast.value = false;
-      }, 2000);
+      setTimeout(() => showSuccessToast.value = false, 2000);
+      
+      // 동반자 목록 새로고침
+      await fetchConnections();
     }
   } catch (e) {
     console.error('동반자 연결 중 예외 발생:', e);
@@ -1562,6 +1641,49 @@ onUnmounted(() => {
 .view-fade-leave-to {
   opacity: 0;
   transform: translateY(-10px);
+}
+
+
+/* --- Partner Carousel Enhancements --- */
+.partner-title-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.disconnect-btn {
+  background: none;
+  border: none;
+  color: #aaa;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  line-height: 1;
+  transition: color 0.2s ease;
+}
+
+.disconnect-btn:hover {
+  color: #e74c3c; /* 빨간색 */
+}
+
+.disconnect-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.host-badge.partner {
+  background-color: #f39c12; /* 주황색 */
+  color: white;
+  font-size: 0.75rem;
+}
+
+.partner-code {
+  font-family: monospace;
+  font-size: 0.9rem; /* 기존보다 약간 작게 */
+  color: #999; /* 덜 강조되는 색상 */
+  display: block;
 }
 
 </style>
