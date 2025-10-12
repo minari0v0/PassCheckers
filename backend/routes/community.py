@@ -587,3 +587,35 @@ def toggle_bookmark(post_id):
         cursor.close()
         conn.close()
 
+@community_bp.route('/tags/popular', methods=['GET'])
+def get_popular_tags():
+    """게시물 수가 많은 인기 태그 조회 API"""
+    limit = request.args.get('limit', 10, type=int)
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute("""
+            SELECT 
+                t.name,
+                COUNT(pt.post_id) as count
+            FROM tags t
+            JOIN post_tags pt ON t.id = pt.tag_id
+            JOIN posts p ON pt.post_id = p.id
+            WHERE p.is_deleted = FALSE
+            GROUP BY t.id, t.name
+            ORDER BY count DESC
+            LIMIT %s
+        """, (limit,))
+        
+        tags = cursor.fetchall()
+        
+        return jsonify({'tags': tags}), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
