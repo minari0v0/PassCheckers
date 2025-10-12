@@ -10,6 +10,19 @@ export default defineNuxtConfig({
     port: 80,
     host: '0.0.0.0'
   },
+  nitro: {
+    // 프로덕션 모드 서버 설정
+    devProxy: {},
+    experimental: {
+      openAPI: false
+    }
+  },
+  // 프로덕션 빌드 시 외부 접속 허용
+  $production: {
+    nitro: {
+      preset: 'node-server'
+    }
+  },
   router: {
     options: {
       scrollBehaviorType: 'smooth'
