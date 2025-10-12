@@ -416,3 +416,30 @@ def delete_post(post_id):
         cursor.close()
         conn.close()
 
+@community_bp.route('/posts/<int:post_id>/like/status', methods=['GET'])
+@jwt_required()
+def get_like_status(post_id):
+    """현재 사용자의 게시물 좋아요 상태 확인"""
+    current_user_id = get_jwt_identity()
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute("""
+            SELECT id FROM post_likes 
+            WHERE post_id = %s AND user_id = %s
+        """, (post_id, current_user_id))
+        
+        existing_like = cursor.fetchone()
+        
+        return jsonify({
+            'liked': existing_like is not None
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
