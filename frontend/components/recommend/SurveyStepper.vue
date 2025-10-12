@@ -45,6 +45,7 @@
                 square 
                 class="custom-input" 
                 @keydown.enter.prevent="handleDestinationEnter"
+                hint="입력 후 Enter를 누르고 선택하세요"
               />
               <q-list bordered separator v-if="destinationSuggestions.length > 0" class="suggestion-list">
                 <q-item
@@ -74,21 +75,36 @@
             </q-card-section>
           </q-card>
         </transition-group>
-        <transition-group name="fade" tag="div" class="card-grid theme-grid">
-          <q-card v-if="currentStep === 4" v-for="opt in themeOptions" :key="opt.id"
-                  class="option-card theme-card" :class="{ selected: preferences.themes.includes(opt.id) }"
-                  @click="selectTheme(opt.id)" flat>
-            <img :src="opt.image" class="card-bg-image" />
-            <div class="card-overlay"></div>
-            <q-card-section class="text-center card-content">
-              <div class="emoji-icon small">{{ opt.emoji }}</div>
-              <div class="option-label theme">{{ opt.label }}</div>
-            </q-card-section>
-            <div v-if="preferences.themes.includes(opt.id)" class="selected-check">
-              <q-icon name="check" />
-            </div>
-          </q-card>
-        </transition-group>
+        <div v-if="currentStep === 4" class="theme-layout-container">
+          <div class="theme-row">
+            <q-card v-for="opt in themeOptions.slice(0, 3)" :key="opt.id"
+                    class="option-card theme-card" :class="{ selected: preferences.themes.includes(opt.id) }"
+                    @click="selectTheme(opt.id)" flat>
+              <img :src="opt.image" class="card-bg-image" />
+              <div class="card-overlay"></div>
+              <q-card-section class="text-center card-content">
+                <div class="option-label theme">{{ opt.label }}</div>
+              </q-card-section>
+              <div v-if="preferences.themes.includes(opt.id)" class="selected-check">
+                <q-icon name="check" />
+              </div>
+            </q-card>
+          </div>
+          <div class="theme-row">
+            <q-card v-for="opt in themeOptions.slice(3, 5)" :key="opt.id"
+                    class="option-card theme-card" :class="{ selected: preferences.themes.includes(opt.id) }"
+                    @click="selectTheme(opt.id)" flat>
+              <img :src="opt.image" class="card-bg-image" />
+              <div class="card-overlay"></div>
+              <q-card-section class="text-center card-content">
+                <div class="option-label theme">{{ opt.label }}</div>
+              </q-card-section>
+              <div v-if="preferences.themes.includes(opt.id)" class="selected-check">
+                <q-icon name="check" />
+              </div>
+            </q-card>
+          </div>
+        </div>
         <div v-if="currentStep === 4" class="theme-hint">최대 2개까지 선택할 수 있습니다.</div>
 
         <!-- Step 5: Flight Selection -->
@@ -393,11 +409,11 @@ const companionOptions = [
   { id: "with_children", emoji: "👶", label: "아이와 함께" },
 ];
 const themeOptions = [
-  { id: "healing", emoji: "🏖️", label: "#힐링/휴양", image: "/images/healing.jpg" },
-  { id: "food", emoji: "🍜", label: "#맛집탐방", image: "/images/food.jpg" },
-  { id: "shopping", emoji: "🛍️", label: "#도시/쇼핑", image: "/images/shopping.jpg" },
-  { id: "activity", emoji: "🏔️", label: "#자연/액티비티", image: "/images/activity.jpg" },
-  { id: "culture", emoji: "🏛️", label: "#문화/역사", image: "/images/culture.jpg" },
+  { id: "healing", label: "#힐링/휴양", image: "/images/theme/healing.jpg" },
+  { id: "food", label: "#맛집탐방", image: "/images/theme/food.jpg" },
+  { id: "shopping", label: "#도시/쇼핑", image: "/images/theme/city.jpg" },
+  { id: "activity", label: "#자연/액티비티", image: "/images/theme/activity.jpg" },
+  { id: "culture", label: "#문화/역사", image: "/images/theme/history.jpg" },
 ];
 const stepDetails = [
   { title: '어디로 떠나시나요?', subtitle: '여행지에 맞는 준비물을 추천해드려요.' },
@@ -673,8 +689,75 @@ const submitSurvey = () => {
 .companion-grid {
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
 }
-.theme-grid {
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+.theme-layout-container {
+  display: flex;
+  flex-direction: column; /* 행(row)들을 수직으로 쌓습니다 */
+  gap: 1rem;             /* 두 행 사이의 간격을 설정합니다 */
+}
+
+.theme-row {
+  display: flex;
+  justify-content: center; /* 행 내부의 카드들을 수평 중앙 정렬합니다 */
+  gap: 1rem;               /* 한 행에 있는 카드들 사이의 간격을 설정합니다 */
+}
+
+.theme-card {
+  position: relative;
+  height: 120px;
+  overflow: hidden;
+  flex: 1 1 0;      /* 카드가 행의 공간을 균등하게 차지하도록 설정합니다 (늘어나고 줄어듦) */
+  max-width: 32%;   /* 카드 3개가 간격을 포함하여 한 줄에 잘 맞도록 최대 너비를 제한합니다 */
+}
+.card-bg-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+.option-card:hover .card-bg-image {
+  transform: scale(1.1);
+}
+.card-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  transition: background 0.3s ease;
+}
+.option-card.selected .card-overlay {
+  background: rgba(0, 123, 255, 0.5);
+}
+.card-content {
+  position: relative;
+  z-index: 2;
+  color: white;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.option-label.theme {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+.selected-check {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: white;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--q-primary);
+  z-index: 3;
 }
 
 .option-card {
@@ -707,10 +790,12 @@ const submitSurvey = () => {
 .suggestion-list {
   position: absolute;
   width: 100%;
-  top: 100%;
+  top: 56px; /* 입력창의 기본 높이에 맞춰 고정. 힌트 텍스트를 덮어쓰기 위함 */
   left: 0;
   z-index: 10;
   background: white;
+  border: 1px solid #ddd;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
 /* Flight search styles */
@@ -722,7 +807,7 @@ const submitSurvey = () => {
 .flight-input-group {
     display: flex;
     gap: 1rem;
-    align-items: center;
+    align-items: flex-start; /* 수직 정렬을 위해 center에서 flex-start로 변경 */
 }
 .flight-list {
     margin-top: 1rem;

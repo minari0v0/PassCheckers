@@ -4,16 +4,15 @@
     <div v-if="!isStarted" style="min-height: 100vh;">
       <!-- 상단 안내문구 -->
       <section style="text-align:center; margin-top:48px; margin-bottom:32px;">
-        <h1 style="font-size:2.2rem; font-weight:bold;">
-          스마트 패킹리스트
-        </h1>
-        <p style="color:#888; margin-top:8px;">
+                  <h1 style="font-size:2.2rem; font-weight:bold;">
+                    <span style="color:var(--main-blue);">스마트</span> 패킹리스트
+                  </h1>        <p style="color:#888; margin-top:8px;">
           여행지, 날짜만 알려주시면 AI가 날씨와 현지 상황을 분석해 완벽한 여행 준비물을 추천해 드립니다.
         </p>
       </section>
 
       <!-- 메인 카드: 주요 특징 -->
-      <div class="page-section" style="background:#f8fbff; border:1px solid #e3f0fa; margin-bottom: 24px;">
+      <div class="page-section" style="background:#f8fbff; border:1px solid #e3f0fa; margin-bottom: 24px; padding: 48px 32px;">
         <div style="text-align:center; font-weight:600; font-size:1.2rem; margin-bottom:16px; display:flex; align-items:center; justify-content:center; gap:8px;">
           <q-icon name="auto_awesome" color="primary" size="28px" />
           스마트 추천 기능
@@ -43,7 +42,7 @@
       </div>
 
       <!-- CTA 카드 -->
-      <div class="page-section" style="background:#ffffff; border:1px solid #e0e0e0;">
+      <div class="page-section" style="background:#ffffff; border:1px solid #e0e0e0; padding: 24px 32px;">
         <h2 style="font-size: 1.8rem; font-weight: 700; color: #333; text-align: center; margin-bottom: 8px;">나만의 패킹리스트 만들기</h2>
         <p style="color:#888; text-align: center; margin-bottom: 24px;">
           간단한 질문으로 당신만의 특별한 여행 준비를 시작하세요.
@@ -68,18 +67,40 @@
     <!-- 2. 설문조사 및 결과 화면 -->
     <div v-else class="survey-container-wide">
       <!-- Survey Header -->
-      <div style="padding: 2rem 0; text-align: center;">
-        <h1 style="font-size: 2rem; font-weight: 700; margin-bottom: 8px;">나만의 여행 준비물 찾기</h1>
-        <p style="font-size: 1.1rem; color: #888;">몇 가지 질문에 답변하고 완벽한 패킹리스트를 받아보세요.</p>
-      </div>
+      <section style="text-align:center; margin-top:48px; margin-bottom:32px;">
+        <h1 style="font-size:2.2rem; font-weight:bold;">
+          <span style="color:var(--main-blue);">나만의</span> 여행 준비물 찾기
+        </h1>
+        <p style="color:#888; margin-top:8px;">
+          몇 가지 질문에 답변하고 완벽한 패킹리스트를 받아보세요.
+        </p>
+      </section>
 
       <SurveyStepper v-if="!showResults" @survey-complete="handleSurveyComplete" />
 
       <!-- 결과 표시 -->
       <div v-else class="results-wrapper">
         <div class="form-header">
-          <q-btn flat round icon="arrow_back" @click="goBackToSurvey" />
+          
           <h2 class="form-title">나만의 패킹리스트</h2>
+          <q-btn 
+            v-if="locationId"
+            outline 
+            rounded
+            color="primary" 
+            label="여행지 정보 보기" 
+            @click="showInfoModal = true"
+            class="q-ml-md"
+          />
+          <q-btn 
+            v-if="packingList.length > 0"
+            outline 
+            rounded
+            color="secondary" 
+            label="내 목록에 추가" 
+            @click="openAddToListModal"
+            class="q-ml-sm"
+          />
         </div>
 
         <q-banner v-if="isHistorical" inline-actions rounded class="bg-blue-1 text-primary q-mb-md">
@@ -89,7 +110,7 @@
           일기 예보를 확인하기 어려운 먼 날짜이므로, 과거 날씨 통계를 기반으로 추천해 드렸어요.
         </q-banner>
 
-        <q-card class="output-card" flat bordered style="padding: 1.5rem;">
+        <q-card class="output-card" flat style="padding: 1.5rem; background-color: #f8fbff; border: 1px solid #e3f0fa;">
           <div v-if="isLoading" class="loading-state">
             <q-spinner-gears size="xl" color="primary" />
             <p class="q-mt-md text-subtitle1">결과를 분석 중입니다...</p>
@@ -143,6 +164,8 @@
             
             <!-- Right Column: Weather Info -->
             <div class="weather-column">
+
+
               <!-- Real-time Forecast Display -->
               <div class="forecast-container q-mb-lg" v-if="forecastData">
                 <q-card flat bordered>
@@ -181,28 +204,259 @@
         </q-card>
       </div>
     </div>
-  </div>
-</template>
+
+    <!-- 상세 정보 모달 -->
+    <Teleport to="body">
+      <div v-if="showInfoModal" class="modal-overlay" @click="showInfoModal = false">
+        <div class="modal-content" @click.stop>
+          <button class="modal-close" @click="showInfoModal = false">&times;</button>
+          <InfoDetailComponent v-if="locationId" :location-id="locationId" @close="showInfoModal = false" />
+        </div>
+      </div>
+          </Teleport>
+    
+      <!-- "내 목록에 추가" 모달 -->
+      <q-dialog v-model="showAddToListModal">
+        <q-card style="width: 900px; max-width: 90vw;">
+          <q-card-section class="row items-center q-pb-none">
+            <div class="text-h6">내 짐 목록에 추가</div>
+            <q-space />
+            <q-btn icon="close" flat round dense v-close-popup />
+          </q-card-section>
+
+          <!-- 분석 기록 선택 -->
+          <q-card-section v-if="analysisHistory.length > 0">
+            <div class="text-subtitle1 q-mb-sm">1. 추가할 목록 선택</div>
+            <q-list bordered separator style="border-radius: 8px;">
+              <q-item v-for="item in analysisHistory" :key="item.id" tag="label" v-ripple>
+                <q-item-section avatar top>
+                  <q-radio v-model="selectedAnalysisId" :val="item.id" />
+                </q-item-section>
+                <q-item-section>
+                  <q-item-label>{{ item.destination || '알 수 없는 목적지' }}</q-item-label>
+                  <q-item-label caption>{{ item.analysis_date }} 분석</q-item-label>
+                </q-item-section>
+                <q-item-section side top>
+                  <q-badge outline color="primary" :label="`${item.total_items}개 물품`" />
+                </q-item-section>
+              </q-item>
+            </q-list>
+          </q-card-section>
+
+          <!-- 아이템 목록 (좌우 분할) -->
+          <q-card-section v-if="selectedAnalysisId" class="q-pt-none">
+            <div class="row q-col-gutter-md">
+              <!-- 왼쪽: 이미 있는 짐 -->
+              <div class="col-6">
+                <div class="text-subtitle1 q-mb-sm">목록에 이미 있는 짐 ({{ existingItems.length }}개)</div>
+                <q-card flat bordered>
+                  <q-list dense separator style="max-height: 300px; overflow-y: auto;">
+                    <q-inner-loading :showing="isFetchingDetails">
+                      <q-spinner-dots size="40px" color="primary" />
+                    </q-inner-loading>
+                    <q-item v-if="!isFetchingDetails && existingItems.length === 0">
+                      <q-item-section class="text-grey text-center">
+                        (비어 있음)
+                      </q-item-section>
+                    </q-item>
+                    <q-item v-for="item in existingItems" :key="item.id">
+                      <q-item-section>
+                        <q-item-label>{{ item.item_name_ko }}</q-item-label>
+                      </q-item-section>
+                      <q-item-section side>
+                        <q-badge :label="item.source" :color="item.source === 'recommendation' ? 'blue' : 'grey-6'" />
+                      </q-item-section>
+                    </q-item>
+                  </q-list>
+                </q-card>
+              </div>
+              <!-- 오른쪽: 추가할 추천 아이템 -->
+              <div class="col-6">
+                <div class="text-subtitle1 q-mb-sm">추가할 추천 아이템</div>
+                <q-card flat bordered>
+                  <q-list dense style="max-height: 300px; overflow-y: auto;">
+                    <q-item tag="label" v-ripple>
+                      <q-item-section side>
+                        <q-checkbox :model-value="areAllSelected" @update:model-value="toggleSelectAll" />
+                      </q-item-section>
+                      <q-item-section>
+                        <q-item-label class="text-weight-bold">전체 선택/해제</q-item-label>
+                      </q-item-section>
+                    </q-item>
+                    <q-separator />
+                    <q-expansion-item
+                      v-for="group in packingList"
+                      :key="group.group_name"
+                      :label="getGroupTitle(group)"
+                      header-class="bg-grey-1"
+                    >
+                      <q-list dense separator>
+                        <q-item v-for="item in group.items" :key="item.name" tag="label" v-ripple>
+                          <q-item-section side>
+                            <q-checkbox v-model="itemsToAdd" :val="item.name" />
+                          </q-item-section>
+                          <q-item-section>
+                            <q-item-label>{{ item.name }}</q-item-label>
+                          </q-item-section>
+                        </q-item>
+                      </q-list>
+                    </q-expansion-item>
+                  </q-list>
+                </q-card>
+              </div>
+            </div>
+          </q-card-section>
+
+          <!-- 분석 기록이 없을 때 -->
+          <q-card-section v-else-if="!analysisHistory.length" class="text-center q-py-xl">
+            <q-icon name="info_outline" size="xl" color="grey-5" />
+            <p class="q-mt-md text-h6">저장할 분석 기록이 없습니다.</p>
+            <p class="text-grey-7">먼저 '수하물 분류' 페이지에서 내 짐을 분석해주세요.</p>
+            <q-btn to="/classification" unelevated color="primary" label="수하물 분류하러 가기" class="q-mt-sm" />
+          </q-card-section>
+
+          <q-separator />
+
+          <q-card-actions align="right" class="q-pa-md bg-grey-1">
+            <q-btn flat label="취소" color="primary" v-close-popup />
+            <q-btn v-if="analysisHistory.length > 0" unelevated label="선택한 목록에 추가" color="primary" @click="saveItemsToList" :disable="!selectedAnalysisId" />
+          </q-card-actions>
+        </q-card>
+      </q-dialog>
+        </div></template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed, watch } from 'vue';
 import SurveyStepper from '~/components/recommend/SurveyStepper.vue';
 import WeatherChart from '~/components/recommend/WeatherChart.vue';
+import InfoDetailComponent from '~/components/info/DetailComponent.vue';
 import { useApiUrl } from '~/composables/useApiUrl';
+import { useAuth } from '~/composables/useAuth';
+import { Notify } from 'quasar';
 
 definePageMeta({ middleware: 'auth' });
 
+// --- Composables ---
+const { getApiUrl } = useApiUrl();
+const { user } = useAuth();
+
+// --- Component State ---
 const isStarted = ref(false);
 const showResults = ref(false);
 const isLoading = ref(false);
 const packingList = ref([]);
 const finalSelections = ref(null);
 const historicalWeather = ref(null);
-const forecastData = ref(null); // 실시간 예보 데이터
+const forecastData = ref(null);
 const isHistorical = ref(false);
-const { getApiUrl } = useApiUrl(); // getApiUrl 정의가 누락되어 추가합니다.
+const locationId = ref(null);
+const expandedGroups = ref({});
 
-const expandedGroups = ref({}); // 그룹별 확장 상태 관리
+// --- "Info" Modal State ---
+const showInfoModal = ref(false);
+
+// --- "Add to List" Modal State ---
+const showAddToListModal = ref(false);
+const analysisHistory = ref([]);
+const selectedAnalysisId = ref(null);
+const itemsToAdd = ref([]);
+const existingItems = ref([]);
+const isFetchingDetails = ref(false);
+
+
+// --- Watchers ---
+watch(selectedAnalysisId, async (newId) => {
+  if (newId) {
+    isFetchingDetails.value = true;
+    existingItems.value = [];
+    try {
+      const response = await fetch(getApiUrl(`/api/analysis/detail/${newId}`));
+      if (!response.ok) throw new Error('분석 상세 정보를 불러오는 데 실패했습니다.');
+      const data = await response.json();
+      existingItems.value = data.items || [];
+    } catch (error) {
+      Notify.create({ type: 'negative', message: error.message });
+    } finally {
+      isFetchingDetails.value = false;
+    }
+  } else {
+    existingItems.value = [];
+  }
+});
+
+// --- Computed Properties for "Select All" ---
+const allRecommendedItems = computed(() => 
+  packingList.value.flatMap(group => group.items.map(item => item.name))
+);
+
+const areAllSelected = computed(() => 
+  allRecommendedItems.value.length > 0 && 
+  itemsToAdd.value.length === allRecommendedItems.value.length
+);
+
+const toggleSelectAll = (newValue) => {
+  if (newValue) {
+    itemsToAdd.value = [...allRecommendedItems.value];
+  } else {
+    itemsToAdd.value = [];
+  }
+};
+
+
+// --- Functions ---
+
+const openAddToListModal = async () => {
+  if (!user.value) {
+    Notify.create({ type: 'negative', message: '로그인이 필요합니다.' });
+    return;
+  }
+  try {
+    const response = await fetch(getApiUrl(`/api/analysis/history/${user.value.id}`));
+    if (!response.ok) throw new Error('분석 기록을 불러오는 데 실패했습니다.');
+    const data = await response.json();
+    analysisHistory.value = data.results || [];
+    // const allItemNames = packingList.value.flatMap(group => group.items.map(item => item.name));
+    itemsToAdd.value = []; // 기본적으로 선택 해제
+    selectedAnalysisId.value = null;
+    existingItems.value = [];
+    showAddToListModal.value = true;
+  } catch (error) {
+    Notify.create({ type: 'negative', message: error.message });
+  }
+};
+
+const saveItemsToList = async () => {
+  if (!selectedAnalysisId.value) {
+    Notify.create({ type: 'warning', message: '아이템을 추가할 분석 기록을 선택해주세요.' });
+    return;
+  }
+  if (itemsToAdd.value.length === 0) {
+    Notify.create({ type: 'warning', message: '추가할 아이템을 하나 이상 선택해주세요.' });
+    return;
+  }
+  try {
+    const postResponse = await fetch(getApiUrl(`/api/analysis/${selectedAnalysisId.value}/add-items`), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ item_names: itemsToAdd.value })
+    });
+    if (!postResponse.ok) throw new Error('아이템 추가에 실패했습니다.');
+    const result = await postResponse.json();
+    Notify.create({ type: 'positive', message: result.message || '아이템이 내 목록에 추가되었습니다.' });
+    
+    const historyItem = analysisHistory.value.find(h => h.id === selectedAnalysisId.value);
+    if (historyItem) {
+        historyItem.total_items += itemsToAdd.value.length;
+    }
+
+    // 상태 초기화로 폴더 선택 화면으로 돌아감
+    selectedAnalysisId.value = null;
+    itemsToAdd.value = [];
+
+  } catch (error) {
+    Notify.create({ type: 'negative', message: error.message });
+  }
+};
 
 const toggleGroup = (groupName) => {
   expandedGroups.value[groupName] = !expandedGroups.value[groupName];
@@ -211,12 +465,23 @@ const toggleGroup = (groupName) => {
 const getGroupTitle = (group) => {
   const groupName = group.group_name;
   const selections = finalSelections.value;
-
   if (!selections) return groupName;
-
   switch (groupName) {
     case '날씨':
       if (isHistorical.value) {
+        if (historicalWeather.value && finalSelections.value?.dates?.from) {
+          const travelMonth = new Date(finalSelections.value.dates.from).getMonth() + 1;
+          const monthData = historicalWeather.value.find(m => m.month === travelMonth);
+          if (monthData) {
+            const maxTemp = parseFloat(monthData.avg_max_temp);
+            const minTemp = parseFloat(monthData.avg_min_temp);
+            if (!isNaN(maxTemp) && !isNaN(minTemp)) {
+              const avgTemp = Math.round((maxTemp + minTemp) / 2);
+              const precip = Math.round(parseFloat(monthData.monthly_precipitation_mm));
+              return `월별 평균 ${avgTemp}°C, 강수량 ${precip}mm`;
+            }
+          }
+        }
         return '월별 날씨 요약';
       } else if (tripForecast.value && tripForecast.value.length > 0) {
         const totalDays = tripForecast.value.length;
@@ -229,7 +494,6 @@ const getGroupTitle = (group) => {
         return `평균 ${avgTemp}°C, 강수확률 ${avgPrecip}%`;
       }
       return '날씨 기반 추천';
-
     case '동반자':
       if (selections.companion) {
         const companionMap = {
@@ -242,7 +506,6 @@ const getGroupTitle = (group) => {
         return companionMap[selections.companion] || '동반자 맞춤 추천';
       }
       return '동반자 맞춤 추천';
-
     case '테마':
       if (selections.themes && selections.themes.length > 0) {
         const themeNameMap = {
@@ -258,10 +521,8 @@ const getGroupTitle = (group) => {
         }
       }
       return '테마 맞춤 추천';
-
     case '항공편':
       return '장거리 비행을 위한 준비';
-
     default:
       return groupName;
   }
@@ -271,14 +532,10 @@ const tripForecast = computed(() => {
   if (!forecastData.value || !finalSelections.value || !finalSelections.value.dates) {
     return [];
   }
-
   const startDate = new Date(finalSelections.value.dates.from);
   const endDate = new Date(finalSelections.value.dates.to);
-
-  // 시간 정보를 0으로 설정하여 날짜만 비교합니다.
   startDate.setHours(0, 0, 0, 0);
   endDate.setHours(0, 0, 0, 0);
-
   return forecastData.value.filter(day => {
     const dayDate = new Date(day.time);
     dayDate.setHours(0, 0, 0, 0);
@@ -286,32 +543,8 @@ const tripForecast = computed(() => {
   });
 });
 
-// 날씨 코드를 이모지 아이콘으로 매핑하는 함수
 const mapWeatherCodeToIcon = (code) => {
-  const iconMap = {
-    0: '☀️', // 맑음
-    1: '🌤️', // 대체로 맑음
-    2: '🌥️', // 구름 조금
-    3: '☁️', // 흐림
-    45: '🌫️', // 안개
-    48: '🌫️', // 서리 안개
-    51: '💧', // 이슬비: 약함
-    53: '💧', // 이슬비: 보통
-    55: '💧', // 이슬비: 강함
-    61: '🌧️', // 비: 약함
-    63: '🌧️', // 비: 보통
-    65: '🌧️', // 비: 강함
-    71: '❄️', // 눈: 약함
-    73: '❄️', // 눈: 보통
-    75: '❄️', // 눈: 강함
-    77: '❄️', // 싸락눈
-    80: '🌦️', // 소나기: 약함
-    81: '🌦️', // 소나기: 보통
-    82: '⛈️', // 소나기: 폭우
-    85: '🌨️', // 눈 소나기: 약함
-    86: '🌨️', // 눈 소나기: 강함
-    95: '⚡️', // 뇌우
-  };
+  const iconMap = { 0: '☀️', 1: '🌤️', 2: '🌥️', 3: '☁️', 45: '🌫️', 48: '🌫️', 51: '💧', 53: '💧', 55: '💧', 61: '🌧️', 63: '🌧️', 65: '🌧️', 71: '❄️', 73: '❄️', 75: '❄️', 77: '❄️', 80: '🌦️', 81: '🌦️', 82: '⛈️', 85: '🌨️', 86: '🌨️', 95: '⚡️' };
   return iconMap[code] || '❔';
 };
 
@@ -323,7 +556,9 @@ const goBackToSurvey = () => {
   finalSelections.value = null;
   historicalWeather.value = null;
   isHistorical.value = false;
-  forecastData.value = null; // 예보 데이터 초기화
+  forecastData.value = null;
+  locationId.value = null;
+  showInfoModal.value = false;
 };
 
 const handleSurveyComplete = async (surveyData) => {
@@ -334,8 +569,6 @@ const handleSurveyComplete = async (surveyData) => {
   historicalWeather.value = null;
   isHistorical.value = false;
   forecastData.value = null;
-
-  // 여행 시작일이 14일 이후인지 확인
   const today = new Date();
   const startDate = new Date(surveyData.dates.from);
   const diffTime = startDate.getTime() - today.getTime();
@@ -343,7 +576,6 @@ const handleSurveyComplete = async (surveyData) => {
   if (diffDays > 14) {
     isHistorical.value = true;
   }
-
   try {
     const recommendationEndpoint = getApiUrl('/api/packing-recommendation');
     const response = await fetch(recommendationEndpoint, {
@@ -351,15 +583,12 @@ const handleSurveyComplete = async (surveyData) => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(surveyData),
     });
-
     if (!response.ok) {
       throw new Error('Network response was not ok for packing list');
     }
-
     const data = await response.json();
     packingList.value = data.packing_list;
-
-    // 실시간 예보 데이터 처리
+    locationId.value = data.location_id || null;
     if (data.forecast_data) {
       const processedForecast = data.forecast_data.map(day => ({
         ...day,
@@ -367,8 +596,6 @@ const handleSurveyComplete = async (surveyData) => {
       }));
       forecastData.value = processedForecast;
     }
-
-    // 과거 날씨 데이터 처리 (차트용)
     if (data.location_id) {
       const weatherEndpoint = getApiUrl(`/api/locations/${data.location_id}/weather/historical`);
       const weatherResponse = await fetch(weatherEndpoint);
@@ -376,7 +603,6 @@ const handleSurveyComplete = async (surveyData) => {
         historicalWeather.value = await weatherResponse.json();
       }
     }
-
   } catch (error) {
     console.error('Error fetching packing list:', error);
     packingList.value = [
@@ -481,5 +707,60 @@ const handleSurveyComplete = async (surveyData) => {
   border-radius: 8px;
   background-color: #f8f9fa;
   box-sizing: border-box;
+}
+
+.info-value {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+/* 모달 스타일 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 0.75rem;
+  max-width: 95vw;
+  max-height: 95vh;
+  width: 1200px;
+  height: 95vh;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 2rem;
+  cursor: pointer;
+  color: #6c757d;
+  z-index: 1001;
+  width: 3rem;
+  height: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.modal-close:hover {
+  background-color: #e3f2fd;
 }
 </style>
