@@ -95,3 +95,30 @@
           <div class="char-count">{{ formData.content.length }} / 5000</div>
         </div>
 
+        <!-- 태그 (선택사항) -->
+        <div class="form-group">
+          <label>태그 (선택사항)</label>
+          <div class="tags-input-area">
+            <div class="selected-tags">
+              <span
+                v-for="(tag, index) in formData.tags"
+                :key="index"
+                class="tag-chip"
+              >
+                #{{ tag }}
+                <button type="button" @click="removeTag(index)">
+                  <i class="material-icons">close</i>
+                </button>
+              </span>
+              <input
+                v-model="tagInput"
+                type="text"
+                placeholder="태그 입력 후 Enter"
+                @keydown.enter.prevent="addTag"
+                maxlength="20"
+              />
+            </div>
+          </div>
+          <p class="help-text">태그는 최대 5개까지 추가할 수 있습니다</p>
+        </div>
+
