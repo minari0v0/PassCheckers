@@ -887,3 +887,35 @@ def get_recent_posts():
         cursor.close()
         conn.close()
 
+@community_bp.route('/images/<int:image_id>', methods=['GET'])
+def get_image(image_id):
+    """데이터베이스에 저장된 게시물 이미지 조회 API"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute("""
+            SELECT image_data, width, height
+            FROM images
+            WHERE id = %s
+            LIMIT 1
+        """, (image_id,))
+        
+        result = cursor.fetchone()
+        
+        if not result:
+            return jsonify({'error': '이미지를 찾을 수 없습니다'}), 404
+        
+        # 이미지 바이너리를 반환
+        return send_file(
+            io.BytesIO(result['image_data']),
+            mimetype='image/jpeg',
+            as_attachment=False
+        )
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
