@@ -261,3 +261,36 @@ def get_analysis_results():
         print(f"Error in get_analysis_results: {e}")
         return jsonify({'results': []}), 200
 
+@user_bp.route('/analysis-results/<int:result_id>', methods=['DELETE'])
+@jwt_required()
+def delete_analysis_result(result_id):
+    """분석 결과 삭제"""
+    current_user_id = get_jwt_identity()
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # 사용자의 분석 결과인지 확인
+        cursor.execute("""
+            SELECT id FROM analysis_results 
+            WHERE id = %s AND user_id = %s
+        """, (result_id, current_user_id))
+        
+        if not cursor.fetchone():
+            return jsonify({'error': '분석 결과를 찾을 수 없거나 권한이 없습니다'}), 404
+        
+        # 분석 결과 삭제 (연관된 데이터도 함께 삭제)
+        cursor.execute("DELETE FROM analysis_items WHERE analysis_id = %s", (result_id,))
+        cursor.execute("DELETE FROM analysis_results WHERE id = %s", (result_id,))
+        
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        return jsonify({'message': '분석 결과가 삭제되었습니다'}), 200
+        
+    except Exception as e:
+        cursor.close()
+        conn.close()
+        return jsonify({'error': '분석 결과 삭제 중 오류가 발생했습니다'}), 500
+
