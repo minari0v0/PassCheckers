@@ -267,3 +267,23 @@ const closeModal = () => {
   emit('close')
 }
 
+// 게시글을 서버에 제출하는 함수
+const submitPost = async () => {
+  if (isSubmitting.value) return
+  
+  console.log('Form data:', formData.value)
+  
+  if (!formData.value.location) {
+    alert('여행지를 선택해주세요. 검색 후 나타나는 목록에서 선택해주세요.')
+    return
+  }
+  
+  isSubmitting.value = true
+  
+  try {
+    const token = getToken()
+    if (!token) {
+      alert('로그인이 필요합니다')
+      return
+    }
+    
