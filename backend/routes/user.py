@@ -151,3 +151,57 @@ def verify_password():
         conn.close()
         return jsonify({'error': '비밀번호 확인 중 오류가 발생했습니다'}), 500
 
+@user_bp.route('/change-password', methods=['POST'])
+@jwt_required()
+def change_password():
+    """비밀번호 변경 (현재 비밀번호 확인 포함)"""
+    current_user_id = get_jwt_identity()
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        data = request.get_json()
+        current_password = data.get('current_password')
+        new_password = data.get('new_password')
+        confirm_password = data.get('confirm_password')
+        
+        if not current_password:
+            return jsonify({'error': '현재 비밀번호를 입력해주세요'}), 400
+        
+        if not new_password or not confirm_password:
+            return jsonify({'error': '새 비밀번호와 확인 비밀번호를 입력해주세요'}), 400
+        
+        if new_password != confirm_password:
+            return jsonify({'error': '비밀번호가 일치하지 않습니다'}), 400
+        
+        # 현재 비밀번호 확인
+        cursor.execute("SELECT password_hash FROM users WHERE id = %s", (current_user_id,))
+        user = cursor.fetchone()
+        
+        if not user:
+            return jsonify({'error': '사용자를 찾을 수 없습니다'}), 404
+        
+        # bcrypt로 현재 비밀번호 검증
+        if not bcrypt.checkpw(current_password.encode('utf-8'), user['password_hash'].encode('utf-8')):
+            return jsonify({'error': '현재 비밀번호가 올바르지 않습니다'}), 401
+        
+        # 새 비밀번호 해시화
+        new_password_hash = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        
+        cursor.execute("""
+            UPDATE users 
+            SET password_hash = %s 
+            WHERE id = %s
+        """, (new_password_hash, current_user_id))
+        
+        conn.commit()
+        cursor.close()
+        conn.close()
+        
+        return jsonify({'message': '비밀번호가 변경되었습니다'}), 200
+        
+    except Exception as e:
+        cursor.close()
+        conn.close()
+        return jsonify({'error': '비밀번호 변경 중 오류가 발생했습니다'}), 500
+
