@@ -651,3 +651,53 @@ def get_popular_locations():
         cursor.close()
         conn.close()
 
+@community_bp.route('/posts/<int:post_id>/comments', methods=['GET'])
+def get_comments(post_id):
+    """특정 게시물의 댓글 및 답글 목록 조회 API"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # 현재 사용자 ID 가져오기 (선택적)
+        current_user_id = None
+        try:
+            verify_jwt_in_request()
+            current_user_id = get_jwt_identity()
+        except:
+            pass  # 로그인하지 않은 사용자도 댓글 조회 가능
+        
+        cursor.execute("""
+            SELECT 
+                c.id,
+                c.content,
+                c.parent_comment_id,
+                c.created_at,
+                c.updated_at,
+                c.user_id,
+                u.nickname as author
+            FROM comments c
+            LEFT JOIN users u ON c.user_id = u.id
+            WHERE c.post_id = %s AND c.is_deleted = FALSE
+            ORDER BY c.created_at ASC
+        """, (post_id,))
+        
+        comments = cursor.fetchall()
+        
+        
+        # 각 댓글에 is_author 정보 추가 및 datetime을 문자열로 변환
+        for comment in comments:
+            comment['is_author'] = current_user_id is not None and comment['user_id'] == current_user_id
+            # datetime 객체를 ISO 형식 문자열로 변환
+            if comment.get('created_at'):
+                comment['created_at'] = comment['created_at'].strftime('%Y-%m-%d %H:%M:%S')
+            if comment.get('updated_at'):
+                comment['updated_at'] = comment['updated_at'].strftime('%Y-%m-%d %H:%M:%S')
+        
+        return jsonify({'comments': comments}), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
