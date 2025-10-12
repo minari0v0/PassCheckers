@@ -137,3 +137,66 @@ def get_posts():
         cursor.close()
         conn.close()
 
+@community_bp.route('/posts/<int:post_id>', methods=['GET'])
+def get_post(post_id):
+    """특정 게시물의 상세 정보 조회 및 조회수 증가"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # 조회수 증가
+        cursor.execute("UPDATE posts SET views_count = views_count + 1 WHERE id = %s", (post_id,))
+        
+        # 게시물 조회 (실제 댓글 수 계산)
+        cursor.execute("""
+            SELECT 
+                p.id,
+                p.title,
+                p.content,
+                p.summary,
+                p.location,
+                p.image_id,
+                p.user_id,
+                p.created_at,
+                p.updated_at,
+                p.likes_count,
+                (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id AND c.is_deleted = FALSE) as comments_count,
+                p.views_count,
+                p.is_deleted,
+                u.nickname as author,
+                GROUP_CONCAT(DISTINCT t.name) as tags
+            FROM posts p
+            LEFT JOIN users u ON p.user_id = u.id
+            LEFT JOIN post_tags pt ON p.id = pt.post_id
+            LEFT JOIN tags t ON pt.tag_id = t.id
+            WHERE p.id = %s AND p.is_deleted = FALSE
+            GROUP BY p.id
+        """, (post_id,))
+        
+        post = cursor.fetchone()
+        
+        if not post:
+            return jsonify({'error': '게시물을 찾을 수 없습니다'}), 404
+        
+        # 태그를 리스트로 변환
+        if post['tags']:
+            post['tags'] = post['tags'].split(',')
+        else:
+            post['tags'] = []
+        
+        # datetime 객체를 문자열로 변환
+        if post.get('created_at'):
+            post['created_at'] = post['created_at'].strftime('%Y-%m-%d %H:%M:%S')
+        if post.get('updated_at'):
+            post['updated_at'] = post['updated_at'].strftime('%Y-%m-%d %H:%M:%S')
+        
+        conn.commit()
+        return jsonify(post), 200
+        
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
