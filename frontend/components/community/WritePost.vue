@@ -257,3 +257,8 @@ const addTag = () => {
   }
 }
 
+// 태그를 제거하는 함수
+const removeTag = (index) => {
+  formData.value.tags.splice(index, 1)
+}
+
