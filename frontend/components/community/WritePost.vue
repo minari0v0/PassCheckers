@@ -262,3 +262,8 @@ const removeTag = (index) => {
   formData.value.tags.splice(index, 1)
 }
 
+// 모달을 닫는 함수
+const closeModal = () => {
+  emit('close')
+}
+
