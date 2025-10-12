@@ -101,6 +101,58 @@
           </div>
         </div>
 
+        <!-- 분석 결과 섹션 -->
+        <div v-if="activeSection === 'analysis'" class="content-section">
+          <div class="section-header">
+            <h1>분석 결과</h1>
+            <p>수하물 분류 분석 기록을 확인하고 관리할 수 있습니다.</p>
+          </div>
+          
+          <div class="analysis-list">
+            <div v-if="analysisResults.length === 0" class="empty-state">
+              <i class="material-icons">analytics</i>
+              <h3>분석 결과가 없습니다</h3>
+              <p>아직 수하물 분류 분석을 수행하지 않았습니다.</p>
+            </div>
+            <div v-else class="results-grid">
+            <div 
+              v-for="result in analysisResults" 
+              :key="result.id" 
+              class="result-card"
+            >
+              <div class="result-content">
+                <div class="result-image">
+                  <img 
+                    :src="getAnalysisImageUrl(result)" 
+                    :alt="result.title"
+                    @error="onImageError"
+                    class="analysis-image"
+                  />
+                </div>
+                <div class="result-info">
+                  <div class="result-header">
+                    <h4>{{ result.title }}</h4>
+                    <button 
+                      class="more-btn"
+                      @click="toggleAnalysisMenu(result.id)"
+                    >
+                      <i class="material-icons">more_vert</i>
+                    </button>
+                    <div v-if="showAnalysisMenu[result.id]" class="delete-menu">
+                      <button class="delete-btn" @click="deleteAnalysis(result.id)">
+                        <i class="material-icons">delete</i>
+                        삭제
+                      </button>
+                    </div>
+                  </div>
+                  <p class="result-date">{{ formatDate(result.created_at) }}</p>
+                </div>
+              </div>
+            </div>
+            </div>
+          </div>
+        </div>
+
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '~/composables/useAuth'
@@ -166,6 +218,61 @@ const loadUserInfo = async () => {
     }
   } catch (error) {
     console.error('Failed to load user info:', error)
+  }
+}
+
+// 분석 결과 로드
+const loadAnalysisResults = async () => {
+  try {
+    const token = getToken()
+    if (!token) return
+
+    const response = await fetch(`${apiUrl}/api/user/analysis-results`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+
+            if (response.ok) {
+              const data = await response.json()
+              console.log('Analysis results:', data.results)
+              analysisResults.value = data.results || []
+            }
+  } catch (error) {
+    console.error('Failed to load analysis results:', error)
+  }
+}
+
+// 분석 결과 메뉴 토글
+const toggleAnalysisMenu = (resultId) => {
+  showAnalysisMenu.value = { [resultId]: !showAnalysisMenu.value[resultId] }
+}
+
+// 분석 결과 삭제
+const deleteAnalysis = async (resultId) => {
+  if (!confirm('분석 결과를 삭제하시겠습니까?')) return
+
+  try {
+    const token = getToken()
+    if (!token) return
+
+    const response = await fetch(`${apiUrl}/api/user/analysis-results/${resultId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+
+    if (response.ok) {
+      analysisResults.value = analysisResults.value.filter(r => r.id !== resultId)
+      alert('분석 결과가 삭제되었습니다')
+    } else {
+      const errorData = await response.json()
+      alert(`분석 결과 삭제 실패: ${errorData.error}`)
+    }
+  } catch (error) {
+    console.error('Failed to delete analysis result:', error)
+    alert('분석 결과 삭제 중 오류가 발생했습니다')
   }
 }
 
@@ -263,6 +370,33 @@ const openPasswordChange = () => {
 // 프로필 이미지 로드 실패 시 기본 이미지로 대체하는 함수
 const onProfileImageError = (event) => {
   event.target.src = '/images/default_profile.png'
+}
+
+// 분석 결과 이미지 URL 생성 함수
+const getAnalysisImageUrl = (result) => {
+  if (result.thumbnail_url) {
+    // thumbnail_url이 상대 경로인 경우 전체 URL 구성
+    if (result.thumbnail_url.startsWith('/static/')) {
+      return `${apiUrl}${result.thumbnail_url}`
+    }
+    return result.thumbnail_url
+  }
+  return '/images/default_wallpaper.png'
+}
+
+// 분석 결과 이미지 로드 실패 시 기본 이미지로 대체하는 함수
+const onImageError = (event) => {
+  event.target.src = '/images/default_wallpaper.png'
+}
+
+// 날짜 포맷 함수
+const formatDate = (dateString) => {
+  const date = new Date(dateString)
+  return date.toLocaleDateString('ko-KR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  })
 }
 
 // 페이지 로드 시 데이터 가져오기
