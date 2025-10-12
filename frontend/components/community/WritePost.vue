@@ -82,3 +82,16 @@
           </div>
         </div>
 
+        <!-- 내용 -->
+        <div class="form-group">
+          <label for="content">내용 <span class="required">*</span></label>
+          <textarea
+            id="content"
+            v-model="formData.content"
+            placeholder="여행 경험과 팁을 공유해주세요..."
+            required
+            rows="10"
+          ></textarea>
+          <div class="char-count">{{ formData.content.length }} / 5000</div>
+        </div>
+
