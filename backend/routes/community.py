@@ -443,3 +443,69 @@ def get_like_status(post_id):
         cursor.close()
         conn.close()
 
+@community_bp.route('/posts/<int:post_id>/like', methods=['POST'])
+@jwt_required()
+def toggle_like(post_id):
+    """게시물 좋아요 추가/취소 토글 API"""
+    current_user_id = get_jwt_identity()
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # 이미 좋아요를 눌렀는지 확인
+        cursor.execute("""
+            SELECT id FROM post_likes 
+            WHERE post_id = %s AND user_id = %s
+        """, (post_id, current_user_id))
+        
+        existing_like = cursor.fetchone()
+        
+        if existing_like:
+            # 좋아요 취소
+            cursor.execute("""
+                DELETE FROM post_likes 
+                WHERE post_id = %s AND user_id = %s
+            """, (post_id, current_user_id))
+            
+            cursor.execute("""
+                UPDATE posts SET likes_count = likes_count - 1 
+                WHERE id = %s
+            """, (post_id,))
+            
+            message = '좋아요가 취소되었습니다'
+            liked = False
+        else:
+            # 좋아요 추가
+            cursor.execute("""
+                INSERT INTO post_likes (post_id, user_id) 
+                VALUES (%s, %s)
+            """, (post_id, current_user_id))
+            
+            cursor.execute("""
+                UPDATE posts SET likes_count = likes_count + 1 
+                WHERE id = %s
+            """, (post_id,))
+            
+            message = '좋아요가 추가되었습니다'
+            liked = True
+        
+        conn.commit()
+        
+        # 현재 좋아요 수 조회
+        cursor.execute("SELECT likes_count FROM posts WHERE id = %s", (post_id,))
+        post = cursor.fetchone()
+        
+        return jsonify({
+            'message': message,
+            'liked': liked,
+            'likes_count': post['likes_count']
+        }), 200
+        
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
