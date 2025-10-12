@@ -205,3 +205,59 @@ def change_password():
         conn.close()
         return jsonify({'error': '비밀번호 변경 중 오류가 발생했습니다'}), 500
 
+@user_bp.route('/analysis-results', methods=['GET'])
+@jwt_required()
+def get_analysis_results():
+    """사용자의 분석 결과 목록 조회"""
+    current_user_id = get_jwt_identity()
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # 테이블 존재 여부 확인
+        cursor.execute("""
+            SELECT COUNT(*) as count 
+            FROM information_schema.tables 
+            WHERE table_schema = DATABASE() 
+            AND table_name = 'analysis_results'
+        """)
+        table_exists = cursor.fetchone()['count'] > 0
+        
+        if not table_exists:
+            cursor.close()
+            conn.close()
+            return jsonify({'results': []}), 200
+        
+        cursor.execute("""
+            SELECT id, image_url, image_id, created_at, analysis_date, destination
+            FROM analysis_results 
+            WHERE user_id = %s 
+            ORDER BY created_at DESC
+        """, (current_user_id,))
+        
+        results = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        
+        formatted_results = []
+        for result in results:
+            # 썸네일 URL 생성
+            thumbnail_url = create_thumbnail(result['image_url'])
+            
+            formatted_results.append({
+                'id': result['id'],
+                'title': result['destination'] if result['destination'] else f'분석 결과 {result["id"]}',
+                'created_at': result['created_at'].isoformat(),
+                'analysis_date': result['analysis_date'].isoformat() if result['analysis_date'] else None,
+                'image_url': result['image_url'],
+                'thumbnail_url': thumbnail_url
+            })
+        
+        return jsonify({'results': formatted_results}), 200
+        
+    except Exception as e:
+        cursor.close()
+        conn.close()
+        print(f"Error in get_analysis_results: {e}")
+        return jsonify({'results': []}), 200
+
