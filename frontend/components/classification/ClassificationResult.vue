@@ -31,6 +31,7 @@
             <q-card flat bordered class="image-card" style="text-align: center; height: 450px; display: flex; align-items: center; justify-content: center;">
               <div ref="imageContainerRef" class="image-container" style="position: relative; display: inline-block; width: 100%; height: 100%;">
                 <img 
+                  v-if="imageUrl"
                   :src="imageUrl" 
                   style="border-radius: 16px; max-width: 100%; max-height: 100%; object-fit: contain;" 
                   @load="isImageLoaded = true"
@@ -38,6 +39,13 @@
                   alt="분석된 이미지"
                 />
                 
+                <!-- 이미지 로딩 중 또는 없을 때 플레이스홀더 -->
+                <div v-if="!imageUrl" style="display: flex; align-items: center; justify-content: center; height: 100%; color: #999;">
+                  <div style="text-align: center;">
+                    <i class="material-icons" style="font-size: 48px; margin-bottom: 8px;">image</i>
+                    <p>이미지를 선택해주세요</p>
+                  </div>
+                </div>
 
                 <!-- 바운딩 박스 표시 시작 -->
                 <template v-if="isImageLoaded">
@@ -158,7 +166,7 @@
         <q-btn 
           v-if="isSaveButtonVisible"
           icon="save" 
-          label="분석 결과 저장" 
+          label="분류 결과 저장" 
           class="action-button action-button--positive"
           @click="openSaveDialog"
           :disable="isSavingResults"
@@ -183,7 +191,7 @@
       v-if="showToast"
       :title="toastTitle"
       :message="toastMessage"
-      redirect-to="/"
+      :redirect-to="toastRedirectTo"
     />
 
     <!-- 저장용 토스트 컴포넌트 -->
@@ -201,14 +209,12 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useQuasar } from 'quasar'
 import ClassificationToast from './ClassificationToast.vue'
 import SaveAnalysisToast from './SaveAnalysisToast.vue'
 import EditItemsModal from './EditItemsModal.vue'
 import { useAuth } from '~/composables/useAuth'
 import { useApiUrl } from '~/composables/useApiUrl'
 
-const $q = useQuasar()
 const route = useRoute()
 const router = useRouter()
 const { user } = useAuth()
@@ -229,6 +235,7 @@ const isImageLoaded = ref(false);
 const showToast = ref(false)
 const toastTitle = ref('')
 const toastMessage = ref('')
+const toastRedirectTo = ref('')
 
 // --- 에디터 모달 상태 ---
 const showEditModal = ref(false)
@@ -339,7 +346,10 @@ const openEditModal = async () => {
 
   } catch (error) {
     console.error('Error opening edit modal:', error);
-    $q.notify({ type: 'negative', message: error.message || '오류가 발생했습니다.' });
+    toastTitle.value = '오류'
+    toastMessage.value = error.message || '오류가 발생했습니다.'
+    toastRedirectTo.value = '' // 리다이렉트 없음
+    showToast.value = true
   }
 }
 
@@ -402,7 +412,12 @@ const handleEditItemsSave = async (itemsInEditor) => {
         console.log('수정할 아이템:', itemsToUpdate.length)
 
         if (itemsToAdd.length === 0 && itemsToDelete.length === 0 && itemsToUpdate.length === 0) {
-            $q.notify({ message: '변경 사항이 없습니다.', color: 'info' });
+            toastTitle.value = '알림'
+            toastMessage.value = '변경 사항이 없습니다.'
+            toastRedirectTo.value = '' // 리다이렉트 없음
+            showToast.value = true
+            isSaving.value = false
+            showEditModal.value = false
             return;
         }
 
@@ -509,11 +524,21 @@ const handleEditItemsSave = async (itemsInEditor) => {
         });
 
         console.log('업데이트된 detectionResults:', detectionResults.value)
-        $q.notify({ message: '성공적으로 저장되었습니다.', color: 'positive', icon: 'check' });
+        
+        // 토스트 메시지 표시
+        toastTitle.value = '저장 완료'
+        toastMessage.value = '물품 정보가 성공적으로 수정되었습니다.'
+        toastRedirectTo.value = '' // 리다이렉트 없음
+        showToast.value = true
 
     } catch (error) {
         console.error('Error saving changes:', error);
-        $q.notify({ message: `오류 발생: ${error.message}`, color: 'negative' });
+        
+        // 에러 토스트 표시
+        toastTitle.value = '저장 실패'
+        toastMessage.value = `오류가 발생했습니다: ${error.message}`
+        toastRedirectTo.value = '' // 리다이렉트 없음
+        showToast.value = true
     } finally {
         isSaving.value = false;
         showEditModal.value = false;
@@ -529,6 +554,12 @@ const handleImageError = (error) => {
   console.error('이미지 로드 오류:', error);
   console.error('이미지 URL:', imageUrl.value);
   isImageLoaded.value = false;
+  
+  // 이미지 URL이 유효하지 않으면 초기화
+  if (imageUrl.value && !imageUrl.value.startsWith('http') && !imageUrl.value.startsWith('blob:')) {
+    console.warn('잘못된 이미지 URL 형식, 초기화합니다.');
+    imageUrl.value = '';
+  }
 }
 
 const findDetectionResultIndex = (item) => {
@@ -744,17 +775,32 @@ const handleSaveAnalysis = async (analysisName) => {
 
     const result = await response.json();
     
-    toastTitle.value = '저장 완료'
-    toastMessage.value = `분석 결과가 성공적으로 저장되었습니다. (총 ${detectionResults.value.length}개 물품)`
-    showToast.value = true
-    
+    // 다이얼로그를 먼저 닫고
     showSaveDialog.value = false;
+    
+    // 약간의 딜레이 후 토스트 표시
+    await nextTick();
+    setTimeout(() => {
+      toastTitle.value = '저장 완료'
+      toastMessage.value = `분석 결과가 성공적으로 저장되었습니다.\n(총 ${detectionResults.value.length}개 물품)`
+      toastRedirectTo.value = '/' // 홈으로 리다이렉트
+      showToast.value = true
+    }, 100);
 
   } catch (error) {
     console.error('Error saving analysis results:', error);
-    toastTitle.value = '저장 실패'
-    toastMessage.value = `저장 중 오류가 발생했습니다: ${error.message}`
-    showToast.value = true
+    
+    // 다이얼로그를 먼저 닫고
+    showSaveDialog.value = false;
+    
+    // 약간의 딜레이 후 에러 토스트 표시
+    await nextTick();
+    setTimeout(() => {
+      toastTitle.value = '저장 실패'
+      toastMessage.value = `저장 중 오류가 발생했습니다: ${error.message}`
+      toastRedirectTo.value = '' // 리다이렉트 없음
+      showToast.value = true
+    }, 100);
   } finally {
     isSavingResults.value = false;
   }
