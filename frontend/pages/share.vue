@@ -157,7 +157,7 @@
               <p>동반자 추가 버튼을 눌러 여행 동반자를 연결하세요</p>
             </div>
             
-            <div v-else-if="partners.length > 0" class="carousel-container">
+            <div v-else-if="partners.length > 0 && isCarouselVisible" class="carousel-container">
               <div class="carousel-track" :style="{ transform: `translateX(-${currentSlideIndex * 100}%)`, transition: noTransition ? 'none' : 'transform 0.5s ease-in-out' }">
                 <!-- 각 동반자 카드 (복제 포함) -->
                 <div v-for="(partner, index) in carouselPartners" :key="partner.connection_id || `${partner.analysis.id}-${index}`" class="carousel-slide">
@@ -312,6 +312,8 @@ const connectError = ref(''); // 동반자 연결 실패 메시지
 const isConnecting = ref(false); // 동반자 연결 로딩 상태
 const partnerCodeInputRef = ref(null); // 동반자 코드 입력창 ref
 
+const isCarouselVisible = ref(true);
+
 // 파트너 캐러셀 관련 상태
 const currentPartnerIndex = ref(0); // 실제 데이터 인덱스
 const currentSlideIndex = ref(1); // 복제된 배열을 포함한 시각적 인덱스
@@ -399,6 +401,11 @@ async function fetchConnections() {
       availableColors.value = [...partnerColorPalette]; // 색상 풀 초기화
 
       data.value.partners.forEach(p => addPartner(p));
+      
+      // [버그 수정] 캐러셀을 강제로 다시 렌더링합니다.
+      isCarouselVisible.value = false;
+      await nextTick();
+      isCarouselVisible.value = true;
     }
   } catch (e) {
     console.error('동반자 목록 요청 중 예외 발생:', e);
