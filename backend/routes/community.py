@@ -919,3 +919,93 @@ def get_image(image_id):
         cursor.close()
         conn.close()
 
+@community_bp.route('/countries', methods=['GET'])
+def get_countries():
+    """국가 및 도시 검색 API (countries와 locations 테이블 사용)"""
+    search = request.args.get('search', '')
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        if search:
+            # 1. countries 테이블에서 국가 검색
+            cursor.execute("""
+                SELECT 
+                    country_ko,
+                    NULL as city_ko,
+                    'country' as type
+                FROM countries
+                WHERE country_ko LIKE %s OR continent_ko LIKE %s
+                LIMIT 20
+            """, (f"%{search}%", f"%{search}%"))
+            
+            country_results = cursor.fetchall()
+            
+            # 2. locations 테이블에서 도시 검색
+            cursor.execute("""
+                SELECT DISTINCT
+                    country_ko,
+                    city_ko,
+                    'city' as type
+                FROM locations
+                WHERE (city_ko LIKE %s OR country_ko LIKE %s)
+                    AND city_ko IS NOT NULL
+                    AND city_ko != ''
+                LIMIT 20
+            """, (f"%{search}%", f"%{search}%"))
+            
+            city_results = cursor.fetchall()
+            
+            # 결과 합치기 (국가 먼저, 그 다음 도시)
+            results = list(country_results) + list(city_results)
+        else:
+            # 검색어 없으면 인기 국가만 반환
+            cursor.execute("""
+                SELECT 
+                    country_ko,
+                    NULL as city_ko,
+                    'country' as type
+                FROM countries
+                ORDER BY country_ko
+                LIMIT 20
+            """)
+            results = cursor.fetchall()
+        
+        # 결과 포맷팅
+        locations = []
+        seen = set()
+        
+        for row in results:
+            if row['type'] == 'city' and row['city_ko']:
+                # 도시인 경우: "국가, 도시"
+                label = f"{row['country_ko']}, {row['city_ko']}"
+                if label not in seen:
+                    locations.append({
+                        'label': label,
+                        'value': label,
+                        'type': 'city'
+                    })
+                    seen.add(label)
+            else:
+                # 국가인 경우: "국가"만
+                label = row['country_ko']
+                if label not in seen:
+                    locations.append({
+                        'label': label,
+                        'value': label,
+                        'type': 'country'
+                    })
+                    seen.add(label)
+        
+        return jsonify({'locations': locations}), 200
+        
+    except Exception as e:
+        print(f"Error in get_countries: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
