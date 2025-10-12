@@ -17,3 +17,123 @@ def get_current_user_or_none():
     except:
         return None
 
+@community_bp.route('/posts', methods=['GET'])
+def get_posts():
+    """페이지네이션, 필터링, 검색을 지원하는 게시물 목록 조회 API"""
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
+    tag = request.args.get('tag', None)
+    location = request.args.get('location', None)
+    search = request.args.get('search', None)
+    
+    # 현재 사용자 ID 가져오기 (선택적)
+    current_user_id = None
+    try:
+        verify_jwt_in_request()
+        current_user_id = get_jwt_identity()
+    except:
+        pass
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # 기본 쿼리 - 태그 필터링을 서브쿼리로 처리, 실제 댓글 수 계산
+        query = """
+            SELECT 
+                p.id,
+                p.title,
+                p.content,
+                p.summary,
+                p.location,
+                p.image_id,
+                p.created_at,
+                p.likes_count,
+                (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id AND c.is_deleted = FALSE) as comments_count,
+                p.views_count,
+                u.nickname as author,
+                GROUP_CONCAT(DISTINCT t.name) as tags
+            FROM posts p
+            LEFT JOIN users u ON p.user_id = u.id
+            LEFT JOIN post_tags pt ON p.id = pt.post_id
+            LEFT JOIN tags t ON pt.tag_id = t.id
+            WHERE p.is_deleted = FALSE
+        """
+        
+        params = []
+        
+        # 태그 필터 - 서브쿼리로 처리하여 다른 태그 정보는 유지
+        if tag:
+            query += """ AND p.id IN (
+                SELECT DISTINCT pt2.post_id 
+                FROM post_tags pt2 
+                JOIN tags t2 ON pt2.tag_id = t2.id 
+                WHERE t2.name = %s
+            )"""
+            params.append(tag)
+        
+        # 여행지 필터
+        if location:
+            query += " AND p.location = %s"
+            params.append(location)
+        
+        # 검색 필터
+        if search:
+            query += " AND (p.title LIKE %s OR p.content LIKE %s)"
+            search_param = f"%{search}%"
+            params.extend([search_param, search_param])
+        
+        query += " GROUP BY p.id ORDER BY p.created_at DESC"
+        
+        # 페이지네이션
+        offset = (page - 1) * per_page
+        query += " LIMIT %s OFFSET %s"
+        params.extend([per_page, offset])
+        
+        cursor.execute(query, params)
+        posts = cursor.fetchall()
+        
+        # 태그를 리스트로 변환 및 datetime을 문자열로 변환
+        for post in posts:
+            if post['tags']:
+                post['tags'] = post['tags'].split(',')
+            else:
+                post['tags'] = []
+            
+            # datetime 객체를 문자열로 변환
+            if post.get('created_at'):
+                post['date'] = post['created_at'].strftime('%Y-%m-%d')
+                post['created_at'] = post['created_at'].strftime('%Y-%m-%d %H:%M:%S')
+            if post.get('updated_at'):
+                post['updated_at'] = post['updated_at'].strftime('%Y-%m-%d %H:%M:%S')
+            
+            # 현재 사용자의 좋아요/북마크 상태 확인
+            post['is_liked'] = False
+            post['is_bookmarked'] = False
+            if current_user_id:
+                # 좋아요 상태 확인
+                cursor.execute("""
+                    SELECT id FROM post_likes 
+                    WHERE post_id = %s AND user_id = %s
+                """, (post['id'], current_user_id))
+                post['is_liked'] = cursor.fetchone() is not None
+                
+                # 북마크 상태 확인
+                cursor.execute("""
+                    SELECT id FROM post_bookmarks 
+                    WHERE post_id = %s AND user_id = %s
+                """, (post['id'], current_user_id))
+                post['is_bookmarked'] = cursor.fetchone() is not None
+        
+        return jsonify({
+            'posts': posts,
+            'page': page,
+            'per_page': per_page
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
