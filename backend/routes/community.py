@@ -748,3 +748,105 @@ def create_comment(post_id):
         cursor.close()
         conn.close()
 
+@community_bp.route('/comments/<int:comment_id>', methods=['PUT'])
+@jwt_required()
+def update_comment(comment_id):
+    """작성자 본인만 가능한 댓글 수정 API"""
+    current_user_id = get_jwt_identity()
+    data = request.get_json()
+    
+    if not data or not data.get('content'):
+        return jsonify({'error': '댓글 내용은 필수입니다'}), 400
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # 댓글 작성자 확인
+        cursor.execute("""
+            SELECT user_id FROM comments WHERE id = %s
+        """, (comment_id,))
+        
+        comment = cursor.fetchone()
+        if not comment:
+            return jsonify({'error': '댓글을 찾을 수 없습니다'}), 404
+        
+        # 권한 확인: 댓글 작성자만 수정 가능
+        if comment['user_id'] != current_user_id:
+            return jsonify({'error': '댓글을 수정할 권한이 없습니다'}), 403
+        
+        # 댓글 수정
+        cursor.execute("""
+            UPDATE comments SET content = %s, updated_at = CURRENT_TIMESTAMP 
+            WHERE id = %s
+        """, (data['content'], comment_id))
+        
+        conn.commit()
+        
+        return jsonify({'message': '댓글이 수정되었습니다'}), 200
+        
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+@community_bp.route('/comments/<int:comment_id>', methods=['DELETE'])
+@jwt_required()
+def delete_comment(comment_id):
+    """댓글 삭제 API - 작성자 또는 게시글 작성자만 가능"""
+    current_user_id = get_jwt_identity()
+    
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        # 댓글 작성자 확인
+        cursor.execute("""
+            SELECT c.user_id, c.post_id, u.nickname as author
+            FROM comments c
+            JOIN users u ON c.user_id = u.id
+            WHERE c.id = %s
+        """, (comment_id,))
+        
+        comment = cursor.fetchone()
+        if not comment:
+            return jsonify({'error': '댓글을 찾을 수 없습니다'}), 404
+        
+        # 게시글 작성자 확인
+        cursor.execute("""
+            SELECT p.user_id, u.nickname as author
+            FROM posts p
+            JOIN users u ON p.user_id = u.id
+            WHERE p.id = %s
+        """, (comment['post_id'],))
+        
+        post = cursor.fetchone()
+        if not post:
+            return jsonify({'error': '게시글을 찾을 수 없습니다'}), 404
+        
+        # 권한 확인: 댓글 작성자 또는 게시글 작성자만 삭제 가능
+        if comment['user_id'] != current_user_id and post['user_id'] != current_user_id:
+            return jsonify({'error': '댓글을 삭제할 권한이 없습니다'}), 403
+        
+        # 댓글 삭제
+        cursor.execute("DELETE FROM comments WHERE id = %s", (comment_id,))
+        
+        # 게시물의 댓글 수 감소
+        cursor.execute("""
+            UPDATE posts SET comments_count = comments_count - 1 
+            WHERE id = %s
+        """, (comment['post_id'],))
+        
+        conn.commit()
+        
+        return jsonify({'message': '댓글이 삭제되었습니다'}), 200
+        
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
