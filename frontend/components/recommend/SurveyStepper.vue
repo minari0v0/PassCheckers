@@ -1,6 +1,6 @@
 <template>
   <div class="survey-layout">
-    <!-- Left: Progress Panel -->
+    <!-- 왼쪽: 진행상황 패널 -->
     <div class="progress-panel-wrapper">
       <q-card class="progress-card" flat>
         <q-card-section>
@@ -20,7 +20,7 @@
       </q-card>
     </div>
 
-    <!-- Center: Stepper Content -->
+    <!-- 중앙: 스텝퍼 컨텐츠 -->
     <div class="stepper-container">
       <div class="text-center mb-8">
         <div class="step-indicator-label">STEP {{ currentStep }}/{{ stepDetails.length }}</div>
@@ -61,7 +61,7 @@
           </div>
         </transition>
         <transition name="fade">
-          <div v-if="currentStep === 2">
+          <div v-show="currentStep === 2">
             <DatePicker v-model.range="preferences.dates" :columns="2" title-position="left" expanded :min-date="new Date()" />
           </div>
         </transition>
@@ -107,7 +107,7 @@
         </div>
         <div v-if="currentStep === 4" class="theme-hint">최대 2개까지 선택할 수 있습니다.</div>
 
-        <!-- Step 5: Flight Selection -->
+        <!-- 5단계: 항공편 선택 -->
         <transition name="fade">
             <div v-if="currentStep === 5" class="flight-search-container">
                 <q-option-group
@@ -180,7 +180,7 @@
       </div>
     </div>
 
-    <!-- Right: Summary & Tips Panel -->
+    <!-- 오른쪽: 요약 및 팁 패널 -->
     <div class="summary-panel-wrapper">
       <q-card class="summary-card" flat>
         <q-card-section>
@@ -189,7 +189,7 @@
             <h3 class="panel-title">선택한 조건</h3>
           </div>
           <div class="selections-group">
-            <!-- Step 1: Destination -->
+            <!-- 1단계: 목적지 -->
             <div class="selection-item">
               <q-icon name="place" class="selection-icon" />
               <div>
@@ -198,7 +198,7 @@
               </div>
             </div>
 
-            <!-- Step 2: Dates -->
+            <!-- 2단계: 날짜 -->
             <div class="selection-item">
               <q-icon name="calendar_month" class="selection-icon" />
               <div>
@@ -209,7 +209,7 @@
               </div>
             </div>
 
-            <!-- Step 3: Companion -->
+            <!-- 3단계: 동반자 -->
             <div class="selection-item">
               <q-icon name="people" class="selection-icon" />
               <div>
@@ -218,7 +218,7 @@
               </div>
             </div>
 
-            <!-- Step 4: Themes -->
+            <!-- 4단계: 테마 -->
             <div class="selection-item">
               <q-icon name="palette" class="selection-icon" />
               <div>
@@ -229,7 +229,7 @@
               </div>
             </div>
             
-            <!-- Step 5: Flight -->
+            <!-- 5단계: 항공편 -->
             <div class="selection-item">
               <q-icon name="flight" class="selection-icon" />
               <div>
@@ -256,12 +256,12 @@ const { getApiUrl } = useApiUrl();
 const currentStep = ref(1);
 const preferences = ref({
   destination: '',
-  dates: {},
+  dates: { start: null, end: null },
   companion: null,
   themes: [],
 });
 
-// Flight state
+// 항공편 상태
 const flightSearchType = ref('flightNumber');
 const flightQuery = ref('');
 const isSearchingFlights = ref(false);
@@ -293,7 +293,7 @@ const fetchDestinationSuggestions = async () => {
     if (!response.ok) throw new Error('Failed to fetch suggestions');
     const data = await response.json();
     
-    // If the top score is very high, only show that one.
+    // 가장 높은 점수가 매우 높으면 해당 항목만 표시합니다.
     if (data.length > 0 && data[0].score > 95) {
         destinationSuggestions.value = [data[0]];
     } else {
@@ -318,7 +318,7 @@ watch(() => preferences.value.destination, (newQuery) => {
     } else {
       destinationSuggestions.value = [];
     }
-  }, 300); // 300ms debounce delay
+  }, 300); // 300ms 디바운스 지연
 });
 
 const selectSuggestion = (suggestion) => {
@@ -328,7 +328,7 @@ const selectSuggestion = (suggestion) => {
 };
 
 const handleDestinationEnter = async () => {
-  // Always try to find the best match when user presses Enter.
+  // 사용자가 Enter를 누르면 항상 최적의 일치 항목을 찾습니다.
   if (preferences.value.destination) {
     try {
         const endpoint = getApiUrl('/api/matching/best-match');
@@ -340,14 +340,14 @@ const handleDestinationEnter = async () => {
         if (!response.ok) throw new Error('Failed to fetch best match');
         const bestMatch = await response.json();
         if (bestMatch && bestMatch.name) {
-            // Replace the user's input with the best match
+            // 사용자 입력을 최적의 일치 항목으로 대체
             preferences.value.destination = bestMatch.name;
         }
     } catch (error) {
         console.error("Error fetching best match for destination:", error);
     }
   }
-  // Hide suggestions after pressing enter
+  // Enter를 누른 후 추천 목록 숨기기
   destinationSuggestions.value = [];
 };
 
@@ -546,7 +546,7 @@ const submitSurvey = () => {
   top: 2rem;
 }
 
-/* Panel header styles */
+/* 패널 헤더 스타일 */
 .panel-header {
   display: flex;
   align-items: center;
@@ -561,7 +561,7 @@ const submitSurvey = () => {
   font-weight: 600;
 }
 
-/* Progress steps styles */
+/* 진행 단계 스타일 */
 .progress-steps-group {
   display: flex;
   flex-direction: column;
@@ -593,7 +593,7 @@ const submitSurvey = () => {
   font-size: 0.95rem;
 }
 
-/* Summary panel styles */
+/* 요약 패널 스타일 */
 .selections-group {
   display: flex;
   flex-direction: column;
@@ -622,7 +622,7 @@ const submitSurvey = () => {
   color: #333;
 }
 
-/* General Stepper styles */
+/* 일반 스텝퍼 스타일 */
 .mb-8 { margin-bottom: 2rem; }
 .text-center { text-align: center; }
 
@@ -681,7 +681,7 @@ const submitSurvey = () => {
   opacity: 0;
 }
 
-/* Card grid for options */
+/* 옵션 카드 그리드 스타일 */
 .card-grid {
   display: grid;
   gap: 1rem;
@@ -781,7 +781,7 @@ const submitSurvey = () => {
   margin-top: 1rem;
 }
 
-/* Input styles */
+/* 입력 스타일 */
 .input-wrapper {
   position: relative;
   max-width: 500px;
@@ -798,7 +798,7 @@ const submitSurvey = () => {
   box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
-/* Flight search styles */
+/* 항공편 검색 스타일 */
 .flight-search-container {
     display: flex;
     flex-direction: column;

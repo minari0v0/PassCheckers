@@ -171,3 +171,45 @@
 | `item_name` | VARCHAR(255) | NOT NULL | 추천 아이템 이름 |
 | `reason` | TEXT | NULL | 추천 이유 |
 
+### 18. `airlines` (항공사 정보)
+| 컬럼명 | 타입 | 제약조건 | 설명 |
+| --- | --- | --- | --- |
+| `id` | int | AUTO_INCREMENT, PRIMARY KEY | 항공사 고유 ID |
+| `iata_code` | varchar(3) | UNIQUE, NOT NULL | IATA 항공사 코드 |
+| `airline_name_ko` | varchar(100) | NOT NULL | 항공사 한글 이름 |
+| `airline_name_en` | varchar(100) | | 항공사 영문 이름 |
+
+### 19. `analysis_results` (분석 결과 요약)
+| 컬럼명 | 타입 | 제약조건 | 설명 |
+| --- | --- | --- | --- |
+| `id` | int | AUTO_INCREMENT, PRIMARY KEY | 분석 결과 고유 ID |
+| `user_id` | varchar(50) | NOT NULL | 분석을 요청한 사용자 ID |
+| `image_id` | int | NOT NULL, FOREIGN KEY | `images.id`와 연결 |
+| `image_url` | text | | 분석된 이미지 URL |
+| `image_width` | int | | 이미지 가로 크기 |
+| `image_height` | int | | 이미지 세로 크기 |
+| `total_items` | int | NOT NULL | 총 아이템 개수 |
+| `analysis_date` | datetime | NOT NULL | 분석 날짜 |
+| `destination` | varchar(100) | | 목적지 (분석 시점) |
+| `created_at` | timestamp | DEFAULT CURRENT_TIMESTAMP | 생성일 |
+
+### 20. `analysis_items` (분석된 개별 아이템)
+| 컬럼명 | 타입 | 제약조건 | 설명 |
+| --- | --- | --- | --- |
+| `id` | int | AUTO_INCREMENT, PRIMARY KEY | 아이템 고유 ID |
+| `analysis_id` | int | NOT NULL, FOREIGN KEY | `analysis_results.id`와 연결 |
+| `item_name_ko` | varchar(255) | NOT NULL | 아이템 한글 이름 |
+| `item_name_en` | varchar(255) | | 아이템 영문 이름 |
+| `confidence` | decimal(5,4) | | 탐지 신뢰도 |
+| `carry_on_allowed` | varchar(100) | | 기내 반입 가능 여부 |
+| `checked_baggage_allowed` | varchar(100) | | 위탁 수하물 가능 여부 |
+| `notes` | text | | 규정 관련 비고 (한글) |
+| `notes_EN` | text | | 규정 관련 비고 (영문) |
+| `source` | varchar(50) | | 데이터 출처 |
+| `bbox_x_min` | decimal(10,8) | | 바운딩 박스 X 최소 좌표 |
+| `bbox_y_min` | decimal(10,8) | | 바운딩 박스 Y 최소 좌표 |
+| `bbox_x_max` | decimal(10,8) | | 바운딩 박스 Y 최대 좌표 |
+| `bbox_y_max` | decimal(10,8) | | 바운딩 박스 Y 최대 좌표 |
+| `predicted_weight_value` | decimal(10,2) | | 예측된 무게 값 |
+| `predicted_weight_unit` | varchar(10) | | 예측된 무게 단위 |
+| `created_at` | timestamp | DEFAULT CURRENT_TIMESTAMP | 생성일 |

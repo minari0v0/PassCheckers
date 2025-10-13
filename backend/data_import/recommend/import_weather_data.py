@@ -11,7 +11,7 @@ import sys
 from urllib.parse import urlparse
 
 # 상위 디렉토리의 config 모듈 import
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from config import Config
 
 def get_db_connection():

@@ -93,6 +93,15 @@
             class="q-ml-md"
           />
           <q-btn 
+            v-if="locationId"
+            outline 
+            rounded
+            color="info"
+            label="여행후기 보기"
+            to="/community"
+            class="q-ml-sm"
+          />
+          <q-btn 
             v-if="packingList.length > 0"
             outline 
             rounded
@@ -263,9 +272,6 @@
                       <q-item-section>
                         <q-item-label>{{ item.item_name_ko }}</q-item-label>
                       </q-item-section>
-                      <q-item-section side>
-                        <q-badge :label="item.source" :color="item.source === 'recommendation' ? 'blue' : 'grey-6'" />
-                      </q-item-section>
                     </q-item>
                   </q-list>
                 </q-card>
@@ -327,20 +333,21 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue';
+import { useQuasar } from 'quasar';
 import SurveyStepper from '~/components/recommend/SurveyStepper.vue';
 import WeatherChart from '~/components/recommend/WeatherChart.vue';
 import InfoDetailComponent from '~/components/info/DetailComponent.vue';
 import { useApiUrl } from '~/composables/useApiUrl';
 import { useAuth } from '~/composables/useAuth';
-import { Notify } from 'quasar';
 
 definePageMeta({ middleware: 'auth' });
 
-// --- Composables ---
+// --- 컴포저블 ---
 const { getApiUrl } = useApiUrl();
 const { user } = useAuth();
+const $q = useQuasar();
 
-// --- Component State ---
+// --- 컴포넌트 상태 ---
 const isStarted = ref(false);
 const showResults = ref(false);
 const isLoading = ref(false);
@@ -352,10 +359,10 @@ const isHistorical = ref(false);
 const locationId = ref(null);
 const expandedGroups = ref({});
 
-// --- "Info" Modal State ---
+// --- "정보" 모달 상태 ---
 const showInfoModal = ref(false);
 
-// --- "Add to List" Modal State ---
+// --- "목록에 추가" 모달 상태 ---
 const showAddToListModal = ref(false);
 const analysisHistory = ref([]);
 const selectedAnalysisId = ref(null);
@@ -364,7 +371,7 @@ const existingItems = ref([]);
 const isFetchingDetails = ref(false);
 
 
-// --- Watchers ---
+// --- 감시자(Watcher) ---
 watch(selectedAnalysisId, async (newId) => {
   if (newId) {
     isFetchingDetails.value = true;
@@ -375,7 +382,7 @@ watch(selectedAnalysisId, async (newId) => {
       const data = await response.json();
       existingItems.value = data.items || [];
     } catch (error) {
-      Notify.create({ type: 'negative', message: error.message });
+      $q.notify({ type: 'negative', message: error.message });
     } finally {
       isFetchingDetails.value = false;
     }
@@ -384,7 +391,7 @@ watch(selectedAnalysisId, async (newId) => {
   }
 });
 
-// --- Computed Properties for "Select All" ---
+// --- "전체 선택" 계산된 속성 ---
 const allRecommendedItems = computed(() => 
   packingList.value.flatMap(group => group.items.map(item => item.name))
 );
@@ -403,11 +410,11 @@ const toggleSelectAll = (newValue) => {
 };
 
 
-// --- Functions ---
+// --- 함수 ---
 
 const openAddToListModal = async () => {
   if (!user.value) {
-    Notify.create({ type: 'negative', message: '로그인이 필요합니다.' });
+    $q.notify({ type: 'negative', message: '로그인이 필요합니다.' });
     return;
   }
   try {
@@ -421,17 +428,17 @@ const openAddToListModal = async () => {
     existingItems.value = [];
     showAddToListModal.value = true;
   } catch (error) {
-    Notify.create({ type: 'negative', message: error.message });
+    $q.notify({ type: 'negative', message: error.message });
   }
 };
 
 const saveItemsToList = async () => {
   if (!selectedAnalysisId.value) {
-    Notify.create({ type: 'warning', message: '아이템을 추가할 분석 기록을 선택해주세요.' });
+    $q.notify({ type: 'warning', message: '아이템을 추가할 분석 기록을 선택해주세요.' });
     return;
   }
   if (itemsToAdd.value.length === 0) {
-    Notify.create({ type: 'warning', message: '추가할 아이템을 하나 이상 선택해주세요.' });
+    $q.notify({ type: 'warning', message: '추가할 아이템을 하나 이상 선택해주세요.' });
     return;
   }
   try {
@@ -442,7 +449,7 @@ const saveItemsToList = async () => {
     });
     if (!postResponse.ok) throw new Error('아이템 추가에 실패했습니다.');
     const result = await postResponse.json();
-    Notify.create({ type: 'positive', message: result.message || '아이템이 내 목록에 추가되었습니다.' });
+    $q.notify({ type: 'positive', message: result.message || '아이템이 내 목록에 추가되었습니다.' });
     
     const historyItem = analysisHistory.value.find(h => h.id === selectedAnalysisId.value);
     if (historyItem) {
@@ -454,7 +461,7 @@ const saveItemsToList = async () => {
     itemsToAdd.value = [];
 
   } catch (error) {
-    Notify.create({ type: 'negative', message: error.message });
+    $q.notify({ type: 'negative', message: error.message });
   }
 };
 
@@ -677,11 +684,11 @@ const handleSurveyComplete = async (surveyData) => {
 }
 
 .recommendation-list {
-  /* styles for the left column */
+  /* 왼쪽 열 스타일 */
 }
 
 .weather-chart-container {
-  /* styles for the right column */
+  /* 오른쪽 열 스타일 */
 }
 
 .weather-column {

@@ -5,12 +5,11 @@ import sys
 from urllib.parse import urlparse
 
 # 상위 디렉토리의 config 모듈 import
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 from config import Config
 
 def get_db_connection():
     """데이터베이스 연결을 생성합니다."""
-    # ... (기존과 동일) ...
     url = os.environ.get('DATABASE_URL')
     if url is None:
         url = Config.SQLALCHEMY_DATABASE_URI
