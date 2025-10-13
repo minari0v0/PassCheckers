@@ -244,7 +244,8 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, onUnmounted, nextTick } from 'vue';
+import { ref, onMounted, computed, onUnmounted, nextTick, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import { useAuth } from '~/composables/useAuth';
 import { useApiUrl } from '~/composables/useApiUrl';
 import draggable from 'vuedraggable';
@@ -311,7 +312,9 @@ const fetchHistory = async () => {
 
 const fetchPackingData = async (id) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/packing/${id}`);
+    const token = localStorage.getItem('access_token');
+    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+    const response = await fetch(`${API_BASE_URL}/api/packing/${id}`, { headers });
     if (!response.ok) throw new Error('패킹 데이터를 가져오는데 실패했습니다.');
     const data = await response.json();
     packingData.value = data;
@@ -533,17 +536,21 @@ const isPackingComplete = computed(() => {
   return packingProgress.value === 100 && allItems.value.length > 0;
 });
 
-// 페이지 로드 시 URL 쿼리 파라미터에 'analysis_id'가 있는지 확인함
-// 예: /packing?analysis_id=123 과 같이 접속하면 해당 분석 ID로 바로 패킹을 시작함
-onMounted(() => {
-  const route = useRoute();
-  const analysisIdFromQuery = route.query.analysis_id;
+const route = useRoute();
 
-  if (analysisIdFromQuery) {
-    selectAnalysis(analysisIdFromQuery);
-  } else {
-    fetchHistory();
+// user 객체가 준비되면, URL 파라미터를 확인하거나 기록을 가져옵니다.
+watch(user, (newUser) => {
+  if (newUser) {
+    const analysisIdFromQuery = route.query.analysis_id;
+    if (analysisIdFromQuery) {
+      selectAnalysis(analysisIdFromQuery);
+    } else {
+      fetchHistory();
+    }
   }
+}, { immediate: true });
+
+onMounted(() => {
   window.addEventListener('resize', updateImageSize);
 });
 

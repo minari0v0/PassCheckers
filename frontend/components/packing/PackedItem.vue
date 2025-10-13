@@ -55,13 +55,22 @@ watch(() => props.isTooltipShown || showInfoOnLongHover.value, (shouldBeVisible)
 });
 
 // 이제 툴팁은 `shown` 속성을 통해서만 제어되는 완전 수동 방식
-const tooltipOptions = computed(() => ({
-  content: props.item.notes || (props.luggageType === 'carry-on' ? props.item.carry_on_allowed : props.item.checked_baggage_allowed),
-  theme: 'passcheckers-tooltip',
-  placement: 'top',
-  triggers: [], // 트리거 없음, 완전 수동 제어
-  shown: isTooltipVisible.value,
-}));
+const tooltipOptions = computed(() => {
+  const conditionalText = props.luggageType === 'carry-on' ? props.item.carry_on_allowed : props.item.checked_baggage_allowed;
+  
+  // 1. 'notes'가 있으면 최우선으로 사용
+  // 2. 'notes'가 없고, 'isConditional' 상태이면 조건부 텍스트 사용
+  // 3. 둘 다 없으면 기본 메시지 사용
+  const content = props.item.notes || (isConditional.value ? conditionalText : '규정 정보를 찾을 수 없습니다.');
+
+  return {
+    content: content,
+    theme: 'passcheckers-tooltip',
+    placement: 'top',
+    triggers: [], // 트리거 없음, 완전 수동 제어
+    shown: isTooltipVisible.value,
+  };
+});
 
 
 // --- 이벤트 핸들러 ---
