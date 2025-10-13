@@ -2,25 +2,9 @@
 from flask import Blueprint, jsonify, request
 from db.database_utils import get_db_connection
 import os
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 share_bp = Blueprint("share", __name__)
-
-def init_share_db(cursor):
-    """공유 기능에 필요한 데이터베이스 테이블을 초기화합니다."""
-    # share_connections 테이블 생성
-    # host_analysis_id: 공유를 요청한(호스트) 사용자의 분석 ID
-    # partner_analysis_id: 공유를 수락한(파트너) 사용자의 분석 ID
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS share_connections (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            host_analysis_id INT NOT NULL,
-            partner_analysis_id INT NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (host_analysis_id) REFERENCES analysis_results(id) ON DELETE CASCADE,
-            FOREIGN KEY (partner_analysis_id) REFERENCES analysis_results(id) ON DELETE CASCADE,
-            UNIQUE KEY uk_connection (host_analysis_id, partner_analysis_id)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-    ''')
 
 @share_bp.route("/api/share/<code>", methods=["GET"])
 def get_analysis_by_share_code(code):
@@ -99,9 +83,6 @@ def connect_partner():
     conn = get_db_connection()
     try:
         with conn.cursor() as cursor:
-            # 테이블이 없을 경우를 대비해 초기화 함수 호출
-            init_share_db(cursor)
-
             # 1. 각 코드로 analysis_id 찾기
             cursor.execute("SELECT id FROM analysis_results WHERE share_code = %s", (host_code,))
             host_result = cursor.fetchone()
@@ -263,6 +244,103 @@ def disconnect_partner():
         conn.rollback()
         print(f"[SHARE DISCONNECT ERROR] {e}")
         return jsonify({"error": "연결 해제 중 오류가 발생했습니다."}), 500
+    finally:
+        if conn:
+            conn.close()
+
+
+@share_bp.route("/api/share/<share_code>/comments", methods=["GET"])
+@jwt_required()
+def get_comments(share_code):
+    """통합된 공유 세션의 모든 댓글을 조회합니다."""
+    conn = get_db_connection()
+    try:
+        with conn.cursor() as cursor:
+            # 1. 현재 사용자의 analysis_id 찾기
+            cursor.execute("SELECT id FROM analysis_results WHERE share_code = %s", (share_code,))
+            viewer_result = cursor.fetchone()
+            if not viewer_result:
+                return jsonify({"error": "유효하지 않은 공유 코드입니다."}), 404
+            viewer_id = viewer_result['id']
+
+            # 2. 이 세션의 '최초 호스트' ID 찾기
+            # 내가 파트너인 경우, 나의 호스트를 찾는다.
+            cursor.execute("SELECT host_analysis_id FROM share_connections WHERE partner_analysis_id = %s", (viewer_id,))
+            main_host_id_result = cursor.fetchone()
+            
+            # 세션 ID는 최초 호스트의 ID. 내가 호스트인 경우(main_host_id_result가 없음) 내 ID가 세션 ID가 된다.
+            session_id = main_host_id_result['host_analysis_id'] if main_host_id_result else viewer_id
+
+            # 3. 세션 ID를 기준으로 모든 댓글을 조회
+            cursor.execute("""
+                SELECT
+                    sc.id, sc.user_id, u.nickname, sc.content, sc.created_at
+                FROM share_comments sc
+                JOIN users u ON sc.user_id = u.id
+                WHERE sc.analysis_id = %s
+                ORDER BY sc.created_at ASC
+            """, (session_id,))
+            
+            comments = cursor.fetchall()
+            return jsonify(comments), 200
+
+    except Exception as e:
+        print(f"[GET COMMENTS ERROR] {e}")
+        return jsonify({"error": "댓글을 불러오는 중 오류가 발생했습니다."}), 500
+    finally:
+        if conn:
+            conn.close()
+
+
+@share_bp.route("/api/share/<share_code>/comments", methods=["POST"])
+@jwt_required()
+def post_comment(share_code):
+    """통합된 공유 세션에 새로운 댓글을 작성합니다."""
+    data = request.get_json()
+    content = data.get('content')
+    if not content:
+        return jsonify({"error": "댓글 내용이 없습니다."}), 400
+
+    user_id = get_jwt_identity()
+    conn = get_db_connection()
+    try:
+        with conn.cursor() as cursor:
+            # 1. 현재 사용자의 analysis_id 찾기
+            cursor.execute("SELECT id FROM analysis_results WHERE share_code = %s", (share_code,))
+            viewer_result = cursor.fetchone()
+            if not viewer_result:
+                return jsonify({"error": "유효하지 않은 공유 코드입니다."}), 404
+            viewer_id = viewer_result['id']
+
+            # 2. 이 세션의 '최초 호스트' ID 찾기
+            cursor.execute("SELECT host_analysis_id FROM share_connections WHERE partner_analysis_id = %s", (viewer_id,))
+            main_host_id_result = cursor.fetchone()
+            session_id = main_host_id_result['host_analysis_id'] if main_host_id_result else viewer_id
+
+            # 3. 세션 ID를 기준으로 새로운 댓글 삽입
+            cursor.execute("""
+                INSERT INTO share_comments (analysis_id, user_id, content)
+                VALUES (%s, %s, %s)
+            """, (session_id, user_id, content))
+            
+            conn.commit()
+            new_comment_id = cursor.lastrowid
+
+            # 4. 방금 삽입한 댓글 정보 다시 조회해서 반환
+            cursor.execute("""
+                SELECT sc.id, sc.user_id, u.nickname, sc.content, sc.created_at
+                FROM share_comments sc
+                JOIN users u ON sc.user_id = u.id
+                WHERE sc.id = %s
+            """, (new_comment_id,))
+            new_comment = cursor.fetchone()
+
+            return jsonify(new_comment), 201
+
+    except Exception as e:
+        conn.rollback()
+        print(f"[POST COMMENT ERROR] {e}")
+        return jsonify({"error": "댓글을 작성하는 중 오류가 발생했습니다."}), 500
     finally:
         if conn:
             conn.close()

@@ -236,6 +236,34 @@ def init_db():
     if cursor.fetchone()['cnt'] == 0:
         cursor.execute("ALTER TABLE analysis_results ADD COLUMN share_code VARCHAR(10) UNIQUE AFTER destination")
         print("[DB MIGRATION] 'share_code' 컬럼이 'analysis_results' 테이블에 추가되었습니다.")
+
+    # share_connections 테이블 생성 (공유 기능용)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS share_connections (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            host_analysis_id INT NOT NULL,
+            partner_analysis_id INT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (host_analysis_id) REFERENCES analysis_results(id) ON DELETE CASCADE,
+            FOREIGN KEY (partner_analysis_id) REFERENCES analysis_results(id) ON DELETE CASCADE,
+            UNIQUE KEY uk_connection (host_analysis_id, partner_analysis_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    """)
+    print("share_connections table checked/created.")
+
+    # share_comments 테이블 생성 (공유 댓글 기능용)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS share_comments (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            analysis_id INT NOT NULL,
+            user_id INT NOT NULL,
+            content VARCHAR(1000) NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (analysis_id) REFERENCES analysis_results(id) ON DELETE CASCADE,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    """)
+    print("share_comments table checked/created.")
     
     conn.commit()
     cursor.close()

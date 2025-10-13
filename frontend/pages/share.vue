@@ -64,7 +64,7 @@
               <svg class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
               <span>뒤로</span>
             </button>
-            <div class="header-divider" />
+            <div class="header-divider"></div>
             <div class="header-title-group">
               <svg class="icon-luggage" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20h0a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h0"/><path d="M8 18V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v14"/></svg>
               <h1 class="header-title">{{ selectedRecord.destination || `분석 #${selectedRecord.id}` }}</h1>
@@ -184,50 +184,17 @@
 
           <!-- 오른쪽 - 동반자 -->
           <div class="partner-panel">
-            <!-- 중앙 토스트 컨테이너 -->
-            <div class="toast-container-center">
-              <!-- 추가 완료 토스트 -->
-              <transition name="toast-fade">
-                <div v-if="showSuccessToast" class="success-toast">
-                  <svg class="check-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-                  <span>추가 완료!</span>
-                </div>
-              </transition>
-            </div>
-
-            <!-- 연결 해제 확인 모달 -->
-            <transition name="fade">
-              <div v-if="showDisconnectConfirm" class="modal-overlay">
-                <div class="confirm-dialog" v-click-outside="() => showDisconnectConfirm = false">
-                  <transition name="fade" mode="out-in">
-                    <!-- 성공 상태 -->
-                    <div v-if="disconnectSuccess" key="success" class="dialog-state-feedback">
-                      <svg class="check-icon" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-                      <p class="dialog-message">성공적으로 연결을 해제했습니다.</p>
-                    </div>
-                    <!-- 로딩 상태 -->
-                    <div v-else-if="isDisconnecting" key="loading" class="dialog-state-feedback">
-                      <div class="button-spinner"></div>
-                      <p class="dialog-message">연결을 해제하는 중...</p>
-                    </div>
-                    <!-- 기본 확인 상태 -->
-                    <div v-else key="confirm">
-                      <h3 class="dialog-title">연결 해제</h3>
-                      <p v-if="partnerToDisconnect" class="dialog-message">
-                        정말로 <strong>'{{ partnerToDisconnect.analysis.nickname }}'</strong>님과의 연결을 해제하시겠습니까?
-                      </p>
-                      <div class="dialog-actions">
-                        <button @click="showDisconnectConfirm = false" class="btn-cancel">취소</button>
-                        <button @click="confirmDisconnect" class="btn-confirm">해제</button>
-                      </div>
-                    </div>
-                  </transition>
-                </div>
-              </div>
-            </transition>
-
             <div class="partner-panel-header">
-              <h2>동반 여행자 수하물</h2>
+              <div class="tabs">
+                <button class="tab-btn" :class="{ active: activeTab === 'baggage' }" @click="activeTab = 'baggage'">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20h0a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h0"/><path d="M8 18V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v14"/></svg>
+                  <span>동반 여행자 수하물</span>
+                </button>
+                <button class="tab-btn" :class="{ active: activeTab === 'comments' }" @click="activeTab = 'comments'">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  <span>댓글</span>
+                </button>
+              </div>
               <!-- 호스트 세션일 경우: 동반자 추가 버튼 -->
               <div v-if="!isClientSession" class="add-partner-container">
                 <button @click.stop="showAddForm = !showAddForm" class="add-partner-btn">
@@ -278,108 +245,185 @@
               </div>
             </div>
 
-            <div v-if="partners.length === 0" class="partner-empty-state">
-              <div class="empty-icon-wrapper">
-                <svg class="icon-users-large" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-              </div>
-              <h3>아직 연결된 동반자가 없습니다</h3>
-              <p>동반자 추가 버튼을 눌러 여행 동반자를 연결하세요</p>
-            </div>
-            
-            <div v-else-if="partners.length > 0 && isCarouselVisible" class="carousel-container">
-              <div class="carousel-track" :style="{ transform: `translateX(-${currentSlideIndex * 100}%)`, transition: noTransition ? 'none' : 'transform 0.5s ease-in-out' }">
-                <!-- 각 동반자 카드 (복제 포함) -->
-                <div v-for="(partner, index) in carouselPartners" :key="partner.connection_id || `${partner.analysis.id}-${index}`" class="carousel-slide">
-                  <div class="partner-card-content">
-                    <div class="partner-image-container">
-                      <img 
-                        :ref="el => partner.imageRef = el" 
-                        :src="getApiUrl(partner.analysis.image_url)" 
-                        :alt="`${partner.analysis.nickname} 수하물`" 
-                        class="analysis-image"
-                        @load="updatePartnerImageSize(partner)"
-                      />
-                      <transition-group name="fade">
-                        <ImageItem 
-                          v-if="partner.showBboxes"
-                          v-for="item in partner.items" 
-                          :key="`partner-${partner.analysis.id}-${item.id}`"
-                          :item="item"
-                          :image-size="partner.imageSize"
-                          :color="partner.color"
-                          :show-label="index === currentSlideIndex"
-                        />
-                      </transition-group>
+            <!-- Tab Content -->
+            <transition name="fade-tab" mode="out-in">
+              <!-- 수하물 보기 탭 -->
+              <div v-if="activeTab === 'baggage'" class="tab-content" key="baggage">
 
-                      <!-- 아이템 목록 오버레이 -->
-                      <transition name="fade">
-                        <div v-if="partner.showItemList && index === currentSlideIndex" class="item-list-overlay">
-                          <ul class="item-list">
-                            <li v-for="item in groupItems(partner.items)" :key="item.name">
-                              <span class="item-name">{{ item.name }}</span>
-                              <span class="item-count">x{{ item.count }}</span>
-                            </li>
-                          </ul>
-                        </div>
-                      </transition>
-
-                      <!-- 이미지 위 버튼 컨테이너 -->
-                      <div v-if="index === currentSlideIndex" class="image-btn-container">
-                        <transition name="fade">
-                          <button v-if="!partner.showItemList" @click="partner.showBboxes = !partner.showBboxes" class="bbox-toggle-btn" title="아이템 표시/숨기기">
-                            <transition name="fade" mode="out-in">
-                                <svg v-if="partner.showBboxes" key="eye" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-                                <svg v-else key="eye-off" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
-                            </transition>
-                          </button>
-                        </transition>
-                        <button @click="partner.showItemList = !partner.showItemList" class="list-toggle-btn hamburger-menu" :class="{ active: partner.showItemList }">
-                          <span class="line"></span>
-                          <span class="line"></span>
-                          <span class="line"></span>
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- 고정된 정보 및 네비게이션 -->
-              <div class="carousel-fixed-footer">
-                <div class="partner-info">
-                  <transition name="fade-info" mode="out-in">
-                    <div class="partner-info-main" :key="currentPartnerIndex">
-                      <div class="partner-title-wrapper">
-                        <div class="left-slot">
-                          <span v-if="currentPartner.is_group_host" class="host-badge partner" title="이 그룹의 호스트입니다.">호스트</span>
-                        </div>
-                        <span class="partner-name">{{ currentPartner.analysis.nickname || currentPartner.analysis.destination || `분석 #${currentPartner.analysis.id}` }}</span>
-                        <div class="right-slot">
-                          <button v-if="!isClientSession && currentPartner.is_host" @click="openDisconnectConfirm(currentPartner)" class="disconnect-btn" title="이 동반자와의 연결을 해제합니다.">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-                          </button>
-                        </div>
-                      </div>
-                      <span class="partner-code">공유코드: {{ currentPartner.code }}</span>
+                <!-- 중앙 토스트 컨테이너 -->
+                <div class="toast-container-center">
+                  <!-- 추가 완료 토스트 -->
+                  <transition name="toast-fade">
+                    <div v-if="showSuccessToast" class="success-toast">
+                      <svg class="check-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                      <span>추가 완료!</span>
                     </div>
                   </transition>
                 </div>
-              
-                <div class="carousel-dots">
-                  <button 
-                    v-for="(_, index) in partners" 
-                    :key="`dot-${index}`" 
-                    :class="{ active: index === currentPartnerIndex }" 
-                    @click="goToSlide(index)"
-                    class="dot"
-                  ></button>
+
+                <!-- 연결 해제 확인 모달 -->
+                <transition name="fade">
+                  <div v-if="showDisconnectConfirm" class="modal-overlay">
+                    <div class="confirm-dialog" v-click-outside="() => showDisconnectConfirm = false">
+                      <transition name="fade" mode="out-in">
+                        <!-- 성공 상태 -->
+                        <div v-if="disconnectSuccess" key="success" class="dialog-state-feedback">
+                          <svg class="check-icon" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                          <p class="dialog-message">성공적으로 연결을 해제했습니다.</p>
+                        </div>
+                        <!-- 로딩 상태 -->
+                        <div v-else-if="isDisconnecting" key="loading" class="dialog-state-feedback">
+                          <div class="button-spinner"></div>
+                          <p class="dialog-message">연결을 해제하는 중...</p>
+                        </div>
+                        <!-- 기본 확인 상태 -->
+                        <div v-else key="confirm">
+                          <h3 class="dialog-title">연결 해제</h3>
+                          <p v-if="partnerToDisconnect" class="dialog-message">
+                            정말로 <strong>'{{ partnerToDisconnect.analysis.nickname }}'</strong>님과의 연결을 해제하시겠습니까?
+                          </p>
+                          <div class="dialog-actions">
+                            <button @click="showDisconnectConfirm = false" class="btn-cancel">취소</button>
+                            <button @click="confirmDisconnect" class="btn-confirm">해제</button>
+                          </div>
+                        </div>
+                      </transition>
+                    </div>
+                  </div>
+                </transition>
+
+                <div v-if="partners.length === 0" class="partner-empty-state">
+                  <div class="empty-icon-wrapper">
+                    <svg class="icon-users-large" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                  </div>
+                  <h3>아직 연결된 동반자가 없습니다</h3>
+                  <p>동반자 추가 버튼을 눌러 여행 동반자를 연결하세요</p>
+                </div>
+                
+                <div v-else-if="partners.length > 0 && isCarouselVisible" class="carousel-container">
+                  <div class="carousel-track" :style="{ transform: `translateX(-${currentSlideIndex * 100}%)`, transition: noTransition ? 'none' : 'transform 0.5s ease-in-out' }">
+                    <!-- 각 동반자 카드 (복제 포함) -->
+                    <div v-for="(partner, index) in carouselPartners" :key="partner.connection_id || `${partner.analysis.id}-${index}`" class="carousel-slide">
+                      <div class="partner-card-content">
+                        <div class="partner-image-container">
+                          <img 
+                            :ref="el => partner.imageRef = el" 
+                            :src="getApiUrl(partner.analysis.image_url)" 
+                            :alt="`${partner.analysis.nickname} 수하물`" 
+                            class="analysis-image"
+                            @load="updatePartnerImageSize(partner)"
+                          />
+                          <transition-group name="fade">
+                            <ImageItem 
+                              v-if="partner.showBboxes"
+                              v-for="item in partner.items" 
+                              :key="`partner-${partner.analysis.id}-${item.id}`"
+                              :item="item"
+                              :image-size="partner.imageSize"
+                              :color="partner.color"
+                              :show-label="index === currentSlideIndex"
+                            />
+                          </transition-group>
+
+                          <!-- 아이템 목록 오버레이 -->
+                          <transition name="fade">
+                            <div v-if="partner.showItemList && index === currentSlideIndex" class="item-list-overlay">
+                              <ul class="item-list">
+                                <li v-for="item in groupItems(partner.items)" :key="item.name">
+                                  <span class="item-name">{{ item.name }}</span>
+                                  <span class="item-count">x{{ item.count }}</span>
+                                </li>
+                              </ul>
+                            </div>
+                          </transition>
+
+                          <!-- 이미지 위 버튼 컨테이너 -->
+                          <div v-if="index === currentSlideIndex" class="image-btn-container">
+                            <transition name="fade">
+                              <button v-if="!partner.showItemList" @click="partner.showBboxes = !partner.showBboxes" class="bbox-toggle-btn" title="아이템 표시/숨기기">
+                                <transition name="fade" mode="out-in">
+                                    <svg v-if="partner.showBboxes" key="eye" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                                    <svg v-else key="eye-off" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+                                </transition>
+                              </button>
+                            </transition>
+                            <button @click="partner.showItemList = !partner.showItemList" class="list-toggle-btn hamburger-menu" :class="{ active: partner.showItemList }">
+                              <span class="line"></span>
+                              <span class="line"></span>
+                              <span class="line"></span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 고정된 정보 및 네비게이션 -->
+                  <div class="carousel-fixed-footer">
+                    <div class="partner-info">
+                      <transition name="fade-info" mode="out-in">
+                        <div class="partner-info-main" :key="currentPartnerIndex">
+                          <div class="partner-title-wrapper">
+                            <div class="left-slot">
+                              <span v-if="currentPartner.is_group_host" class="host-badge partner" title="이 그룹의 호스트입니다.">호스트</span>
+                            </div>
+                            <span class="partner-name">{{ currentPartner.analysis.nickname || currentPartner.analysis.destination || `분석 #${currentPartner.analysis.id}` }}</span>
+                            <div class="right-slot">
+                              <button v-if="!isClientSession && currentPartner.is_host" @click="openDisconnectConfirm(currentPartner)" class="disconnect-btn" title="이 동반자와의 연결을 해제합니다.">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                              </button>
+                            </div>
+                          </div>
+                          <span class="partner-code">공유코드: {{ currentPartner.code }}</span>
+                        </div>
+                      </transition>
+                    </div>
+                  
+                    <div class="carousel-dots">
+                      <button 
+                        v-for="(_, index) in partners" 
+                        :key="`dot-${index}`" 
+                        :class="{ active: index === currentPartnerIndex }" 
+                        @click="goToSlide(index)"
+                        class="dot"
+                      ></button>
+                    </div>
+                  </div>
+
+                  <!-- 캐러셀 네비게이션 버튼 -->
+                  <button v-if="partners.length > 1" @click="prevPartner" class="carousel-nav prev">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                  </button>
+                  <button v-if="partners.length > 1" @click="nextPartner" class="carousel-nav next">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                  </button>
                 </div>
               </div>
-
-              <!-- 캐러셀 네비게이션 버튼 -->
-              <button v-if="partners.length > 1" @click="prevPartner" class="carousel-nav prev">&#8249;</button>
-              <button v-if="partners.length > 1" @click="nextPartner" class="carousel-nav next">&#8250;</button>
+              <!-- 댓글 탭 -->
+              <div v-else-if="activeTab === 'comments'" class="tab-content comments-tab-container" key="comments">
+              <div class="comment-list-wrapper" ref="commentListWrapperRef">
+                <ul v-if="comments.length > 0" class="comment-list">
+                  <li v-for="comment in comments" :key="comment.id" class="comment-item" :class="{ 'my-comment': user && comment.user_id === user.id }">
+                    <div class="comment-bubble">
+                      <div class="comment-author">{{ comment.nickname }}</div>
+                      <p class="comment-content">{{ comment.content }}</p>
+                      <div class="comment-time">{{ formatRelativeTime(comment.created_at) }}</div>
+                    </div>
+                  </li>
+                </ul>
+                <p v-else class="empty-list-message">아직 댓글이 없습니다. 첫 댓글을 남겨보세요!</p>
+              </div>
+              <div class="comment-input-form">
+                <textarea v-model="newComment" @keyup.enter.prevent="postComment" placeholder="댓글을 입력하세요..."></textarea>
+                <button @click="postComment" :disabled="!newComment.trim() || isSendingComment">
+                  <span v-if="!isSendingComment">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="m22 2-7 20-4-9-9-4 20-7z"/></svg>
+                  </span>
+                  <div v-else class="button-spinner-dark"></div>
+                </button>
+              </div>
             </div>
+            </transition>
           </div>
         </main>
       </div>
@@ -476,6 +520,13 @@ const showCombinedListModal = ref(false);
 const showCommunityShareModal = ref(false);
 const communityPostTitle = ref('');
 const communityPostDescription = ref('');
+
+// 댓글 기능 관련 상태
+const activeTab = ref('baggage'); // 'baggage' 또는 'comments'
+const comments = ref([]);
+const newComment = ref('');
+const commentPollingInterval = ref(null);
+const isSendingComment = ref(false);
 
 // 파트너 캐러셀 관련 상태
 const currentPartnerIndex = ref(0); // 실제 데이터 인덱스
@@ -657,6 +708,106 @@ async function handleShareToCommunity() {
   alert(`[임시] 커뮤니티 공유 성공!\n제목: ${communityPostTitle.value}`);
   showCommunityShareModal.value = false;
   router.push('/community'); // 임시로 커뮤니티 목록 페이지로 이동
+}
+
+/**
+ * 댓글 목록을 서버에서 가져옵니다.
+ */
+async function fetchComments() {
+  if (!shareCode.value) return;
+  try {
+    const url = getApiUrl(`/api/share/${shareCode.value}/comments`);
+    const { data, error } = await useFetch(url, {
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('access_token')}` }
+    });
+
+    if (error.value) {
+      console.error('댓글 목록을 가져오는 데 실패했습니다:', error.value);
+    } else {
+      comments.value = data.value;
+    }
+  } catch (e) {
+    console.error('댓글 목록 요청 중 예외 발생:', e);
+  }
+}
+
+/**
+ * 새로운 댓글을 서버에 전송합니다.
+ */
+async function postComment() {
+  if (!newComment.value.trim()) return;
+  if (isSendingComment.value) return;
+
+  isSendingComment.value = true;
+  try {
+    const url = getApiUrl(`/api/share/${shareCode.value}/comments`);
+    const { data, error } = await useFetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+      },
+      body: { content: newComment.value }
+    });
+
+    if (error.value) {
+      console.error('댓글 작성 실패:', error.value);
+      alert('댓글 작성에 실패했습니다.');
+    } else {
+      newComment.value = ''; // 입력창 초기화
+      // 댓글 작성 성공 시, 즉시 목록을 다시 불러옵니다.
+      await fetchComments();
+      // 댓글 목록의 맨 아래로 스크롤합니다.
+      await nextTick();
+      const wrapper = commentListWrapperRef.value;
+      if (wrapper) {
+        wrapper.scrollTop = wrapper.scrollHeight;
+      }
+    }
+  } catch (e) {
+    console.error('댓글 작성 중 예외 발생:', e);
+    alert('댓글 작성 중 오류가 발생했습니다.');
+  } finally {
+    isSendingComment.value = false;
+  }
+}
+
+/**
+ * 브라우저 탭의 활성 상태에 따라 폴링을 제어합니다.
+ */
+function handleVisibilityChange() {
+  if (!selectedRecordId.value) return; // 공유 세션이 아닐 때는 무시
+
+  if (document.hidden) {
+    // 탭이 비활성화되면 폴링 중지
+    if (commentPollingInterval.value) {
+      clearInterval(commentPollingInterval.value);
+      commentPollingInterval.value = null;
+    }
+  } else {
+    // 탭이 다시 활성화되면 즉시 데이터를 가져오고 폴링 재시작
+    fetchComments();
+    if (!commentPollingInterval.value) {
+      commentPollingInterval.value = setInterval(fetchComments, 5000);
+    }
+  }
+}
+
+/**
+ * 날짜 포맷을 'X분 전'과 같이 상대 시간으로 변경합니다.
+ */
+function formatRelativeTime(datetime) {
+  const now = new Date();
+  const pastUTC = new Date(datetime);
+  // 한국 시간 기준으로 맞추기 (UTC+9)
+  const past = new Date(pastUTC.getTime() - 9 * 60 * 60 * 1000);
+
+  const diffInSeconds = Math.floor((now - past) / 1000);
+  if (diffInSeconds < 60) return '방금 전';
+  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}분 전`;
+  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}시간 전`;
+  if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}일 전`;
+  return past.toLocaleDateString('ko-KR');
 }
 
 
@@ -1166,6 +1317,24 @@ watch(() => partners.value.length, (newLength, oldLength) => {
   }, 1500);
 });
 
+// 댓글 로직
+watch(selectedRecordId, (newId) => {
+  // 새로운 분석 세션이 선택되면 댓글을 한번 가져온다.
+  if (newId) {
+    fetchComments();
+  } else {
+    // 세션을 나가면 댓글 목록 초기화
+    comments.value = [];
+  }
+});
+
+// 댓글 탭을 누를 때마다 새로고침
+watch(activeTab, (newTab) => {
+  if (newTab === 'comments') {
+    fetchComments();
+  }
+});
+
 
 // --- LIFECYCLE ---
 onMounted(() => {
@@ -1175,6 +1344,10 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('resize', updateImageSize);
+  // 컴포넌트가 사라질 때 폴링 중지
+  if (commentPollingInterval.value) {
+    clearInterval(commentPollingInterval.value);
+  }
 });
 </script>
 
@@ -1815,6 +1988,75 @@ onUnmounted(() => {
   padding: 2px 6px;
 }
 
+.partner-panel {
+  flex-grow: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.tab-content {
+  flex-grow: 1;
+  min-height: 0;
+}
+
+.comments-tab-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.comment-list-wrapper {
+  flex-grow: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding-right: 1rem; /* For scrollbar */
+}
+
+.fade-tab-enter-active,
+.fade-tab-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-tab-enter-from,
+.fade-tab-leave-to {
+  opacity: 0;
+}
+
+.carousel-container:hover .carousel-nav {
+    opacity: 1;
+}
+
+.carousel-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.4);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    opacity: 0;
+    z-index: 10;
+}
+
+.carousel-nav:hover {
+    background-color: rgba(0, 0, 0, 0.7);
+}
+
+.carousel-nav.prev {
+    left: 16px;
+}
+
+.carousel-nav.next {
+    right: 16px;
+}
+
 .partner-panel-header {
   display: flex;
   justify-content: space-between;
@@ -1822,10 +2064,42 @@ onUnmounted(() => {
   margin-bottom: 1rem;
 }
 
-.partner-panel-header h2 {
-  font-size: 1.5rem;
+/* --- Tabs in Header --- */
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.tab-btn {
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
   font-weight: 600;
+  color: #888;
+  background-color: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 8px 8px 0 0;
+}
+
+.tab-btn:hover {
   color: #333;
+  background-color: #f5f5f5;
+}
+
+.tab-btn.active {
+  color: var(--main-blue, #2196f3);
+  border-bottom-color: var(--main-blue, #2196f3);
+}
+
+.partner-panel-header .tabs {
+  flex-grow: 1;
+  margin-bottom: 0;
 }
 
 .add-partner-btn {
@@ -2543,6 +2817,153 @@ onUnmounted(() => {
   padding: 0.2rem 0.5rem;
   border-radius: 6px;
   font-size: 0.9em;
+}
+
+/* --- 댓글 탭 관련 스타일 --- */
+.tabs {
+  display: flex;
+  border-bottom: 1px solid #e0e0e0;
+  margin-bottom: 1rem;
+}
+.tab-btn {
+  padding: 0.8rem 1.2rem;
+  cursor: pointer;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #888;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.tab-btn:hover {
+  color: #333;
+  background-color: #f5f5f5;
+}
+.tab-btn.active {
+  color: var(--main-blue, #2196f3);
+  border-bottom-color: var(--main-blue, #2196f3);
+  font-weight: 600;
+}
+.comment-count-badge {
+  background-color: var(--main-blue, #2196f3);
+  color: white;
+  font-size: 0.75rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 8px;
+  margin-left: 0.25rem;
+}
+
+.tab-content {
+  padding-top: 1rem;
+}
+
+.comments-tab-container {
+  display: flex;
+  flex-direction: column;
+  height: 600px; /* 예시 높이, 실제 프로젝트에 맞게 조정 필요 */
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  border: 1px solid #e9ecef;
+}
+.comment-list-wrapper {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 1rem;
+}
+.comment-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.comment-item {
+  display: flex;
+}
+.comment-item.my-comment {
+  justify-content: flex-end;
+}
+.comment-bubble {
+  max-width: 80%;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  background-color: white;
+  border: 1px solid #e9ecef;
+}
+.comment-item.my-comment .comment-bubble {
+  background-color: #e7f5ff;
+  border-color: transparent;
+}
+.comment-author {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+.comment-item.my-comment .comment-author {
+  display: none; /* 내 댓글에는 내 닉네임 숨김 */
+}
+.comment-content {
+  font-size: 1rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0;
+}
+.comment-time {
+  font-size: 0.75rem;
+  color: #aaa;
+  text-align: right;
+  margin-top: 0.5rem;
+}
+
+.comment-input-form {
+  display: flex;
+  padding: 1rem;
+  border-top: 1px solid #e0e0e0;
+  background-color: #fff;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
+.comment-input-form textarea {
+  flex-grow: 1;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 0.75rem;
+  resize: none;
+  font-size: 1rem;
+  max-height: 100px;
+}
+.comment-input-form button {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  background: var(--main-blue, #2196f3);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+  margin-left: 0.5rem;
+}
+.comment-input-form button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+.button-spinner-dark {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s ease-in-out infinite;
+  margin: 0 auto;
 }
 
 </style>
