@@ -1,5 +1,26 @@
 <template>
   <div class="share-page-container">
+    <!-- 커뮤니티 공유 모달 -->
+    <transition name="fade">
+      <div v-if="showCommunityShareModal" class="modal-overlay">
+        <div class="confirm-dialog" v-click-outside="() => showCommunityShareModal = false">
+          <div key="confirm">
+            <h3 class="dialog-title">커뮤니티에 공유</h3>
+            <p class="dialog-message">
+              수하물 분석을 커뮤니티에 공유합니다. 다른 여행자들에게 영감을 주세요!
+            </p>
+            <div class="community-form">
+              <input type="text" v-model="communityPostTitle" placeholder="게시물 제목을 입력하세요" class="form-input">
+              <textarea v-model="communityPostDescription" placeholder="간단한 설명을 추가하세요 (선택)" class="form-textarea"></textarea>
+            </div>
+            <div class="dialog-actions">
+              <button @click="showCommunityShareModal = false" class="btn-cancel">취소</button>
+              <button @click="handleShareToCommunity" class="btn-confirm" :disabled="!communityPostTitle">공유하기</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition>
     <!-- 상세 정보 로딩 오버레이 -->
     <div v-if="isLoading && selectedRecord" class="page-loading-overlay">
       <div class="loading-container">
@@ -96,19 +117,26 @@
               </div>
               <!-- 연결 상태에 따라 다른 정보 표시 -->
               <div>
-                <!-- 연결된 파트너가 없을 때: 공유 코드 표시 -->
-                <div v-if="partners.length === 0" class="share-code-box">
-                  <label>내 공유 코드</label>
-                  <div class="share-code-input-wrapper">
-                    <div class="share-code-display">{{ shareCode }}</div>
-                    <button @click="handleCopyCode" class="copy-button">
-                      <transition name="fade" mode="out-in">
-                        <svg v-if="copied" key="copied" class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-                        <svg v-else key="copy" class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
-                      </transition>
-                    </button>
+                <!-- 연결된 파트너가 없을 때: 공유 코드 또는 커뮤니티 공유 표시 -->
+                <div v-if="partners.length === 0" class="no-partner-actions">
+                  <div class="share-code-box">
+                    <label>동반자 공유 코드</label>
+                    <div class="share-code-input-wrapper">
+                      <div class="share-code-display">{{ shareCode }}</div>
+                      <button @click="handleCopyCode" class="copy-button">
+                        <transition name="fade" mode="out-in">
+                          <svg v-if="copied" key="copied" class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                          <svg v-else key="copy" class="icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                        </transition>
+                      </button>
+                    </div>
+                    <p class="share-code-desc">이 코드를 동반 여행자와 공유하세요</p>
                   </div>
-                  <p class="share-code-desc">이 코드를 동반 여행자와 공유하세요</p>
+                  <div class="or-divider">또는</div>
+                  <button @click="openCommunityShareModal" class="community-share-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" x2="12" y1="2" y2="15"/></svg>
+                    <span>커뮤니티에 공유하기</span>
+                  </button>
                 </div>
 
                 <!-- 연결된 파트너가 있을 때: 동반자 목록 표시 -->
@@ -375,6 +403,7 @@ import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
 import { useAuth } from '~/composables/useAuth';
 import { useApiUrl } from '~/composables/useApiUrl';
 import ImageItem from '~/components/packing/ImageItem.vue';
+import { useRouter } from 'vue-router';
 
 definePageMeta({
   middleware: 'auth'
@@ -383,6 +412,7 @@ definePageMeta({
 // --- COMPOSABLES ---
 const { user } = useAuth();
 const { getApiUrl } = useApiUrl();
+const router = useRouter();
 
 // --- STATE ---
 const records = ref([]); // 분석 기록 목록
@@ -410,6 +440,11 @@ const isDisconnecting = ref(false); // 연결 해제 로딩 상태
 const disconnectSuccess = ref(false); // 연결 해제 성공 상태
 const statusChange = ref(null); // 동반자 수 변경 애니메이션 상태 ('added' 또는 'removed')
 const statusColorClass = ref(''); // 동반자 수 상태의 동적 클래스
+
+// 커뮤니티 공유 관련 상태
+const showCommunityShareModal = ref(false);
+const communityPostTitle = ref('');
+const communityPostDescription = ref('');
 
 // 파트너 캐러셀 관련 상태
 const currentPartnerIndex = ref(0); // 실제 데이터 인덱스
@@ -507,6 +542,63 @@ const carouselPartners = computed(() => {
 });
 
 // --- METHODS ---
+/**
+ * 커뮤니티 공유 모달을 엽니다.
+ */
+function openCommunityShareModal() {
+  communityPostTitle.value = selectedRecord.value.destination || `나의 여행 짐 목록`;
+  communityPostDescription.value = '';
+  showCommunityShareModal.value = true;
+}
+
+/**
+ * 수하물 분석을 커뮤니티에 공유합니다.
+ */
+async function handleShareToCommunity() {
+  if (!communityPostTitle.value) {
+    alert('게시물 제목을 입력해주세요.');
+    return;
+  }
+
+  // --- 백엔드 구현 후 아래 주석을 해제하고 실제 API와 연동하세요 ---
+  /*
+  try {
+    const url = getApiUrl('/api/community/posts');
+    const { data, error } = await useFetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+      },
+      body: JSON.stringify({
+        analysis_id: selectedRecord.value.id,
+        title: communityPostTitle.value,
+        description: communityPostDescription.value,
+      })
+    });
+
+    if (error.value) {
+      console.error('커뮤니티 공유 실패:', error.value);
+      alert('커뮤니티 공유에 실패했습니다.');
+    } else {
+      alert('커뮤니티에 성공적으로 공유되었습니다.');
+      showCommunityShareModal.value = false;
+      // 성공 시 커뮤니티 게시물로 이동 (API 응답에 따라 postId 등을 사용)
+      router.push(`/community/${data.value.postId}`); 
+    }
+  } catch (e) {
+    console.error('커뮤니티 공유 중 예외 발생:', e);
+    alert('오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+  }
+  */
+
+  // 임시 프론트엔드 전용 로직 (백엔드 구현 전까지 사용)
+  alert(`[임시] 커뮤니티 공유 성공!\n제목: ${communityPostTitle.value}`);
+  showCommunityShareModal.value = false;
+  router.push('/community'); // 임시로 커뮤니티 목록 페이지로 이동
+}
+
+
 /**
  * 현재 분석에 연결된 모든 동반자 목록을 가져옵니다.
  */
@@ -2227,6 +2319,80 @@ onUnmounted(() => {
 
 .dialog-state-feedback .button-spinner {
   border-top-color: var(--main-blue, #2196f3);
+}
+
+/* --- 커뮤니티 공유 관련 새로운 스타일 --- */
+.no-partner-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.or-divider {
+  text-align: center;
+  color: #aaa;
+  font-size: 0.9rem;
+  font-weight: 500;
+  position: relative;
+}
+.or-divider::before, .or-divider::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 40%;
+  height: 1px;
+  background-color: #e0e0e0;
+}
+.or-divider::before {
+  left: 0;
+}
+.or-divider::after {
+  right: 0;
+}
+
+.community-share-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.8rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--main-blue, #2196f3);
+  background-color: #fff;
+  border: 2px solid var(--main-blue, #2196f3);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.community-share-btn:hover {
+  background-color: rgba(33, 150, 243, 0.05);
+  transform: translateY(-2px);
+}
+.community-share-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.community-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 1.5rem 0;
+  text-align: left;
+}
+.form-input, .form-textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+.form-textarea {
+  min-height: 100px;
+  resize: vertical;
 }
 
 </style>
