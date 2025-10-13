@@ -498,7 +498,7 @@ definePageMeta({
 });
 
 // --- COMPOSABLES ---
-const { user } = useAuth();
+const { user, isInitialized } = useAuth();
 const { getApiUrl } = useApiUrl();
 const router = useRouter();
 const route = useRoute();
@@ -1034,6 +1034,7 @@ async function loadAnalysisDetail(id) {
     const url = getApiUrl(`/api/analysis/detail/${id}`);
     const token = localStorage.getItem('access_token');
     const { data, error } = await useFetch(url, {
+      server: false,
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -1065,20 +1066,13 @@ async function loadAnalysisDetail(id) {
 
 function selectRecord(id) {
   router.push({ query: { id } });
-  loadAnalysisDetail(id);
 }
 
 /**
  * 공유 화면에서 기록 선택 화면으로 돌아갑니다.
  */
 function goBack() {
-  router.push({ query: {} });
-  transitionName.value = 'slide-right';
-  selectedRecordId.value = null;
-  detailedRecord.value = null;
-  partners.value = [];
-  partnerCode.value = '';
-  showAddForm.value = false;
+  router.replace({ query: {} });
 }
 
 /**
@@ -1355,15 +1349,25 @@ watch(() => partners.value.length, (newLength, oldLength) => {
   }, 1500);
 });
 
-// user 객체가 준비되면 분석 목록을 가져옵니다.
-watch(user, (newUser) => {
-  if (newUser) {
-    const analysisId = route.query.id;
+// 인증 상태 및 라우트 변경을 감지하여 뷰를 업데이트합니다.
+watch([isInitialized, () => route.query.id], ([initialized, analysisId]) => {
+  // 인증 절차가 완료되었고, 사용자 정보도 있어야 진행합니다.
+  if (initialized && user.value) {
     if (analysisId) {
-      // URL에 ID가 있으면 상세 정보 로드
-      loadAnalysisDetail(analysisId);
+      // 상세 페이지. 상세 데이터가 없거나 ID가 다르면 로드합니다.
+      if (!detailedRecord.value || detailedRecord.value.analysis.id != analysisId) {
+        loadAnalysisDetail(analysisId);
+      }
     } else {
-      // URL에 ID가 없으면 목록 로드
+      // 목록 페이지.
+      if (selectedRecordId.value) { // 상세 페이지에 있다가 목록으로 돌아온 경우 상태 초기화
+        transitionName.value = 'slide-right';
+        selectedRecordId.value = null;
+        detailedRecord.value = null;
+        partners.value = [];
+        partnerCode.value = '';
+        showAddForm.value = false;
+      }
       fetchAnalyses();
     }
   }
