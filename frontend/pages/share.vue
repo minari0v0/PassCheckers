@@ -21,6 +21,30 @@
         </div>
       </div>
     </transition>
+
+    <!-- 통합 물품 목록 모달 -->
+    <transition name="fade">
+      <div v-if="showCombinedListModal" class="modal-overlay">
+        <div class="combined-list-modal" v-click-outside="() => showCombinedListModal = false">
+          <div class="modal-header">
+            <h3>통합 물품 목록</h3>
+            <button @click="showCombinedListModal = false" class="close-btn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></svg>
+            </button>
+          </div>
+          <div class="modal-body">
+            <p v-if="combinedItems.length === 0" class="empty-list-message">표시할 물품이 없습니다.</p>
+            <ul v-else class="combined-item-list">
+              <li v-for="item in combinedItems" :key="item.name">
+                <span class="item-name">{{ item.name }}</span>
+                <span class="item-count">x {{ item.count }}</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </transition>
+
     <!-- 상세 정보 로딩 오버레이 -->
     <div v-if="isLoading && selectedRecord" class="page-loading-overlay">
       <div class="loading-container">
@@ -44,6 +68,10 @@
             <div class="header-title-group">
               <svg class="icon-luggage" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20h0a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2h0"/><path d="M8 18V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v14"/></svg>
               <h1 class="header-title">{{ selectedRecord.destination || `분석 #${selectedRecord.id}` }}</h1>
+              <button @click="showCombinedListModal = true" class="combined-list-btn" title="통합 물품 목록 보기">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                <span>통합 목록</span>
+              </button>
             </div>
             <div class="partner-status" :class="[partnerStatusClass, statusColorClass]">
               <svg class="icon-users" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
@@ -441,6 +469,9 @@ const disconnectSuccess = ref(false); // 연결 해제 성공 상태
 const statusChange = ref(null); // 동반자 수 변경 애니메이션 상태 ('added' 또는 'removed')
 const statusColorClass = ref(''); // 동반자 수 상태의 동적 클래스
 
+// 통합 물품 목록 관련 상태
+const showCombinedListModal = ref(false);
+
 // 커뮤니티 공유 관련 상태
 const showCommunityShareModal = ref(false);
 const communityPostTitle = ref('');
@@ -539,6 +570,36 @@ const carouselPartners = computed(() => {
   const first = partners.value[0];
   const last = partners.value[partners.value.length - 1];
   return [last, ...partners.value, first];
+});
+
+// 모든 참여자의 아이템을 통합하고 그룹화하는 computed 속성
+const combinedItems = computed(() => {
+  if (!detailedRecord.value) return [];
+
+  const allItems = [];
+  // 1. 호스트(나)의 아이템 추가
+  if (detailedRecord.value.items) {
+    allItems.push(...detailedRecord.value.items);
+  }
+
+  // 2. 모든 파트너의 아이템 추가
+  partners.value.forEach(partner => {
+    if (partner.items) {
+      allItems.push(...partner.items);
+    }
+  });
+
+  // 3. 아이템 이름으로 그룹화 및 개수 세기
+  const itemCounts = allItems.reduce((acc, item) => {
+    const name = item.item_name || '알 수 없는 물품';
+    acc[name] = (acc[name] || 0) + 1;
+    return acc;
+  }, {});
+
+  // 4. 배열로 변환하고 정렬
+  return Object.entries(itemCounts)
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => a.name.localeCompare(b.name));
 });
 
 // --- METHODS ---
@@ -2393,6 +2454,95 @@ onUnmounted(() => {
 .form-textarea {
   min-height: 100px;
   resize: vertical;
+}
+
+/* --- 통합 물품 목록 관련 스타일 --- */
+.combined-list-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: #f1f3f5;
+  border: 1px solid #dee2e6;
+  color: #495057;
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-left: 1rem;
+}
+.combined-list-btn:hover {
+  background-color: #e9ecef;
+  border-color: #ced4da;
+}
+.combined-list-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.combined-list-modal {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  width: 90%;
+  max-width: 480px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.combined-list-modal .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e9ecef;
+}
+.combined-list-modal .modal-header h3 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #343a40;
+}
+
+.combined-list-modal .modal-body {
+  overflow-y: auto;
+  padding-top: 1rem;
+}
+
+.empty-list-message {
+  text-align: center;
+  color: #868e96;
+  padding: 2rem 0;
+}
+
+.combined-item-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.combined-item-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.8rem 0.5rem;
+  border-bottom: 1px solid #f1f3f5;
+}
+.combined-item-list li:last-child {
+  border-bottom: none;
+}
+.combined-item-list .item-name {
+  font-weight: 500;
+  color: #495057;
+}
+.combined-item-list .item-count {
+  font-weight: 600;
+  color: var(--main-blue, #2196f3);
+  background-color: #e7f5ff;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.9em;
 }
 
 </style>
