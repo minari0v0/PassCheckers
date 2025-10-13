@@ -475,7 +475,23 @@ import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue';
 import { useAuth } from '~/composables/useAuth';
 import { useApiUrl } from '~/composables/useApiUrl';
 import ImageItem from '~/components/packing/ImageItem.vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
+
+const vClickOutside = {
+  beforeMount(el, binding) {
+    el.clickOutsideEvent = function(event) {
+      // 클릭된 곳이 엘리먼트 외부인지 확인합니다.
+      if (!(el === event.target || el.contains(event.target))) {
+        // 외부라면, 전달된 메소드를 호출합니다.
+        binding.value(event);
+      }
+    };
+    document.body.addEventListener('mousedown', el.clickOutsideEvent);
+  },
+  unmounted(el) {
+    document.body.removeEventListener('mousedown', el.clickOutsideEvent);
+  },
+};
 
 definePageMeta({
   middleware: 'auth'
@@ -485,6 +501,7 @@ definePageMeta({
 const { user } = useAuth();
 const { getApiUrl } = useApiUrl();
 const router = useRouter();
+const route = useRoute();
 
 // --- STATE ---
 const records = ref([]); // 분석 기록 목록
@@ -544,12 +561,21 @@ const imageSize = ref({ width: 0, height: 0, offsetX: 0, offsetY: 0 });
 // 현재 선택된 분석 기록의 기본 정보
 const selectedRecord = computed(() => {
   if (!selectedRecordId.value) return null;
-  // 상세 데이터가 로드되었으면 상세 데이터 사용
-  if (detailedRecord.value && detailedRecord.value.analysis.id === selectedRecordId.value) {
+
+  // 상세 데이터가 있으면, 그것을 사용합니다.
+  if (detailedRecord.value && detailedRecord.value.analysis.id == selectedRecordId.value) {
     return detailedRecord.value.analysis;
   }
-  // 그렇지 않으면 목록에서 찾아서 반환
-  return records.value.find(r => r.id === selectedRecordId.value);
+
+  // 새로고침으로 상세 페이지에 바로 접근했을 때, records 배열은 비어있습니다.
+  // 이 경우 v-if="selectedRecord"가 참을 유지하도록 임시 객체를 반환해야 합니다.
+  if (isLoading.value && records.value.length === 0) {
+      // 로딩 오버레이가 활성화되어 있으므로, 잠시 제목이 표시되지 않아도 괜찮습니다.
+      return { id: selectedRecordId.value };
+  }
+
+  // 목록에서 클릭했을 때의 일반적인 경우입니다.
+  return records.value.find(r => r.id == selectedRecordId.value);
 });
 
 const isHostOfAnyConnection = computed(() => {
@@ -977,7 +1003,7 @@ async function fetchAnalyses() {
     if (error.value) {
       console.error('분석 기록을 가져오는 데 실패했습니다:', error.value);
       records.value = [];
-    } else {
+    } else if (data.value && data.value.results) {
       records.value = data.value.results.map(r => ({
         id: r.id,
         name: r.destination || `분석 #${r.id}`,
@@ -985,6 +1011,9 @@ async function fetchAnalyses() {
         itemCount: r.total_items,
         imageUrl: r.thumbnail_url ? getApiUrl(r.thumbnail_url) : 'https://images.unsplash.com/photo-1566054260359-cb6e7c144787?q=80&w=2070&auto=format&fit=crop',
       }));
+    } else {
+      records.value = [];
+      console.warn('fetchAnalyses did not return valid results.', data.value);
     }
   } catch (e) {
     console.error('분석 기록 요청 중 예외 발생:', e);
@@ -997,7 +1026,7 @@ async function fetchAnalyses() {
  * 특정 분석 기록을 선택하고 상세 정보 및 연결된 동반자 목록을 가져옵니다.
  * @param {number} id - 분석 기록 ID
  */
-async function selectRecord(id) {
+async function loadAnalysisDetail(id) {
   transitionName.value = 'slide-left';
   selectedRecordId.value = id;
   isLoading.value = true;
@@ -1010,9 +1039,11 @@ async function selectRecord(id) {
       }
     });
 
-    if (error.value) {
-      console.error('분석 상세 정보를 가져오는 데 실패했습니다:', error.value);
+    if (error.value || !data.value) { // 데이터가 null인 경우도 에러로 처리
+      console.error('분석 상세 정보를 가져오는 데 실패했습니다:', error.value || 'API returned null data');
       selectedRecordId.value = null; // 에러 발생 시 선택 취소
+      router.push({ query: {} }); // 에러 시 URL에서도 ID 제거
+      fetchAnalyses(); // 상세 정보 로딩 실패 시, 전체 목록을 다시 불러옵니다.
     } else {
       detailedRecord.value = data.value;
       
@@ -1026,15 +1057,22 @@ async function selectRecord(id) {
   } catch (e) {
     console.error('상세 정보 요청 중 예외 발생:', e);
     selectedRecordId.value = null;
+    router.push({ query: {} }); // 에러 시 URL에서도 ID 제거
   } finally {
     isLoading.value = false;
   }
+}
+
+function selectRecord(id) {
+  router.push({ query: { id } });
+  loadAnalysisDetail(id);
 }
 
 /**
  * 공유 화면에서 기록 선택 화면으로 돌아갑니다.
  */
 function goBack() {
+  router.push({ query: {} });
   transitionName.value = 'slide-right';
   selectedRecordId.value = null;
   detailedRecord.value = null;
@@ -1317,6 +1355,14 @@ watch(() => partners.value.length, (newLength, oldLength) => {
   }, 1500);
 });
 
+// user 객체가 준비되면 분석 목록을 가져옵니다.
+watch(user, (newUser) => {
+  // URL에 특정 분석 ID가 없을 때만 목록을 가져옵니다.
+  if (newUser && !route.query.id) {
+    fetchAnalyses();
+  }
+}, { immediate: true });
+
 // 댓글 로직
 watch(selectedRecordId, (newId) => {
   // 새로운 분석 세션이 선택되면 댓글을 한번 가져온다.
@@ -1336,9 +1382,12 @@ watch(activeTab, (newTab) => {
 });
 
 
-// --- LIFECYCLE ---
+// --- 생명주기 ---
 onMounted(() => {
-  fetchAnalyses();
+  const analysisId = route.query.id;
+  if (analysisId) {
+    loadAnalysisDetail(analysisId);
+  }
   window.addEventListener('resize', updateImageSize);
 });
 
