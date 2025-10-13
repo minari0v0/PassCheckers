@@ -1357,37 +1357,31 @@ watch(() => partners.value.length, (newLength, oldLength) => {
 
 // user 객체가 준비되면 분석 목록을 가져옵니다.
 watch(user, (newUser) => {
-  // URL에 특정 분석 ID가 없을 때만 목록을 가져옵니다.
-  if (newUser && !route.query.id) {
-    fetchAnalyses();
+  if (newUser) {
+    const analysisId = route.query.id;
+    if (analysisId) {
+      // URL에 ID가 있으면 상세 정보 로드
+      loadAnalysisDetail(analysisId);
+    } else {
+      // URL에 ID가 없으면 목록 로드
+      fetchAnalyses();
+    }
   }
 }, { immediate: true });
 
 // 댓글 로직
-watch(selectedRecordId, (newId) => {
-  // 새로운 분석 세션이 선택되면 댓글을 한번 가져온다.
-  if (newId) {
+watch(shareCode, (newShareCode) => {
+  if (newShareCode) {
+    // shareCode가 생겼다는 것은 상세 정보 로드가 완료되었다는 의미이므로 댓글을 가져옵니다.
     fetchComments();
   } else {
-    // 세션을 나가면 댓글 목록 초기화
+    // shareCode가 없어졌다는 것은 상세 뷰를 나갔다는 의미이므로 댓글 목록을 초기화합니다.
     comments.value = [];
   }
 });
 
-// 댓글 탭을 누를 때마다 새로고침
-watch(activeTab, (newTab) => {
-  if (newTab === 'comments') {
-    fetchComments();
-  }
-});
-
-
 // --- 생명주기 ---
 onMounted(() => {
-  const analysisId = route.query.id;
-  if (analysisId) {
-    loadAnalysisDetail(analysisId);
-  }
   window.addEventListener('resize', updateImageSize);
 });
 
