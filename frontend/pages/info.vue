@@ -70,87 +70,91 @@
 
       <!-- 오른쪽: 지도 또는 상세 정보 -->
       <section class="right-panel">
-        <div v-if="!selectedLocationDetails" class="map-wrapper">
-          <InteractiveMap 
-            ref="interactiveMapRef"
-            :continent-to-focus="selectedContinent?.continent_ko"
-            :country-to-highlight="countryToHighlight"
-            :continent-to-highlight="continentToHighlight"
-            :reset-map="resetMap"
-            @country-selected="handleCountrySelected"
-          />
-        </div>
-        <div v-else class="details-view-wrapper">
-          <!-- 상세 정보 표시 -->
-          <div class="details-view">
-            <div class="detail-header">
-                <div class="country-title-wrapper">
-                  <h3 class="country-name">
-                      {{ selectedLocationDetails.location.location_type === 'city' ? selectedLocationDetails.location.city_ko : selectedLocationDetails.location.country_ko }}
-                  </h3>
-                  <p class="country-name-en">{{ selectedLocationDetails.location.location_type === 'city' ? selectedLocationDetails.location.city : selectedLocationDetails.location.country }}</p>
-                </div>
-                <button @click="showDetailModal = true; selectedLocationId = selectedLocationDetails.location.location_id" class="detail-button">전체 정보 보기</button>
-            </div>
-            <div v-if="selectedLocationDetails.budget" class="detail-card">
-                <h4 class="card-title">여행 예산</h4>
-                <div class="budget-grid">
-                    <div class="budget-item">
-                        <div class="budget-icon">💰</div>
-                        <div class="budget-label">저가형</div>
-                        <div class="budget-prices">
-                            <div class="budget-price-item"><span class="period">1일</span> <span class="price">${{ selectedLocationDetails.budget.budget_daily }}</span></div>
-                            <div class="budget-price-item"><span class="period">1주</span> <span class="price">${{ selectedLocationDetails.budget.budget_weekly }}</span></div>
-                            <div class="budget-price-item"><span class="period">1달</span> <span class="price">${{ selectedLocationDetails.budget.budget_monthly }}</span></div>
-                        </div>
-                    </div>
-                    <div class="budget-item">
-                        <div class="budget-icon">🏨</div>
-                        <div class="budget-label">중가형</div>
-                        <div class="budget-prices">
-                            <div class="budget-price-item"><span class="period">1일</span> <span class="price">${{ selectedLocationDetails.budget.midrange_daily }}</span></div>
-                            <div class="budget-price-item"><span class="period">1주</span> <span class="price">${{ selectedLocationDetails.budget.midrange_weekly }}</span></div>
-                            <div class="budget-price-item"><span class="period">1달</span> <span class="price">${{ selectedLocationDetails.budget.midrange_monthly }}</span></div>
-                        </div>
-                    </div>
-                    <div class="budget-item">
-                        <div class="budget-icon">✨</div>
-                        <div class="budget-label">고급형</div>
-                        <div class="budget-prices">
-                            <div class="budget-price-item"><span class="period">1일</span> <span class="price">${{ selectedLocationDetails.budget.luxury_daily }}</span></div>
-                            <div class="budget-price-item"><span class="period">1주</span> <span class="price">${{ selectedLocationDetails.budget.luxury_weekly }}</span></div>
-                            <div class="budget-price-item"><span class="period">1달</span> <span class="price">${{ selectedLocationDetails.budget.luxury_monthly }}</span></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div v-if="selectedLocationDetails.cost_breakdowns && selectedLocationDetails.cost_breakdowns.length" class="detail-card">
-                <h4 class="card-title">세부 비용 분석 (일일 기준)</h4>
-                <div class="cost-grid">
-                    <div v-for="item in selectedLocationDetails.cost_breakdowns" :key="item.breakdown_id" class="cost-card">
-                        <div class="cost-card-icon">{{ getCategoryIcon(item.category) }}</div>
-                        <div class="cost-card-category">{{ item.category_ko || item.category }}</div>
-                        <div class="cost-card-prices">
-                            <div class="price-item price-budget"><span class="price-label">저</span><span class="price-value">{{ item.budget ? '$' + item.budget : 'N/A' }}</span></div>
-                            <div class="price-item price-midrange"><span class="price-label">중</span><span class="price-value">{{ item.mid_range ? '$' + item.mid_range : 'N/A' }}</span></div>
-                            <div class="price-item price-luxury"><span class="price-label">고</span><span class="price-value">{{ item.luxury ? '$' + item.luxury : 'N/A' }}</span></div>
-                        </div>
-                    </div>
-                </div>
+        <transition name="fade" mode="out-in">
+          <div v-if="!selectedLocationDetails" class="map-wrapper" key="map">
+            <InteractiveMap 
+              ref="interactiveMapRef"
+              :continent-to-focus="selectedContinent?.continent_ko"
+              :country-to-highlight="countryToHighlight"
+              :continent-to-highlight="continentToHighlight"
+              :reset-map="resetMap"
+              @country-selected="handleCountrySelected"
+            />
+          </div>
+          <div v-else class="details-view-wrapper" key="details">
+            <!-- 상세 정보 표시 -->
+            <div class="details-view">
+              <div class="detail-header">
+                  <div class="country-title-wrapper">
+                    <h3 class="country-name">
+                        {{ selectedLocationDetails.location.location_type === 'city' ? selectedLocationDetails.location.city_ko : selectedLocationDetails.location.country_ko }}
+                    </h3>
+                    <p class="country-name-en">{{ selectedLocationDetails.location.location_type === 'city' ? selectedLocationDetails.location.city : selectedLocationDetails.location.country }}</p>
+                  </div>
+                  <button @click="showDetailModal = true; selectedLocationId = selectedLocationDetails.location.location_id" class="detail-button">전체 정보 보기</button>
+              </div>
+              <div v-if="selectedLocationDetails.budget" class="detail-card">
+                  <h4 class="card-title">여행 예산</h4>
+                  <div class="budget-grid">
+                      <div class="budget-item">
+                          <div class="budget-icon">💰</div>
+                          <div class="budget-label">저가형</div>
+                          <div class="budget-prices">
+                              <div class="budget-price-item"><span class="period">1일</span> <span class="price">${{ selectedLocationDetails.budget.budget_daily }}</span></div>
+                              <div class="budget-price-item"><span class="period">1주</span> <span class="price">${{ selectedLocationDetails.budget.budget_weekly }}</span></div>
+                              <div class="budget-price-item"><span class="period">1달</span> <span class="price">${{ selectedLocationDetails.budget.budget_monthly }}</span></div>
+                          </div>
+                      </div>
+                      <div class="budget-item">
+                          <div class="budget-icon">🏨</div>
+                          <div class="budget-label">중가형</div>
+                          <div class="budget-prices">
+                              <div class="budget-price-item"><span class="period">1일</span> <span class="price">${{ selectedLocationDetails.budget.midrange_daily }}</span></div>
+                              <div class="budget-price-item"><span class="period">1주</span> <span class="price">${{ selectedLocationDetails.budget.midrange_weekly }}</span></div>
+                              <div class="budget-price-item"><span class="period">1달</span> <span class="price">${{ selectedLocationDetails.budget.midrange_monthly }}</span></div>
+                          </div>
+                      </div>
+                      <div class="budget-item">
+                          <div class="budget-icon">✨</div>
+                          <div class="budget-label">고급형</div>
+                          <div class="budget-prices">
+                              <div class="budget-price-item"><span class="period">1일</span> <span class="price">${{ selectedLocationDetails.budget.luxury_daily }}</span></div>
+                              <div class="budget-price-item"><span class="period">1주</span> <span class="price">${{ selectedLocationDetails.budget.luxury_weekly }}</span></div>
+                              <div class="budget-price-item"><span class="period">1달</span> <span class="price">${{ selectedLocationDetails.budget.luxury_monthly }}</span></div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+              <div v-if="selectedLocationDetails.cost_breakdowns && selectedLocationDetails.cost_breakdowns.length" class="detail-card">
+                  <h4 class="card-title">세부 비용 분석 (일일 기준)</h4>
+                  <div class="cost-grid">
+                      <div v-for="item in selectedLocationDetails.cost_breakdowns" :key="item.breakdown_id" class="cost-card">
+                          <div class="cost-card-icon">{{ getCategoryIcon(item.category) }}</div>
+                          <div class="cost-card-category">{{ item.category_ko || item.category }}</div>
+                          <div class="cost-card-prices">
+                              <div class="price-item price-budget"><span class="price-label">저</span><span class="price-value">{{ item.budget ? '$' + item.budget : 'N/A' }}</span></div>
+                              <div class="price-item price-midrange"><span class="price-label">중</span><span class="price-value">{{ item.mid_range ? '$' + item.mid_range : 'N/A' }}</span></div>
+                              <div class="price-item price-luxury"><span class="price-label">고</span><span class="price-value">{{ item.luxury ? '$' + item.luxury : 'N/A' }}</span></div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
             </div>
           </div>
-        </div>
+        </transition>
       </section>
     </main>
 
     <!-- 상세 정보 모달 -->
     <Teleport to="body">
-      <div v-if="showDetailModal" class="modal-overlay" @click="showDetailModal = false">
-        <div class="modal-content" @click.stop>
-          <button class="modal-close" @click="showDetailModal = false">&times;</button>
-          <InfoDetailComponent :location-id="selectedLocationId" @close="showDetailModal = false" />
+      <transition name="fade">
+        <div v-if="showDetailModal" class="modal-overlay" @click="showDetailModal = false">
+          <div class="modal-content" @click.stop>
+            <button class="modal-close" @click="showDetailModal = false">&times;</button>
+            <InfoDetailComponent :location-id="selectedLocationId" @close="showDetailModal = false" />
+          </div>
         </div>
-      </div>
+      </transition>
     </Teleport>
   </div>
 </template>
@@ -501,5 +505,15 @@ onMounted(fetchContinents);
 
 .modal-close:hover {
   background-color: #e3f2fd;
+}
+
+/* 트랜지션 스타일 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.4s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

@@ -18,6 +18,8 @@ from routes.analysis import analysis_bp
 from routes.locations import locations_bp
 from routes.weight import weight_bp
 from routes.category import category_bp
+from routes.packing import packing_bp
+from routes.share import share_bp
 from routes.recommend import recommend_bp
 from routes.flights import flights_bp
 from routes.matching import matching_bp
@@ -45,6 +47,8 @@ app.register_blueprint(analysis_bp)
 app.register_blueprint(locations_bp)
 app.register_blueprint(weight_bp)
 app.register_blueprint(category_bp)
+app.register_blueprint(packing_bp)
+app.register_blueprint(share_bp)
 app.register_blueprint(recommend_bp, url_prefix='/api')
 app.register_blueprint(flights_bp, url_prefix='/api')
 app.register_blueprint(matching_bp, url_prefix='/api/matching')
@@ -338,6 +342,46 @@ def init_db():
     if cursor.fetchone()['cnt'] == 0:
         cursor.execute("ALTER TABLE items ADD COLUMN category VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL")
         print("[DB MIGRATION] 'category' column added to 'items' table.")
+
+    # 스키마 마이그레이션: analysis_results 테이블에 share_code 컬럼이 없는 경우 추가
+    cursor.execute("""
+        SELECT COUNT(*) as cnt
+        FROM information_schema.COLUMNS
+        WHERE TABLE_SCHEMA = %s
+        AND TABLE_NAME = 'analysis_results'
+        AND COLUMN_NAME = 'share_code'
+    """, (db_name,))
+    if cursor.fetchone()['cnt'] == 0:
+        cursor.execute("ALTER TABLE analysis_results ADD COLUMN share_code VARCHAR(10) UNIQUE AFTER destination")
+        print("[DB MIGRATION] 'share_code' 컬럼이 'analysis_results' 테이블에 추가되었습니다.")
+
+    # share_connections 테이블 생성 (공유 기능용)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS share_connections (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            host_analysis_id INT NOT NULL,
+            partner_analysis_id INT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (host_analysis_id) REFERENCES analysis_results(id) ON DELETE CASCADE,
+            FOREIGN KEY (partner_analysis_id) REFERENCES analysis_results(id) ON DELETE CASCADE,
+            UNIQUE KEY uk_connection (host_analysis_id, partner_analysis_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    """)
+    print("share_connections table checked/created.")
+
+    # share_comments 테이블 생성 (공유 댓글 기능용)
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS share_comments (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            analysis_id INT NOT NULL,
+            user_id INT NOT NULL,
+            content VARCHAR(1000) NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (analysis_id) REFERENCES analysis_results(id) ON DELETE CASCADE,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    """)
+    print("share_comments table checked/created.")
     
     # 스키마 마이그레이션: posts 테이블에 image_id 컬럼이 없는 경우 추가
     cursor.execute("""
