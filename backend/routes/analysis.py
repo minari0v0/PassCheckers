@@ -279,7 +279,7 @@ def get_analysis_detail(analysis_id):
                 cursor.execute("""
                     SELECT ar.*, i.width, i.height
                     FROM analysis_results ar
-                    LEFT JOIN images i ON ar.image_id = i.image_id
+                    LEFT JOIN images i ON ar.image_id = i.id
                     WHERE ar.id = %s
                 """, (analysis_id,))
                 
