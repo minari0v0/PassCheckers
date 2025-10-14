@@ -556,6 +556,9 @@ const availableColors = ref([...partnerColorPalette]);
 const analysisImageRef = ref(null);
 const imageSize = ref({ width: 0, height: 0, offsetX: 0, offsetY: 0 });
 
+// 댓글 목록 스크롤 관련 ref
+const commentListWrapperRef = ref(null);
+
 
 // --- COMPUTED ---
 // 현재 선택된 분석 기록의 기본 정보
@@ -1082,7 +1085,28 @@ async function handleCopyCode() {
   if (!shareCode.value) return;
 
   try {
-    await navigator.clipboard.writeText(shareCode.value);
+    // 클립보드 API가 지원되는 경우
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(shareCode.value);
+    } else {
+      // Fallback: execCommand 사용 (구형 브라우저 지원)
+      const textArea = document.createElement('textarea');
+      textArea.value = shareCode.value;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      textArea.style.top = '-999999px';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      
+      const successful = document.execCommand('copy');
+      document.body.removeChild(textArea);
+      
+      if (!successful) {
+        throw new Error('클립보드 복사 실패');
+      }
+    }
+    
     copied.value = true;
     setTimeout(() => {
       copied.value = false;
