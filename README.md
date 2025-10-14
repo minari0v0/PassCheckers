@@ -252,3 +252,8 @@ get refresh_token:1
 - `backend_merge_file/` 폴더는 **절대 수정하지 마세요**
 - 이 폴더는 다른 환경에서 작업된 코드로, 병합 시 참고용입니다
 - 모든 수정 작업은 `backend/` 폴더에서 진행하세요
+
+
+#### 마지막 수정사항
+- nuxt/config.ts 복구
+- config.py 복구 

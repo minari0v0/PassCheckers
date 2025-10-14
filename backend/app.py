@@ -18,6 +18,9 @@ from routes.analysis import analysis_bp
 from routes.locations import locations_bp
 from routes.weight import weight_bp
 from routes.category import category_bp
+from routes.recommend import recommend_bp
+from routes.flights import flights_bp
+from routes.matching import matching_bp
 from routes.community import community_bp
 from routes.user import user_bp
 
@@ -42,6 +45,9 @@ app.register_blueprint(analysis_bp)
 app.register_blueprint(locations_bp)
 app.register_blueprint(weight_bp)
 app.register_blueprint(category_bp)
+app.register_blueprint(recommend_bp, url_prefix='/api')
+app.register_blueprint(flights_bp, url_prefix='/api')
+app.register_blueprint(matching_bp, url_prefix='/api/matching')
 app.register_blueprint(community_bp)
 app.register_blueprint(user_bp)
 

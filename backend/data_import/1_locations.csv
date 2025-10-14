@@ -1,4 +1,4 @@
-location_id,continent,continent_ko,country,country_ko,city,city_ko,location_type,geonameid
+﻿location_id,continent,continent_ko,country,country_ko,city,city_ko,location_type,geonameid
 1,Europe,유럽,Albania,알바니아,Tirana,티라나,country,3183875
 2,Europe,유럽,Andorra,안도라,Andorra la Vella,안도라라베야,country,3041563
 3,North America,북아메리카,Anguilla,앵귈라,The Valley,더밸리,country,3573374
