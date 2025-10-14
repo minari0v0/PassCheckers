@@ -133,7 +133,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch, computed } from 'vue'
+import { ref, onMounted, watch, computed, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useApiUrl } from '~/composables/useApiUrl'
 
@@ -272,12 +272,18 @@ async function navigateTo(path) {
     // 최소 0.5초 로딩 표시
     await new Promise(resolve => setTimeout(resolve, 500))
     
-    // 페이지 이동
+    // nextTick으로 감싸서 컴포넌트 업데이트 후 페이지 이동
+    await nextTick()
     await router.push(path)
   } catch (error) {
     console.error('페이지 이동 실패:', error)
+    // 에러 발생 시에도 로딩 오버레이 숨기기
+    if (pageLoadingOverlay.value) {
+      pageLoadingOverlay.value.hideOverlay()
+    }
   } finally {
-    // 로딩 오버레이 숨기기
+    // 로딩 오버레이 숨기기 (성공 시에만)
+    // 에러 발생 시에는 catch 블록에서 이미 처리됨
     if (pageLoadingOverlay.value) {
       pageLoadingOverlay.value.hideOverlay()
     }

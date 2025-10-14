@@ -13,7 +13,7 @@ def get_db_connection():
     url = os.environ.get('DATABASE_URL')
     if url is None:
         try:
-            url = Config.SQLALCHEMY_DATABASE_URI
+            url = Config.DATABASE_URL
         except (ImportError, AttributeError):
             print("Error: Could not import Config. Please ensure config.py exists and is correctly configured.")
             print("Or set the DATABASE_URL environment variable (e.g., mysql+pymysql://user:pass@host/db_name).")
