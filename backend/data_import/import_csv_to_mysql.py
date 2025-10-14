@@ -19,7 +19,7 @@ def get_db_connection():
     """데이터베이스 연결을 생성합니다."""
     url = os.environ.get('DATABASE_URL')
     if url is None:
-        url = Config.SQLALCHEMY_DATABASE_URI
+        url = Config.DATABASE_URL
 
     # SQLAlchemy의 URI 형식을 urlparse가 이해할 수 있도록 변경
     if 'mysql+pymysql://' in url:
