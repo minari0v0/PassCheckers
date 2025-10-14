@@ -23,7 +23,8 @@ def get_db_connection():
         database=parsed.path.lstrip('/'),
         port=parsed.port or 3306,
         charset='utf8mb4',
-        cursorclass=pymysql.cursors.DictCursor
+        cursorclass=pymysql.cursors.DictCursor,
+        init_command="SET time_zone = '+09:00'"
     )
 
 def fetch_item_info(item_name_en, conn=None):

@@ -4,14 +4,14 @@
       <q-card-section>
         <div class="text-h6 text-center q-mb-md">
           <q-icon name="save" color="positive" class="q-mr-sm" />
-          분석 결과 저장
+          수하물 분류 결과 저장
         </div>
         <div class="text-center text-grey-7 q-mb-md">
-          저장할 분석 결과의 이름을 입력해주세요.
+          여행지를 입력해주세요.
         </div>
         <q-input
           v-model="analysisName"
-          label="분석 결과 이름"
+          label="어디로 떠나실 건가요?"
           outlined
           autofocus
           @keyup.enter="handleSave"

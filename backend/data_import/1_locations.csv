@@ -199,8 +199,6 @@ location_id,continent,continent_ko,country,country_ko,city,city_ko,location_type
 198,Europe,유럽,Croatia,크로아티아,Split,스플리트,city,3190261
 199,Europe,유럽,Croatia,크로아티아,Trogir,트로기르,city,3188763
 200,Europe,유럽,Croatia,크로아티아,Zadar,자다르,city,3186952
-네, 세 번째 텍스트도 확인했습니다. 수정된 내용을 아래에 보내드립니다. 이번 텍스트에서는 특히 핀란드와 프랑스, 독일 지역의 지명 오류가 많아 수정했습니다.
-
 201,Europe,유럽,Croatia,크로아티아,Zagreb,자그레브,city,3186886
 202,North America,북아메리카,Cuba,쿠바,Havana,아바나,country,3553478
 203,North America,북아메리카,Cuba,쿠바,Havana,아바나,city,3553478
@@ -401,8 +399,6 @@ location_id,continent,continent_ko,country,country_ko,city,city_ko,location_type
 398,Asia,아시아,Indonesia,인도네시아,Surabaya,수라바야,city,1625822
 399,Asia,아시아,Indonesia,인도네시아,Ubud,우붓,city,1622846
 400,Asia,아시아,Indonesia,인도네시아,Yogyakarta,욕야카르타,city,1621177
-네, 마지막 텍스트도 확인했습니다. 아래에 수정된 내용을 보내드립니다. 이번 텍스트에서는 특히 아일랜드, 이탈리아, 자메이카, 일본 지역의 지명 오류가 많아 수정했습니다.
-
 401,Asia,아시아,Iran,이란,Tehran,테헤란,country,112931
 402,Asia,아시아,Iran,이란,Tehran,테헤란,city,112931
 403,Europe,유럽,Ireland,아일랜드,Dublin,더블린,country,2964574
@@ -705,8 +701,6 @@ location_id,continent,continent_ko,country,country_ko,city,city_ko,location_type
 698,Europe,유럽,Portugal,포르투갈,Ponta Delgada,폰타델가다,city,3372783
 699,Europe,유럽,Portugal,포르투갈,Portimao,포르티망,city,2264456
 700,Europe,유럽,Portugal,포르투갈,Porto,포르투,city,2735943
-네, 여덟 번째 텍스트도 확인했습니다. 아래에 수정된 내용을 보내드립니다. 이번 텍스트에서는 루마니아, 세르비아, 남아프리카, 스웨덴 지역의 지명 오류를 수정했습니다.
-
 701,Europe,유럽,Portugal,포르투갈,Setubal,세투발,city,2262963
 702,Europe,유럽,Portugal,포르투갈,Sintra,신트라,city,2262912
 703,Europe,유럽,Portugal,포르투갈,Sintra-Cascais National Park,신트라-카스카이스 국립공원,city,10942668

@@ -123,6 +123,14 @@ export const useAuth = () => {
     }
   }
 
+  // 토큰 가져오기
+  const getToken = () => {
+    if (process.client) {
+      return localStorage.getItem('access_token')
+    }
+    return null
+  }
+
   return {
     isAuthenticated: readonly(isAuthenticated),
     user: readonly(user),
@@ -130,7 +138,8 @@ export const useAuth = () => {
     login,
     logout,
     checkAuth,
-    validateToken
+    validateToken,
+    getToken
   }
 }
 

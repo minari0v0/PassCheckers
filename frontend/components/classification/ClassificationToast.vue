@@ -117,6 +117,7 @@ onMounted(() => {
   font-size: 14px;
   color: #666;
   line-height: 1.4;
+  white-space: pre-line;
 }
 
 .close-button {
