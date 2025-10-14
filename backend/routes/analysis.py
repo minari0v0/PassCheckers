@@ -346,3 +346,59 @@ def get_analysis_detail(analysis_id):
             "error": "분석 상세 정보 조회 중 오류가 발생했습니다.",
             "details": str(e) if "development" in str(os.environ.get('FLASK_ENV', '')).lower() else "서버 내부 오류"
         }), 500
+
+@analysis_bp.route("/api/analysis/<int:analysis_id>/add-items", methods=["POST"])
+def add_items_to_analysis(analysis_id):
+    """특정 분석 기록에 추천 아이템들을 추가합니다."""
+    data = request.get_json()
+    item_names = data.get('item_names')
+
+    if not item_names:
+        return jsonify({"error": "추가할 아이템이 없습니다."}), 400
+
+    conn = get_db_connection()
+    try:
+        with conn.cursor() as cursor:
+            # 1. 추가할 아이템들의 상세 정보를 'items' 테이블에서 가져옵니다.
+            placeholders = ', '.join(['%s'] * len(item_names))
+            sql = f"SELECT item_name, item_name_EN, carry_on_allowed, checked_baggage_allowed, notes, notes_EN FROM items WHERE item_name IN ({placeholders})"
+            cursor.execute(sql, tuple(item_names))
+            item_details_map = {item['item_name']: item for item in cursor.fetchall()}
+
+            # 2. 'analysis_items' 테이블에 아이템들을 추가합니다.
+            added_count = 0
+            for name in item_names:
+                details = item_details_map.get(name)
+                if not details:
+                    continue # 마스터 테이블에 없는 아이템은 건너뜁니다.
+
+                cursor.execute("""
+                    INSERT INTO analysis_items 
+                    (analysis_id, item_name_ko, item_name_en, source,
+                     carry_on_allowed, checked_baggage_allowed, notes, notes_EN)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                """, (
+                    analysis_id,
+                    name,
+                    details.get('item_name_EN'),
+                    'recommendation', # 소스를 'recommendation'으로 지정
+                    details.get('carry_on_allowed'),
+                    details.get('checked_baggage_allowed'),
+                    details.get('notes'),
+                    details.get('notes_EN')
+                ))
+                added_count += 1
+            
+            # 3. analysis_results의 total_items 업데이트
+            if added_count > 0:
+                cursor.execute("UPDATE analysis_results SET total_items = total_items + %s WHERE id = %s", (added_count, analysis_id))
+
+            conn.commit()
+            return jsonify({"message": f"{added_count}개의 아이템이 추가되었습니다."}), 200
+
+    except Exception as e:
+        conn.rollback()
+        print(f"[ADD ITEMS ERROR] {e}")
+        return jsonify({"error": "아이템 추가 중 오류 발생", "details": str(e)}), 500
+    finally:
+        conn.close()

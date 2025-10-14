@@ -3,11 +3,10 @@
     <!-- 상단 헤더 -->
     <header class="page-header">
       <h1 class="header-title">
-        <span class="header-title-icon">🌍</span>
-        세계 여행 비용 정보
+        전 세계 여행지의 정보가 담긴, <span class="highlight">여행 정보</span>
       </h1>
       <p class="header-description">
-        여행지를 선택하여 여행 비용을 확인하세요.
+        여행지를 선택하여 여행지 정보와 비용을 확인해보세요
       </p>
     </header>
 
@@ -360,10 +359,11 @@ onMounted(fetchContinents);
 </script>
 
 <style scoped>
-.info-page-container { padding: 2rem; background-color: #f8f9fa; min-height: 100vh; font-family: 'Pretendard', sans-serif; }
-.page-header { text-align: center; margin-bottom: 2rem; }
-.header-title { font-size: 2.5rem; font-weight: 800; color: #212529; display: flex; align-items: center; justify-content: center; gap: 0.75rem; }
-.header-description { font-size: 1.125rem; color: #6c757d; margin-top: 0.5rem; }
+.info-page-container { padding: 0 2rem 2rem 2rem; background-color: #f8f9fa; min-height: 100vh; font-family: 'Pretendard', sans-serif; }
+.page-header { text-align: center; margin-top: 48px; margin-bottom: 32px; }
+.header-title { font-size: 2.2rem; font-weight: bold; color: #222; margin: 0; }
+.header-title .highlight { color: var(--main-blue); }
+.header-description { font-size: 1rem; color: #888; margin-top: 8px; }
 .main-content { display: flex; gap: 1.5rem; max-width: 1400px; margin: 0 auto; }
 
 .left-panel { flex: 1; max-width: 300px; background-color: white; border-radius: 0.75rem; padding: 0rem 1.5rem 1.5rem 1.5rem; border: 1px solid #dee2e6; box-shadow: 0 2px 8px rgba(0,0,0,0.06); height: fit-content; }
