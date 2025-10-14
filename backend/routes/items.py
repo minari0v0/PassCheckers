@@ -132,7 +132,7 @@ def get_image_by_id(image_id):
         print(f"[IMAGE API] 이미지 요청 받음: image_id={image_id}")
         conn = get_db_connection()
         with conn.cursor() as cursor:
-            cursor.execute("SELECT image_data FROM images WHERE image_id = %s", (image_id,))
+            cursor.execute("SELECT image_data FROM images WHERE id = %s", (image_id,))
             result = cursor.fetchone()
             
             if result and result['image_data']:
