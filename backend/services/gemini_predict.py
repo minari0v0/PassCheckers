@@ -74,7 +74,7 @@ def _calculate_weight_from_weights_table(avg_weight_value, avg_weight_unit, weig
     """
     try:
         # 무게 범위에서 최소값과 최대값 추출
-        weight_range_clean = weight_range.replace('g', '').replace('kg', '').strip()
+        weight_range_clean = weight_range.replace('kg', '').replace('g', '').strip()
         if '-' in weight_range_clean:
             min_weight_str, max_weight_str = weight_range_clean.split('-')
             min_weight = float(min_weight_str.strip())
