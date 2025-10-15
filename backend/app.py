@@ -1,12 +1,15 @@
 from flask import Flask, request, jsonify, send_file
 from flask_jwt_extended import JWTManager, create_access_token, create_refresh_token, jwt_required, get_jwt_identity
 from flask_cors import CORS
+from dotenv import load_dotenv
 import redis
 import pymysql
 import os
 import io
 from datetime import timedelta
 from config import Config
+
+load_dotenv()
 from models.user import User
 from urllib.parse import urlparse
 from functools import wraps
