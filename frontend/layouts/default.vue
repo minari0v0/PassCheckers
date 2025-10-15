@@ -161,7 +161,6 @@ const { isAuthenticated, user, logout: authLogout, checkAuth, isInitialized, get
 
 // 프로필 이미지 URL
 const profileImageUrl = ref('/images/default_profile.png')
-const profileImageError = ref(false)
 
 // 프로필 이미지 로드
 const loadProfileImage = async () => {
@@ -188,8 +187,7 @@ const loadProfileImage = async () => {
 
 // 프로필 이미지 에러 처리
 const onProfileImageError = () => {
-  if (!profileImageError.value) {
-    profileImageError.value = true
+  if (profileImageUrl.value !== '/images/default_profile.png') {
     profileImageUrl.value = '/images/default_profile.png'
   }
 }
