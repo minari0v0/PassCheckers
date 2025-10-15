@@ -140,7 +140,7 @@ def find_flights(search_type, destination_city, departure_date, airline_query, f
                         if 'quantity' in bags:
                             baggage_info['free'] = f"{bags['quantity']}개"
                         elif 'weight' in bags:
-                            baggage_info['free'] = f"{bags['weight']}{bags['unit']}"
+                            baggage_info['free'] = f"{bags['weight']}{bags['weightUnit']}"
                 except (IndexError, KeyError) as e:
                     print(f"무료 수하물 정보 파싱 오류: {e}")
 
