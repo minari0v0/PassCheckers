@@ -115,40 +115,41 @@
               <p>아직 수하물 분류 분석을 수행하지 않았습니다.</p>
             </div>
             <div v-else class="results-grid">
-            <div 
-              v-for="result in analysisResults" 
-              :key="result.id" 
-              class="result-card"
-            >
-              <div class="result-content">
-                <div class="result-image">
-                  <img 
-                    :src="getAnalysisImageUrl(result)" 
-                    :alt="result.title"
-                    @error="onImageError"
-                    class="analysis-image"
-                  />
-                </div>
-                <div class="result-info">
-                  <div class="result-header">
-                    <h4>{{ result.title }}</h4>
-                    <button 
-                      class="more-btn"
-                      @click="toggleAnalysisMenu(result.id)"
-                    >
-                      <i class="material-icons">more_vert</i>
-                    </button>
-                    <div v-if="showAnalysisMenu[result.id]" class="delete-menu">
-                      <button class="delete-btn" @click="deleteAnalysis(result.id)">
-                        <i class="material-icons">delete</i>
-                        삭제
-                      </button>
-                    </div>
+              <div 
+                v-for="result in analysisResults" 
+                :key="result.id" 
+                class="result-card"
+                @click="openDetailModal(result)"
+              >
+                <div class="result-content">
+                  <div class="result-image">
+                    <img 
+                      :src="getAnalysisImageUrl(result)" 
+                      :alt="result.title"
+                      @error="onImageError"
+                      class="analysis-image"
+                    />
                   </div>
-                  <p class="result-date">{{ formatDate(result.created_at) }}</p>
+                  <div class="result-info">
+                    <div class="result-header">
+                      <h4>{{ result.title }}</h4>
+                      <button 
+                        class="more-btn"
+                        @click.stop="toggleAnalysisMenu(result.id)"
+                      >
+                        <i class="material-icons">more_vert</i>
+                      </button>
+                      <div v-if="showAnalysisMenu[result.id]" class="delete-menu" v-click-outside="() => closeAnalysisMenu(result.id)">
+                        <button class="delete-btn" @click.stop="openDeleteConfirm(result)">
+                          <i class="material-icons">delete</i>
+                          <span>삭제</span>
+                        </button>
+                      </div>
+                    </div>
+                    <p class="result-date">{{ formatDate(result.created_at) }}</p>
+                  </div>
                 </div>
               </div>
-            </div>
             </div>
           </div>
         </div>
@@ -289,10 +290,26 @@
       @confirmed="handleAccountDeletion"
       @cancelled="showDeletionModal = false"
     />
-    </div>
-  </template>
+
+    <!-- 분석 결과 삭제 확인 모달 -->
+    <AnalysisDeleteDialog
+      :show="showDeleteDialog"
+      :item="analysisToDelete"
+      @confirm="handleDeleteConfirm"
+      @cancel="handleDeleteCancel"
+    />
+
+    <!-- 분석 결과 상세 보기 모달 -->
+    <AnalysisDetailModal 
+      :show="showDetailModal"
+      :analysis-data="analysisToView"
+      @close="showDetailModal = false"
+      @delete="handleDetailModalDelete"
+    />
+  </div>
+</template>
   
-  <script setup>
+<script setup>
 // 로그인 검증 미들웨어 적용
   definePageMeta({
     middleware: 'auth'
@@ -306,6 +323,8 @@ import ProfileEditToast from '~/components/profile/ProfileEditToast.vue'
 import NicknameEditToast from '~/components/profile/NicknameEditToast.vue'
 import PasswordChangeToast from '~/components/profile/PasswordChangeToast.vue'
 import AccountDeletionToast from '~/components/profile/AccountDeletionToast.vue'
+import AnalysisDeleteDialog from '~/components/profile/AnalysisDeleteDialog.vue'
+import AnalysisDetailModal from '~/components/profile/AnalysisDetailModal.vue'
 
 const router = useRouter()
 const { user, getToken } = useAuth()
@@ -334,6 +353,13 @@ const showNicknameEditModal = ref(false)
 const showPasswordChangeModal = ref(false)
 const showDeletionModal = ref(false)
 
+// 분석 결과 관련 모달 상태
+const showDeleteDialog = ref(false)
+const analysisToDelete = ref(null)
+const showDetailModal = ref(false)
+const analysisToView = ref(null)
+const isDetailLoading = ref(false)
+
 // 사용자 정보 로드
 const loadUserInfo = async () => {
   try {
@@ -348,16 +374,13 @@ const loadUserInfo = async () => {
 
     if (response.ok) {
       const data = await response.json()
-      console.log('API Response:', data)
       const user = data.user
-      console.log('User data:', user)
       userInfo.value = {
         id: user.id,
         nickname: user.nickname,
         email: user.email,
         profileImageUrl: `${apiUrl}/api/users/${user.id}/profile-image`
       }
-      console.log('userInfo.value:', userInfo.value)
     } else {
       console.error('Failed to load user info:', await response.text())
     }
@@ -378,11 +401,10 @@ const loadAnalysisResults = async () => {
       }
     })
 
-            if (response.ok) {
-              const data = await response.json()
-              console.log('Analysis results:', data.results)
-              analysisResults.value = data.results || []
-            }
+    if (response.ok) {
+      const data = await response.json()
+      analysisResults.value = data.results || []
+    }
   } catch (error) {
     console.error('Failed to load analysis results:', error)
   }
@@ -407,18 +429,15 @@ const loadUserActivity = async () => {
     ])
 
     if (likesRes.ok) {
-      const data = await likesRes.json()
-      likedPosts.value = data.posts || []
+      likedPosts.value = (await likesRes.json()).posts || []
     }
 
     if (bookmarksRes.ok) {
-      const data = await bookmarksRes.json()
-      bookmarkedPosts.value = data.posts || []
+      bookmarkedPosts.value = (await bookmarksRes.json()).posts || []
     }
 
     if (commentsRes.ok) {
-      const data = await commentsRes.json()
-      commentedPosts.value = data.posts || []
+      commentedPosts.value = (await commentsRes.json()).posts || []
     }
   } catch (error) {
     console.error('Failed to load user activity:', error)
@@ -430,14 +449,36 @@ const toggleAnalysisMenu = (resultId) => {
   showAnalysisMenu.value = { [resultId]: !showAnalysisMenu.value[resultId] }
 }
 
-// 분석 결과 삭제
-const deleteAnalysis = async (resultId) => {
-  if (!confirm('분석 결과를 삭제하시겠습니까?')) return
+const closeAnalysisMenu = (resultId) => {
+  if (showAnalysisMenu.value[resultId]) {
+    showAnalysisMenu.value[resultId] = false;
+  }
+}
 
+// --- 삭제 로직 ---
+const openDeleteConfirm = (result) => {
+  analysisToDelete.value = result;
+  showDeleteDialog.value = true;
+  closeAnalysisMenu(result.id); // 메뉴 닫기
+}
+
+const handleDeleteCancel = () => {
+  showDeleteDialog.value = false;
+  analysisToDelete.value = null;
+}
+
+const handleDeleteConfirm = async () => {
+  if (!analysisToDelete.value) return;
+  await deleteAnalysis();
+  handleDeleteCancel(); // 모달 닫기 및 상태 초기화
+}
+
+const deleteAnalysis = async () => {
   try {
     const token = getToken()
-    if (!token) return
+    if (!token || !analysisToDelete.value) return
 
+    const resultId = analysisToDelete.value.id;
     const response = await fetch(`${apiUrl}/api/user/analysis-results/${resultId}`, {
       method: 'DELETE',
       headers: {
@@ -455,6 +496,39 @@ const deleteAnalysis = async (resultId) => {
   } catch (error) {
     console.error('Failed to delete analysis result:', error)
     alert('분석 결과 삭제 중 오류가 발생했습니다')
+  }
+}
+
+// --- 상세 보기 로직 ---
+const openDetailModal = async (result) => {
+  isDetailLoading.value = true;
+  showDetailModal.value = true;
+  analysisToView.value = null; // 이전 데이터 초기화
+
+  try {
+    const token = getToken();
+    const response = await fetch(`${apiUrl}/api/packing/${result.id}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!response.ok) throw new Error('상세 정보를 불러오는데 실패했습니다.');
+    const data = await response.json();
+    analysisToView.value = {
+      ...result, // 목록의 기본 정보
+      ...data,   // API로부터 받은 상세 정보 (items 포함)
+    };
+  } catch (error) {
+    console.error(error);
+    alert('상세 정보를 가져오는 중 오류가 발생했습니다.');
+    showDetailModal.value = false;
+  } finally {
+    isDetailLoading.value = false;
+  }
+}
+
+const handleDetailModalDelete = () => {
+  if (analysisToView.value) {
+    showDetailModal.value = false;
+    openDeleteConfirm(analysisToView.value);
   }
 }
 
@@ -1043,6 +1117,7 @@ onMounted(async () => {
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
+  cursor: pointer;
 }
 
 .result-card:hover {

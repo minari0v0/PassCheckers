@@ -41,7 +41,7 @@ def predict_name_with_yolo(image_data: bytes, bboxes: list):
 
         # 잘라낸 이미지를 YOLO 모델에 입력하여 객체 이름 분류
         # conf=0.5 로 임계값 50% 설정 (이 값을 0.1 ~ 0.9 사이로 조절)
-        yolo_results = yolo_model(cropped_image, conf=0.4)
+        yolo_results = yolo_model(cropped_image, conf=0.33)
 
         if yolo_results and yolo_results[0].boxes:
             # YOLO가 탐지한 객체 중 가장 높은 confidence를 가진 결과를 선택
