@@ -6,8 +6,9 @@ from dotenv import load_dotenv
 
 def get_db_connection():
     """Creates a database connection using the DATABASE_URL from environment variables."""
-    project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    dotenv_path = os.path.join(project_root, '.env')
+    # .env 파일이 backend 폴더에 있으므로, 해당 폴더를 기준으로 경로를 설정합니다.
+    backend_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    dotenv_path = os.path.join(backend_dir, '.env')
     if os.path.exists(dotenv_path):
         load_dotenv(dotenv_path)
     else:

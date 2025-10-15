@@ -176,23 +176,42 @@
                 <div v-else-if="weightError" class="card-content-placeholder text-negative">
                   <q-icon name="error_outline" size="24px" />
                 </div>
-                <q-list v-else-if="adjustedWeightData" separator style="margin-top: 8px;">
-                  <q-item v-for="item in adjustedWeightData.items" :key="item.item_name_ko">
-                    <q-item-section>{{ item.item_name_ko }}</q-item-section>
-                    <q-item-section side>
-                      <q-badge :label="itemCategories[item.item_name_ko] || '기타'" color="grey-6" />
-                    </q-item-section>
-                    <q-item-section side v-if="item.predicted_weight_value !== null">
-                      {{ formatWeight(item.predicted_weight_value, item.predicted_weight_unit) }}
-                    </q-item-section>
-                    <q-item-section side v-else>
-                      <span class="text-grey">무게 정보 없음</span>
-                    </q-item-section>
-                  </q-item>
-                  <q-item v-if="adjustedWeightData.items.length === 0">
-                    <q-item-section class="text-grey">무게가 예측된 물품이 없습니다.</q-item-section>
-                  </q-item>
-                </q-list>
+                <div v-else-if="adjustedWeightData">
+                  <div v-if="Object.keys(groupedAndSortedItems).length === 0" class="card-content-placeholder">
+                      <q-icon name="info" size="32px" />
+                      <p>무게가 예측된 물품이 없습니다.</p>
+                  </div>
+                  <q-list v-else class="rounded-borders q-pa-none" style="background-color: transparent;">
+                    <q-expansion-item
+                      v-for="(items, category) in groupedAndSortedItems"
+                      :key="category"
+                      class="shadow-1 overflow-hidden"
+                      style="border-radius: 8px; margin-bottom: 12px;"
+                      icon="folder_open"
+                      :label="category"
+                      :caption="`${items.length}개 품목`"
+                      header-class="bg-grey-2 text-grey-8 text-weight-bold"
+                      expand-icon-class="text-grey-8"
+                      default-opened
+                    >
+                      <div class="bg-white">
+                        <q-list separator>
+                          <q-item v-for="item in items" :key="item.item_name_ko" dense>
+                              <q-item-section class="q-ml-md">
+                                  <q-item-label>{{ item.item_name_ko }}</q-item-label>
+                              </q-item-section>
+                              <q-item-section side v-if="item.predicted_weight_value !== null">
+                                  <q-badge outline color="primary" :label="formatWeight(item.predicted_weight_value, item.predicted_weight_unit)" />
+                              </q-item-section>
+                              <q-item-section side v-else>
+                                  <q-badge outline color="grey-5" label="무게 없음" />
+                              </q-item-section>
+                          </q-item>
+                        </q-list>
+                      </div>
+                    </q-expansion-item>
+                  </q-list>
+                </div>
               </q-card>
             </div>
           </div>
@@ -488,6 +507,41 @@ const categoryChartData = computed(() => {
 
   console.log('[차트] 최종 차트 데이터:', { labels, series });
   return { labels, series };
+});
+
+const groupedAndSortedItems = computed(() => {
+  if (!adjustedWeightData.value || !adjustedWeightData.value.items) {
+    return {};
+  }
+
+  // 1. 카테고리별로 아이템 그룹화
+  const grouped = adjustedWeightData.value.items.reduce((acc, item) => {
+    const category = itemCategories.value[item.item_name_ko] || '기타';
+    if (!acc[category]) {
+      acc[category] = [];
+    }
+    acc[category].push(item);
+    return acc;
+  }, {} as { [key: string]: WeightItem[] });
+
+  // 2. 각 카테고리 내에서 아이템을 가나다순으로 정렬
+  for (const category in grouped) {
+    grouped[category].sort((a, b) => a.item_name_ko.localeCompare(b.item_name_ko, 'ko'));
+  }
+
+  // 3. 카테고리 자체를 가나다순으로 정렬 ('기타'는 마지막으로)
+  const sortedCategories = Object.keys(grouped).sort((a, b) => {
+      if (a === '기타') return 1;
+      if (b === '기타') return -1;
+      return a.localeCompare(b, 'ko');
+  });
+
+  const result: { [key: string]: WeightItem[] } = {};
+  for (const category of sortedCategories) {
+      result[category] = grouped[category];
+  }
+
+  return result;
 });
 
 watch(categoryChartData, (newChartData) => {

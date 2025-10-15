@@ -303,12 +303,11 @@ def get_predicted_weights_for_analysis(analysis_id: int):
                 
                 # weights 테이블에 기본 무게 데이터가 있는 경우
                 if item.get('avg_weight_value') and item.get('weight_range'):
-                    # bbox_ratio 계산
-                    bbox_width = item['bbox_x_max'] - item['bbox_x_min']
-                    bbox_height = item['bbox_y_max'] - item['bbox_y_min']
-
-                    if item['image_width'] and item['image_height'] and item['image_width'] > 0 and item['image_height'] > 0:
-                        bbox_ratio = (bbox_width * bbox_height) / (item['image_width'] * item['image_height'])
+                    # bbox_ratio 계산 (좌표가 0-1 사이로 정규화되었다고 가정)
+                    if item.get('bbox_x_max') is not None and item.get('bbox_x_min') is not None and                        item.get('bbox_y_max') is not None and item.get('bbox_y_min') is not None:
+                        bbox_width = item['bbox_x_max'] - item['bbox_x_min']
+                        bbox_height = item['bbox_y_max'] - item['bbox_y_min']
+                        bbox_ratio = float(bbox_width * bbox_height)
                     else:
                         bbox_ratio = 0
                     
@@ -352,11 +351,12 @@ def get_predicted_weights_for_analysis(analysis_id: int):
                 
                 # Gemini API용 데이터 준비
                 for item in items_without_weights:
-                    bbox_width = item['bbox_x_max'] - item['bbox_x_min']
-                    bbox_height = item['bbox_y_max'] - item['bbox_y_min']
-
-                    if item['image_width'] and item['image_height'] and item['image_width'] > 0 and item['image_height'] > 0:
-                        bbox_ratio = (bbox_width * bbox_height) / (item['image_width'] * item['image_height'])
+                    # bbox_ratio 계산 (좌표가 0-1 사이로 정규화되었다고 가정)
+                    if item.get('bbox_x_max') is not None and item.get('bbox_x_min') is not None and \
+                       item.get('bbox_y_max') is not None and item.get('bbox_y_min') is not None:
+                        bbox_width = item['bbox_x_max'] - item['bbox_x_min']
+                        bbox_height = item['bbox_y_max'] - item['bbox_y_min']
+                        bbox_ratio = float(bbox_width * bbox_height)
                     else:
                         bbox_ratio = 0
 
