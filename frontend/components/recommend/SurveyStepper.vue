@@ -159,6 +159,9 @@
                         <q-item-section>
                             <q-item-label>{{ flight.carrierCode }}{{ flight.flightNumber }}</q-item-label>
                             <q-item-label caption>출발: {{ formatFlightTime(flight.departure) }} / 도착: {{ formatFlightTime(flight.arrival) }}</q-item-label>
+                            <q-item-label caption v-if="flight.baggage" class="baggage-info">
+                                <q-icon name="luggage" size="xs" class="q-mr-xs"/> 무료: <strong>{{ flight.baggage.free }}</strong> / 유료: <strong>{{ flight.baggage.paid }}</strong>
+                            </q-item-label>
                         </q-item-section>
                         <q-item-section side top>
                             <q-icon name="check_circle" v-if="selectedFlight && selectedFlight.id === flight.id" color="primary" />

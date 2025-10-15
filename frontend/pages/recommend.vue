@@ -119,6 +119,39 @@
           일기 예보를 확인하기 어려운 먼 날짜이므로, 과거 날씨 통계를 기반으로 추천해 드렸어요.
         </q-banner>
 
+        <!-- 항공편 정보 패널 -->
+        <div v-if="finalSelections && finalSelections.flight" class="row justify-end">
+          <q-card flat bordered class="q-mb-md col-auto flight-info-panel">
+            <q-card-section class="q-py-sm">
+              <div class="row items-center no-wrap">
+                <div class="col-auto row items-center no-wrap q-mr-md q-ml-sm">
+                  <q-icon name="flight_takeoff" color="blue-grey-5" size="md" class="q-mr-md"/>
+                  <div>
+                    <div class="text-weight-bold">{{ finalSelections.flight.carrierCode }}{{ finalSelections.flight.flightNumber }}</div>
+                    <div class="text-caption text-grey-7">기종: {{ finalSelections.flight.aircraft }}</div>
+                  </div>
+                </div>
+                <q-separator vertical spaced />
+                <div class="col-auto row items-center no-wrap q-mx-md">
+                  <q-icon name="schedule" color="blue-grey-5" size="sm" class="q-mr-sm"/>
+                  <div>
+                    <div class="text-body2">{{ formatFullDateTime(finalSelections.flight.departure) }} 출발</div>
+                    <div class="text-caption text-grey-7">터미널: T{{ finalSelections.flight.departureTerminal }}</div>
+                  </div>
+                </div>
+                <q-separator vertical spaced />
+                <div class="col row items-center no-wrap q-ml-md">
+                  <q-icon name="luggage" color="blue-grey-5" size="sm" class="q-mr-sm"/>
+                  <div>
+                    <div class="text-body2">무료수하물: {{ finalSelections.flight.baggage.free }}</div>
+                    <div class="text-caption text-grey-7">유료: {{ finalSelections.flight.baggage.paid }}</div>
+                  </div>
+                </div>
+              </div>
+            </q-card-section>
+          </q-card>
+        </div>
+
         <q-card class="output-card" flat style="padding: 1.5rem; background-color: #f8fbff; border: 1px solid #e3f0fa;">
           <div v-if="isLoading" class="loading-state">
             <q-spinner-gears size="xl" color="primary" />
@@ -173,7 +206,6 @@
             
             <!-- Right Column: Weather Info -->
             <div class="weather-column">
-
 
               <!-- Real-time Forecast Display -->
               <div class="forecast-container q-mb-lg" v-if="forecastData">
@@ -467,6 +499,17 @@ const saveItemsToList = async () => {
 
 const toggleGroup = (groupName) => {
   expandedGroups.value[groupName] = !expandedGroups.value[groupName];
+};
+
+const formatFullDateTime = (isoString) => {
+  if (!isoString) return '';
+  return new Date(isoString).toLocaleString('ko-KR', {
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  });
 };
 
 const getGroupTitle = (group) => {
@@ -766,6 +809,17 @@ const handleSurveyComplete = async (surveyData) => {
   border-radius: 50%;
   transition: background-color 0.2s;
 }
+
+.flight-bookmark-panel {
+  position: absolute;
+            top: -36px; /* 패널 높이만큼 위로 이동 */
+            right: 1.5rem; /* output-card의 패딩과 동일하게 설정 */
+            width: 450px; /* 너비 고정 */  z-index: 5; /* 다른 요소 위에 표시되도록 */
+  background-color: var(--q-primary);
+  border-radius: 8px 8px 0 0;
+  box-shadow: 0 -4px 8px rgba(0,0,0,0.1);
+}
+
 
 .modal-close:hover {
   background-color: #e3f2fd;

@@ -112,7 +112,9 @@ def find_flights(search_type, destination_city, departure_date, airline_query, f
     try:
         response = requests.get(url, headers=headers, params=params)
         response.raise_for_status()
-        flight_data = response.json().get('data', [])
+        flight_data_raw = response.json()
+        flight_data = flight_data_raw.get('data', [])
+        dictionaries = flight_data_raw.get('dictionaries', {})
 
         parsed_flights = []
         for flight in flight_data:
@@ -122,13 +124,53 @@ def find_flights(search_type, destination_city, departure_date, airline_query, f
             if flight_number_to_match and segment['number'] != flight_number_to_match:
                 continue
 
+            # 수하물 정보 파싱
+            baggage_info = {
+                'free': '정보 없음',
+                'paid': '항공사 문의'  # 기본값을 '항공사 문의'로 변경
+            }
+            
+            # 무료 수하물 정보 추출
+            if flight.get('travelerPricings'):
+                try:
+                    traveler_pricing = flight['travelerPricings'][0]
+                    fare_details = traveler_pricing['fareDetailsBySegment'][0]
+                    if 'includedCheckedBags' in fare_details:
+                        bags = fare_details['includedCheckedBags']
+                        if 'quantity' in bags:
+                            baggage_info['free'] = f"{bags['quantity']}개"
+                        elif 'weight' in bags:
+                            baggage_info['free'] = f"{bags['weight']}{bags['unit']}"
+                except (IndexError, KeyError) as e:
+                    print(f"무료 수하물 정보 파싱 오류: {e}")
+
+            # 유료 수하물 정보 추출
+            if flight.get('price', {}).get('additionalServices'):
+                for service in flight['price']['additionalServices']:
+                    if service.get('type') == 'CHECKED_BAGS':
+                        currency_code = service.get('currency', '')
+                        currency_map = {'EUR': '유로', 'USD': '달러', 'KRW': '원'}
+                        currency_display = currency_map.get(currency_code, currency_code)
+                        baggage_info['paid'] = f"{service['amount']} {currency_display}"
+                        break
+            
+            # 항공기 및 터미널 정보 추출
+            aircraft_code = segment.get('aircraft', {}).get('code')
+            aircraft_name = dictionaries.get('aircraft', {}).get(aircraft_code, '정보 없음')
+            departure_terminal = segment.get('departure', {}).get('terminal', '-')
+            arrival_terminal = segment.get('arrival', {}).get('terminal', '-')
+
             parsed_flights.append({
                 'id': flight['id'],
                 'carrierCode': segment['carrierCode'],
                 'flightNumber': segment['number'],
                 'departure': segment['departure']['at'],
                 'arrival': segment['arrival']['at'],
-                'duration': itinerary['duration']
+                'duration': itinerary['duration'],
+                'baggage': baggage_info,
+                'aircraft': aircraft_name,
+                'departureTerminal': departure_terminal,
+                'arrivalTerminal': arrival_terminal
             })
         
         return parsed_flights
