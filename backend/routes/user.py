@@ -450,6 +450,46 @@ def get_commented_posts():
         print(f"Error in get_commented_posts: {e}")
         return jsonify({'posts': []}), 200
 
+@user_bp.route('/my-posts', methods=['GET'])
+@jwt_required()
+def get_my_posts():
+    """사용자가 작성한 게시글 목록"""
+    current_user_id = get_jwt_identity()
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    try:
+        cursor.execute("""
+            SELECT id, title, summary, created_at, likes_count, comments_count, image_id
+            FROM posts
+            WHERE user_id = %s AND is_deleted = FALSE
+            ORDER BY created_at DESC
+        """, (current_user_id,))
+        
+        posts = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        
+        formatted_posts = []
+        for post in posts:
+            formatted_posts.append({
+                'id': post['id'],
+                'title': post['title'],
+                'summary': post['summary'],
+                'created_at': post['created_at'].isoformat(),
+                'likes_count': post['likes_count'],
+                'comments_count': post['comments_count'],
+                'image_id': post['image_id']
+            })
+        
+        return jsonify({'posts': formatted_posts}), 200
+        
+    except Exception as e:
+        cursor.close()
+        conn.close()
+        print(f"Error in get_my_posts: {e}")
+        return jsonify({'posts': []}), 200
+
 @user_bp.route('/delete-account', methods=['DELETE'])
 @jwt_required()
 def delete_account():

@@ -165,11 +165,37 @@
             <q-tabs v-model="activeTab" class="text-grey-7" active-color="primary">
               <q-tab name="likes" label="좋아요" />
               <q-tab name="bookmarks" label="저장" />
+              <q-tab name="my-posts" label="게시글" />
               <q-tab name="comments" label="댓글" />
             </q-tabs>
           </div>
 
           <div class="tab-content">
+            <!-- 내가 작성한 게시글 -->
+            <div v-if="activeTab === 'my-posts'">
+              <div v-if="myPosts.length === 0" class="empty-state">
+                <i class="material-icons">article</i>
+                <h3>작성한 게시글이 없습니다</h3>
+                <p>커뮤니티에 첫 게시글을 작성해보세요.</p>
+              </div>
+              <div v-else class="posts-list">
+                <div 
+                  v-for="post in myPosts" 
+                  :key="post.id" 
+                  class="post-item"
+                  @click="goToPost(post.id)"
+                >
+                  <h4>{{ post.title }}</h4>
+                  <p>{{ post.summary }}</p>
+                  <div class="post-meta">
+                    <span>좋아요 {{ post.likes_count }}</span>
+                    <span>댓글 {{ post.comments_count }}</span>
+                    <span>{{ formatDate(post.created_at) }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <!-- 좋아요한 게시글 -->
             <div v-if="activeTab === 'likes'">
               <div v-if="likedPosts.length === 0" class="empty-state">
@@ -341,6 +367,7 @@ const userInfo = ref({
 })
 
 const analysisResults = ref([])
+const myPosts = ref([])
 const likedPosts = ref([])
 const bookmarkedPosts = ref([])
 const commentedPosts = ref([])
@@ -410,13 +437,35 @@ const loadAnalysisResults = async () => {
   }
 }
 
+const loadMyPosts = async () => {
+  try {
+    const token = getToken()
+    if (!token) return
+
+    const response = await fetch(`${apiUrl}/api/user/my-posts`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+
+    if (response.ok) {
+      const data = await response.json()
+      myPosts.value = data.posts || []
+    } else {
+      console.error('Failed to load my posts:', await response.text())
+    }
+  } catch (error) {
+    console.error('Failed to load my posts:', error)
+  }
+}
+
 // 내 활동 데이터 로드
 const loadUserActivity = async () => {
   try {
     const token = getToken()
     if (!token) return
 
-    const [likesRes, bookmarksRes, commentsRes] = await Promise.all([
+    const [likesRes, bookmarksRes, commentsRes, myPostsRes] = await Promise.all([
       fetch(`${apiUrl}/api/user/liked-posts`, {
         headers: { 'Authorization': `Bearer ${token}` }
       }),
@@ -424,6 +473,9 @@ const loadUserActivity = async () => {
         headers: { 'Authorization': `Bearer ${token}` }
       }),
       fetch(`${apiUrl}/api/user/commented-posts`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      }),
+      fetch(`${apiUrl}/api/user/my-posts`, { // my-posts 추가
         headers: { 'Authorization': `Bearer ${token}` }
       })
     ])
@@ -438,6 +490,10 @@ const loadUserActivity = async () => {
 
     if (commentsRes.ok) {
       commentedPosts.value = (await commentsRes.json()).posts || []
+    }
+
+    if (myPostsRes.ok) { // my-posts 결과 처리
+      myPosts.value = (await myPostsRes.json()).posts || []
     }
   } catch (error) {
     console.error('Failed to load user activity:', error)
@@ -1286,16 +1342,29 @@ onMounted(async () => {
 }
 
 .post-item h4 {
-  font-size: 0.875rem;
+  font-size: 1rem;
   font-weight: 600;
   color: #2c3e50;
-  margin: 0 0 4px 0;
+  margin: 0 0 8px 0;
 }
 
 .post-item p {
+  font-size: 0.875rem;
+  color: #555;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.post-item .post-meta {
+  display: flex;
+  gap: 16px;
   font-size: 0.75rem;
   color: #7fb3d3;
-  margin: 0;
+  margin-top: 8px;
 }
 
 /* 빈 상태 */
