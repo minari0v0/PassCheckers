@@ -3,19 +3,81 @@
     <!-- 커뮤니티 공유 모달 -->
     <transition name="fade">
       <div v-if="showCommunityShareModal" class="modal-overlay">
-        <div class="confirm-dialog" v-click-outside="() => showCommunityShareModal = false">
+        <div class="confirm-dialog">
           <div key="confirm">
             <h3 class="dialog-title">커뮤니티에 공유</h3>
             <p class="dialog-message">
               수하물 분석을 커뮤니티에 공유합니다. 다른 여행자들에게 영감을 주세요!
             </p>
             <div class="community-form">
-              <input type="text" v-model="communityPostTitle" placeholder="게시물 제목을 입력하세요" class="form-input">
-              <textarea v-model="communityPostDescription" placeholder="간단한 설명을 추가하세요 (선택)" class="form-textarea"></textarea>
+              <!-- 제목 -->
+              <div class="form-group">
+                <label for="title">제목 <span class="required">*</span></label>
+                <input id="title" v-model="communityPost.title" type="text" placeholder="게시물 제목을 입력하세요" required maxlength="255" class="form-input">
+              </div>
+
+              <!-- 여행지 선택 -->
+              <div class="form-group">
+                <label for="location">여행지 <span class="required">*</span></label>
+                <div class="location-search" ref="locationSearchContainerRef">
+                  <input id="location" v-model="locationSearch" type="text" placeholder="국가 또는 도시를 검색하세요" autocomplete="off" @input="searchLocations" @focus="handleLocationFocus" @click.stop class="form-input">
+                  <div v-if="showLocationDropdown && locationResults.length > 0" class="location-dropdown location-dropdown-container">
+                    <div v-for="location in locationResults" :key="location.value" class="location-option" @click="selectLocation(location)">
+                      {{ location.label }}
+                    </div>
+                  </div>
+                  <div v-else-if="showLocationDropdown && locationSearch && locationResults.length === 0" class="location-dropdown">
+                    <div class="location-option-empty">
+                      검색 결과가 없습니다
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 내용 -->
+              <div class="form-group">
+                <label for="content">내용 <span class="required">*</span></label>
+                <textarea id="content" v-model="communityPost.content" placeholder="여행 경험과 팁을 공유해주세요..." required rows="6" class="form-textarea"></textarea>
+              </div>
+
+              <!-- 태그 (선택사항) -->
+              <div class="form-group">
+                <label>태그 (선택사항)</label>
+                <div class="tags-input-area">
+                  <div class="selected-tags">
+                    <span v-for="(tag, index) in communityPost.tags" :key="index" class="tag-chip">
+                      #{{ tag }}
+                      <button type="button" @click="removeTag(index)">
+                        <i class="material-icons">close</i>
+                      </button>
+                    </span>
+                    <input v-model="tagInput" type="text" placeholder="태그 입력 후 Enter" @keydown.enter.prevent="addTag" maxlength="20" class="form-input">
+                  </div>
+                </div>
+                <p class="help-text">태그는 최대 5개까지 추가할 수 있습니다</p>
+              </div>
             </div>
             <div class="dialog-actions">
               <button @click="showCommunityShareModal = false" class="btn-cancel">취소</button>
-              <button @click="handleShareToCommunity" class="btn-confirm" :disabled="!communityPostTitle">공유하기</button>
+              <button @click="handleShareToCommunity" class="btn-confirm" :disabled="!communityPost.title || !communityPost.location || !communityPost.content">공유하기</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <!-- 커뮤니티 공유 결과 모달 -->
+    <transition name="fade">
+      <div v-if="showShareResultModal" class="modal-overlay">
+        <div class="confirm-dialog">
+          <div key="result">
+            <h3 class="dialog-title">{{ shareSuccess ? '공유 완료' : '공유 실패' }}</h3>
+            <p class="dialog-message">
+              {{ shareResultMessage }}
+            </p>
+            <div class="dialog-actions">
+              <button @click="showShareResultModal = false" class="btn-cancel">확인</button>
+              <button v-if="shareSuccess" @click="goToNewPost" class="btn-confirm">게시물 보러가기</button>
             </div>
           </div>
         </div>
@@ -477,22 +539,6 @@ import { useApiUrl } from '~/composables/useApiUrl';
 import ImageItem from '~/components/packing/ImageItem.vue';
 import { useRoute, useRouter } from 'vue-router';
 
-const vClickOutside = {
-  beforeMount(el, binding) {
-    el.clickOutsideEvent = function(event) {
-      // 클릭된 곳이 엘리먼트 외부인지 확인합니다.
-      if (!(el === event.target || el.contains(event.target))) {
-        // 외부라면, 전달된 메소드를 호출합니다.
-        binding.value(event);
-      }
-    };
-    document.body.addEventListener('mousedown', el.clickOutsideEvent);
-  },
-  unmounted(el) {
-    document.body.removeEventListener('mousedown', el.clickOutsideEvent);
-  },
-};
-
 definePageMeta({
   middleware: 'auth'
 });
@@ -535,8 +581,20 @@ const showCombinedListModal = ref(false);
 
 // 커뮤니티 공유 관련 상태
 const showCommunityShareModal = ref(false);
-const communityPostTitle = ref('');
-const communityPostDescription = ref('');
+const communityPost = ref({
+  title: '',
+  content: '',
+  location: '',
+  tags: []
+});
+const locationSearch = ref('');
+const locationResults = ref([]);
+const showLocationDropdown = ref(false);
+const tagInput = ref('');
+const showShareResultModal = ref(false);
+const shareSuccess = ref(false);
+const shareResultMessage = ref('');
+const newPostId = ref(null);
 
 // 댓글 기능 관련 상태
 const activeTab = ref('baggage'); // 'baggage' 또는 'comments'
@@ -687,56 +745,146 @@ const combinedItems = computed(() => {
  * 커뮤니티 공유 모달을 엽니다.
  */
 function openCommunityShareModal() {
-  communityPostTitle.value = selectedRecord.value.destination || `나의 여행 짐 목록`;
-  communityPostDescription.value = '';
+  communityPost.value = {
+    title: selectedRecord.value.destination ? `${selectedRecord.value.destination} 여행 짐 목록` : '나의 여행 짐 목록',
+    content: '',
+    location: selectedRecord.value.destination || '',
+    tags: []
+  };
+  locationSearch.value = selectedRecord.value.destination || '';
+  tagInput.value = '';
   showCommunityShareModal.value = true;
 }
 
+let searchTimeout = null;
+
+// 여행지 입력 필드에 포커스가 갈 때 처리하는 함수
+const handleLocationFocus = () => {
+  if (locationSearch.value.trim().length > 0) {
+    showLocationDropdown.value = true;
+    searchLocations();
+  }
+};
+
+// 여행지를 검색하는 함수 (디바운스 적용)
+const searchLocations = () => {
+  if (searchTimeout) {
+    clearTimeout(searchTimeout);
+  }
+  
+  const searchValue = locationSearch.value.trim();
+  
+  if (searchValue.length === 0) {
+    locationResults.value = [];
+    showLocationDropdown.value = false;
+    return;
+  }
+  
+  showLocationDropdown.value = true;
+  
+  searchTimeout = setTimeout(async () => {
+    try {
+      const response = await fetch(getApiUrl(`/api/community/countries?search=${encodeURIComponent(searchValue)}`));
+      const data = await response.json();
+      
+      if (data.locations && data.locations.length > 0) {
+        locationResults.value = data.locations;
+        showLocationDropdown.value = true;
+      } else {
+        locationResults.value = [];
+        showLocationDropdown.value = true;
+      }
+    } catch (error) {
+      console.error('Failed to search locations:', error);
+      locationResults.value = [];
+    }
+  }, 50);
+};
+
+// 드롭다운에서 여행지를 선택하는 함수
+const selectLocation = (location) => {
+  locationSearch.value = location.label;
+  communityPost.value.location = location.value;
+  showLocationDropdown.value = false;
+  locationResults.value = [];
+};
+
+// 태그를 추가하는 함수 (최대 5개)
+const addTag = () => {
+  const tag = tagInput.value.trim();
+  if (tag && communityPost.value.tags.length < 5 && !communityPost.value.tags.includes(tag)) {
+    communityPost.value.tags.push(tag);
+    tagInput.value = '';
+  }
+};
+
+// 태그를 제거하는 함수
+const removeTag = (index) => {
+  communityPost.value.tags.splice(index, 1);
+};
+
+function goToNewPost() {
+      if (newPostId.value) {
+        window.location.href = `/community?postId=${newPostId.value}`;
+      }
+      showShareResultModal.value = false;
+    }
 /**
  * 수하물 분석을 커뮤니티에 공유합니다.
  */
 async function handleShareToCommunity() {
-  if (!communityPostTitle.value) {
-    alert('게시물 제목을 입력해주세요.');
+  if (!communityPost.value.title || !communityPost.value.location || !communityPost.value.content) {
+    shareSuccess.value = false;
+    shareResultMessage.value = '제목, 여행지, 내용을 모두 입력해주세요.';
+    showShareResultModal.value = true;
     return;
   }
 
-  // --- 백엔드 구현 후 아래 주석을 해제하고 실제 API와 연동하세요 ---
-  /*
   try {
-    const url = getApiUrl('/api/community/posts');
-    const { data, error } = await useFetch(url, {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      shareSuccess.value = false;
+      shareResultMessage.value = '로그인이 필요합니다.';
+      showShareResultModal.value = true;
+      return;
+    }
+
+    const postData = new FormData();
+    postData.append('analysis_id', selectedRecord.value.id);
+    postData.append('title', communityPost.value.title);
+    postData.append('content', communityPost.value.content);
+    postData.append('location', communityPost.value.location);
+    postData.append('summary', communityPost.value.content.substring(0, 200));
+    postData.append('tags', JSON.stringify(communityPost.value.tags));
+
+    const url = getApiUrl('/api/community/share-post');
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+        'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify({
-        analysis_id: selectedRecord.value.id,
-        title: communityPostTitle.value,
-        description: communityPostDescription.value,
-      })
+      body: postData
     });
 
-    if (error.value) {
-      console.error('커뮤니티 공유 실패:', error.value);
-      alert('커뮤니티 공유에 실패했습니다.');
-    } else {
-      alert('커뮤니티에 성공적으로 공유되었습니다.');
+    if (response.ok) {
+      const data = await response.json();
+      shareSuccess.value = true;
+      shareResultMessage.value = '커뮤니티에 성공적으로 공유되었습니다.';
+      newPostId.value = data.post_id;
       showCommunityShareModal.value = false;
-      // 성공 시 커뮤니티 게시물로 이동 (API 응답에 따라 postId 등을 사용)
-      router.push(`/community/${data.value.postId}`); 
+      showShareResultModal.value = true;
+    } else {
+      const error = await response.json();
+      shareSuccess.value = false;
+      shareResultMessage.value = error.error || '커뮤니티 공유에 실패했습니다.';
+      showShareResultModal.value = true;
     }
   } catch (e) {
     console.error('커뮤니티 공유 중 예외 발생:', e);
-    alert('오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+    shareSuccess.value = false;
+    shareResultMessage.value = '오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
+    showShareResultModal.value = true;
   }
-  */
-
-  // 임시 프론트엔드 전용 로직 (백엔드 구현 전까지 사용)
-  alert(`[임시] 커뮤니티 공유 성공!\n제목: ${communityPostTitle.value}`);
-  showCommunityShareModal.value = false;
-  router.push('/community'); // 임시로 커뮤니티 목록 페이지로 이동
 }
 
 /**
@@ -1408,13 +1556,22 @@ watch(shareCode, (newShareCode) => {
   }
 });
 
+const locationSearchContainerRef = ref(null);
+const handleClickOutside = (event) => {
+  if (locationSearchContainerRef.value && !locationSearchContainerRef.value.contains(event.target)) {
+    showLocationDropdown.value = false;
+  }
+};
+
 // --- 생명주기 ---
 onMounted(() => {
   window.addEventListener('resize', updateImageSize);
+  document.addEventListener('click', handleClickOutside);
 });
 
 onUnmounted(() => {
   window.removeEventListener('resize', updateImageSize);
+  document.removeEventListener('click', handleClickOutside);
   // 컴포넌트가 사라질 때 폴링 중지
   if (commentPollingInterval.value) {
     clearInterval(commentPollingInterval.value);
@@ -1873,6 +2030,293 @@ onUnmounted(() => {
 
 .item-list-overlay::-webkit-scrollbar-thumb:hover {
   background-color: rgba(255, 255, 255, 0.5);
+}
+
+.confirm-dialog {
+  max-width: 800px;
+  width: 100%;
+}
+
+
+.community-form {
+  padding: 24px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.form-group {
+  margin-bottom: 24px;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.form-input,
+.form-textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+
+.form-input:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: #2196f3;
+  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+}
+
+.location-search {
+  position: relative;
+}
+
+.location-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  margin-top: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 1010; /* Ensure it's above the modal overlay */
+}
+
+.location-option {
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.location-option:hover {
+  background: #f5f5f5;
+  color: #2196f3;
+}
+
+.location-option-empty {
+  padding: 12px 16px;
+  color: #999;
+  text-align: center;
+}
+
+.tags-input-area {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 8px;
+  min-height: 48px;
+}
+
+.selected-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.tag-chip {
+  background: #e3f2fd;
+  color: #2196f3;
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tag-chip button {
+  background: none;
+  border: none;
+  color: #2196f3;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+.tag-chip button i {
+  font-size: 16px;
+}
+
+.selected-tags .form-input {
+  flex: 1;
+  min-width: 150px;
+  border: none;
+  outline: none;
+  padding: 6px;
+  font-size: 0.9rem;
+}
+
+.help-text {
+  font-size: 0.85rem;
+  color: #999;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.required {
+  color: #f44336;
+}
+
+.confirm-dialog {
+  max-width: 800px;
+  width: 100%;
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  border-bottom: none;
+}
+
+.dialog-header .dialog-title {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #1565c0;
+}
+
+.community-form {
+  padding: 24px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.form-group {
+  margin-bottom: 24px;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.form-input,
+.form-textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+
+.form-input:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: #2196f3;
+  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+}
+
+.location-search {
+  position: relative;
+}
+
+.location-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  margin-top: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 1010; /* Ensure it's above the modal overlay */
+}
+
+.location-option {
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.location-option:hover {
+  background: #f5f5f5;
+  color: #2196f3;
+}
+
+.location-option-empty {
+  padding: 12px 16px;
+  color: #999;
+  text-align: center;
+}
+
+.tags-input-area {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 8px;
+  min-height: 48px;
+}
+
+.selected-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.tag-chip {
+  background: #e3f2fd;
+  color: #2196f3;
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tag-chip button {
+  background: none;
+  border: none;
+  color: #2196f3;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+.tag-chip button i {
+  font-size: 16px;
+}
+
+.selected-tags .form-input {
+  flex: 1;
+  min-width: 150px;
+  border: none;
+  outline: none;
+  padding: 6px;
+  font-size: 0.9rem;
+}
+
+.help-text {
+  font-size: 0.85rem;
+  color: #999;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.required {
+  color: #f44336;
 }
 
 .item-list-overlay {
@@ -2661,7 +3105,7 @@ onUnmounted(() => {
   border-radius: 16px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   width: 100%;
-  max-width: 400px;
+  max-width: 800px;
   text-align: center;
 }
 
