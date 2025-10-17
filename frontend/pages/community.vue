@@ -209,10 +209,14 @@
     </div>
 
     <!-- 게시글 작성 모달 -->
-    <WritePost v-if="showWritePost" @close="showWritePost = false" @submit="handlePostSubmit" />
+    <transition name="modal-fade">
+      <WritePost v-if="showWritePost" @close="showWritePost = false" @submit="handlePostSubmit" />
+    </transition>
 
     <!-- 게시글 상세 모달 -->
-    <PostDetail v-if="selectedPostId" :post-id="selectedPostId" @close="closePostDetail" @update="handlePostUpdate" />
+    <transition name="modal-fade">
+      <PostDetail v-if="selectedPostId" :post-id="selectedPostId" @close="closePostDetail" @update="handlePostUpdate" />
+    </transition>
   </div>
 </template>
 
@@ -1143,6 +1147,28 @@ onUnmounted(() => {
   gap: 16px;
   margin-top: 32px;
   padding: 20px 0;
+}
+
+/* Modal Transitions */
+.modal-fade-enter-active,
+.modal-fade-leave-active {
+  transition: opacity 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.modal-fade-enter-from,
+.modal-fade-leave-to {
+  opacity: 0;
+}
+
+.modal-fade-enter-active .post-detail-container,
+.modal-fade-leave-active .post-detail-container {
+  transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.modal-fade-enter-from .post-detail-container,
+.modal-fade-leave-to .post-detail-container {
+  transform: scale(0.95);
+  opacity: 0;
 }
 
 .pagination-btn {
