@@ -67,40 +67,6 @@
       </div>
     </section>
 
-    <!-- 수하물 무게 예측 섹션 -->
-    <section class="service-section weight-section">
-      <div class="section-background" :style="{ transform: `translateY(${parallaxOffset * 0.3}px)` }"></div>
-      <div class="section-content">
-        <div class="card-header">
-          <div class="card-icon-large">⚖️</div>
-          <h3 class="card-title-large">수하물 무게 예측</h3>
-        </div>
-        <div class="card-body">
-          <p class="card-description-large">
-            정확한 무게 예측으로 초과요금을 방지하세요.<br>
-            수하물의 크기와 종류를 입력하면 예상 무게를 계산해드립니다.
-          </p>
-          <div class="feature-list">
-            <div class="feature-item">
-              <span class="feature-icon">📏</span>
-              <span>크기 기반 계산</span>
-            </div>
-            <div class="feature-item">
-              <span class="feature-icon">💰</span>
-              <span>요금 예측</span>
-            </div>
-            <div class="feature-item">
-              <span class="feature-icon">📊</span>
-              <span>정확한 분석</span>
-            </div>
-          </div>
-        </div>
-        <div class="card-footer">
-          <button class="action-button" @click="navigateTo('/weight')">무게 측정</button>
-        </div>
-      </div>
-    </section>
-
     <!-- 수하물 패킹 섹션 -->
     <section class="service-section packing-section">
       <div class="section-background" :style="{ transform: `translateY(${parallaxOffset * 0.3}px)` }"></div>
@@ -135,36 +101,70 @@
       </div>
     </section>
 
-    <!-- 커뮤니티 섹션 -->
-    <section class="service-section community-section">
+    <!-- 수하물 무게 예측 섹션 -->
+    <section class="service-section weight-section">
       <div class="section-background" :style="{ transform: `translateY(${parallaxOffset * 0.3}px)` }"></div>
       <div class="section-content">
         <div class="card-header">
-          <div class="card-icon-large">👥</div>
-          <h3 class="card-title-large">커뮤니티</h3>
+          <div class="card-icon-large">⚖️</div>
+          <h3 class="card-title-large">수하물 무게 예측</h3>
         </div>
         <div class="card-body">
           <p class="card-description-large">
-            여행자들과 정보를 공유하고 소통하세요.<br>
-            다양한 여행 경험과 팁을 나누는 활발한 커뮤니티입니다.
+            정확한 무게 예측으로 초과요금을 방지하세요.<br>
+            수하물의 크기와 종류를 입력하면 예상 무게를 계산해드립니다.
           </p>
           <div class="feature-list">
             <div class="feature-item">
-              <span class="feature-icon">💬</span>
-              <span>실시간 채팅</span>
+              <span class="feature-icon">📏</span>
+              <span>크기 기반 계산</span>
             </div>
             <div class="feature-item">
-              <span class="feature-icon">📝</span>
-              <span>여행 후기</span>
+              <span class="feature-icon">💰</span>
+              <span>요금 예측</span>
             </div>
             <div class="feature-item">
-              <span class="feature-icon">🤝</span>
-              <span>정보 공유</span>
+              <span class="feature-icon">📊</span>
+              <span>정확한 분석</span>
             </div>
           </div>
         </div>
         <div class="card-footer">
-          <button class="action-button" @click="navigateTo('/community')">커뮤니티 참여</button>
+          <button class="action-button" @click="navigateTo('/weight')">무게 측정</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 공유 섹션 -->
+    <section class="service-section share-section">
+      <div class="section-background" :style="{ transform: `translateY(${parallaxOffset * 0.3}px)` }"></div>
+      <div class="section-content">
+        <div class="card-header">
+          <div class="card-icon-large">📤</div>
+          <h3 class="card-title-large">공유</h3>
+        </div>
+        <div class="card-body">
+          <p class="card-description-large">
+            수하물 분류 결과를 바탕으로 여행 물품을 공유하세요.<br>
+            친구와 함께 여행할 때 서로 필요한 물품만 가져가도록 도와드립니다.
+          </p>
+          <div class="feature-list">
+            <div class="feature-item">
+              <span class="feature-icon">🤝</span>
+              <span>물품 공유</span>
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon">📋</span>
+              <span>체크리스트</span>
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon">👥</span>
+              <span>그룹 여행</span>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer">
+          <button class="action-button" @click="navigateTo('/share')">공유하기</button>
         </div>
       </div>
     </section>
@@ -237,36 +237,36 @@
       </div>
     </section>
 
-    <!-- 공유 섹션 -->
-    <section class="service-section share-section">
+    <!-- 커뮤니티 섹션 -->
+    <section class="service-section community-section">
       <div class="section-background" :style="{ transform: `translateY(${parallaxOffset * 0.3}px)` }"></div>
       <div class="section-content">
         <div class="card-header">
-          <div class="card-icon-large">📤</div>
-          <h3 class="card-title-large">공유</h3>
+          <div class="card-icon-large">👥</div>
+          <h3 class="card-title-large">커뮤니티</h3>
         </div>
         <div class="card-body">
           <p class="card-description-large">
-            수하물 분류 결과를 바탕으로 여행 물품을 공유하세요.<br>
-            친구와 함께 여행할 때 서로 필요한 물품만 가져가도록 도와드립니다.
+            여행자들과 정보를 공유하고 소통하세요.<br>
+            다양한 여행 경험과 팁을 나누는 활발한 커뮤니티입니다.
           </p>
           <div class="feature-list">
             <div class="feature-item">
+              <span class="feature-icon">💬</span>
+              <span>실시간 채팅</span>
+            </div>
+            <div class="feature-item">
+              <span class="feature-icon">📝</span>
+              <span>여행 후기</span>
+            </div>
+            <div class="feature-item">
               <span class="feature-icon">🤝</span>
-              <span>물품 공유</span>
-            </div>
-            <div class="feature-item">
-              <span class="feature-icon">📋</span>
-              <span>체크리스트</span>
-            </div>
-            <div class="feature-item">
-              <span class="feature-icon">👥</span>
-              <span>그룹 여행</span>
+              <span>정보 공유</span>
             </div>
           </div>
         </div>
         <div class="card-footer">
-          <button class="action-button" @click="navigateTo('/share')">공유하기</button>
+          <button class="action-button" @click="navigateTo('/community')">커뮤니티 참여</button>
         </div>
       </div>
     </section>
