@@ -909,33 +909,42 @@ async function fetchComments() {
 
     const data = await response.json();
     const previousLength = comments.value.length;
+    const previousComments = [...comments.value]; // 이전 댓글 복사
     comments.value = data;
     
-    // 새로운 채팅이 추가되었고, 사용자가 맨 아래 근처에 있으면 스크롤
-    if (data.length > previousLength) {
+    // 채팅 탭이 활성화되어 있을 때만 스크롤 처리
+    if (activeTab.value === 'comments') {
       await nextTick();
-      scrollToBottomIfNearBottom();
-    }
-    
-    // 채팅 탭이 활성화되어 있고, 처음 로드되는 경우 강제로 맨 아래로 스크롤
-    if (activeTab.value === 'comments' && previousLength === 0 && data.length > 0) {
-      await nextTick();
-      setTimeout(() => {
-        scrollToBottom();
-      }, 100);
-    }
-    
-    // 채팅 탭이 활성화되어 있고, 데이터가 있는 경우 항상 스크롤 확인
-    if (activeTab.value === 'comments' && data.length > 0) {
-      await nextTick();
-      setTimeout(() => {
-        const wrapper = commentListWrapperRef.value;
-        if (wrapper && wrapper.scrollHeight > wrapper.clientHeight) {
-          // 스크롤이 필요한 경우에만 스크롤
-          wrapper.scrollTop = wrapper.scrollHeight;
-          console.log('채팅 데이터 로드 후 스크롤 완료');
+      
+      // 새로운 채팅이 추가된 경우
+      if (data.length > previousLength) {
+        // 사용자가 맨 아래 근처에 있으면 스크롤
+        scrollToBottomIfNearBottom();
+        console.log('새로운 채팅 추가 - 스크롤 실행');
+      }
+      // 기존 채팅이 수정된 경우 (내용이 변경됨)
+      else if (data.length === previousLength && data.length > 0) {
+        const hasContentChange = data.some((newComment, index) => {
+          const oldComment = previousComments[index];
+          return oldComment && (
+            newComment.content !== oldComment.content ||
+            newComment.updated_at !== oldComment.updated_at
+          );
+        });
+        
+        if (hasContentChange) {
+          // 사용자가 맨 아래 근처에 있으면 스크롤
+          scrollToBottomIfNearBottom();
+          console.log('채팅 내용 변경 - 스크롤 실행');
         }
-      }, 100);
+      }
+      // 처음 로드되는 경우
+      else if (previousLength === 0 && data.length > 0) {
+        setTimeout(() => {
+          scrollToBottom();
+        }, 100);
+        console.log('채팅 처음 로드 - 스크롤 실행');
+      }
     }
   } catch (e) {
     console.error('댓글 목록 요청 중 예외 발생:', e);
@@ -968,11 +977,14 @@ async function postComment() {
     }
 
     newComment.value = ''; // 입력창 초기화
-    // 댓글 작성 성공 시, 즉시 목록을 다시 불러옵니다.
-    await fetchComments();
-    // 댓글 목록의 맨 아래로 스크롤합니다.
+    
+    // 내가 채팅을 보낼 때는 즉시 스크롤 (사용자가 맨 아래에 있다고 가정)
     await nextTick();
     scrollToBottom();
+    console.log('내 채팅 전송 후 즉시 스크롤');
+    
+    // 댓글 작성 성공 시, 즉시 목록을 다시 불러옵니다.
+    await fetchComments();
   } catch (e) {
     console.error('댓글 작성 중 예외 발생:', e);
     alert('댓글 작성 중 오류가 발생했습니다.');
@@ -988,9 +1000,12 @@ async function postComment() {
 function scrollToBottomIfNearBottom() {
   const wrapper = commentListWrapperRef.value;
   if (wrapper) {
-    const isNearBottom = wrapper.scrollTop + wrapper.clientHeight >= wrapper.scrollHeight - 100;
+    const isNearBottom = wrapper.scrollTop + wrapper.clientHeight >= wrapper.scrollHeight - 150; // 150px로 범위 확대
     if (isNearBottom) {
       wrapper.scrollTop = wrapper.scrollHeight;
+      console.log('사용자가 맨 아래 근처 - 스크롤 실행');
+    } else {
+      console.log('사용자가 위쪽에 있음 - 스크롤하지 않음');
     }
   } else {
     // wrapper가 없으면 강제로 스크롤 시도
@@ -1027,7 +1042,10 @@ function handleVisibilityChange() {
     // 탭이 다시 활성화되면 즉시 데이터를 가져오고 폴링 재시작
     fetchComments();
     if (!commentPollingInterval.value) {
-      commentPollingInterval.value = setInterval(fetchComments, 5000);
+      // 현재 활성화된 탭에 따라 폴링 간격 설정
+      const interval = activeTab.value === 'comments' ? 1000 : 2000;
+      commentPollingInterval.value = setInterval(fetchComments, interval);
+      console.log(`탭 활성화 - 폴링 간격 ${interval}ms로 설정`);
     }
   }
 }
@@ -1632,9 +1650,9 @@ watch(shareCode, (newShareCode) => {
   if (newShareCode) {
     // shareCode가 생겼다는 것은 상세 정보 로드가 완료되었다는 의미이므로 댓글을 가져옵니다.
     fetchComments();
-    // 폴링 시작 (5초마다 댓글 목록 갱신)
+    // 폴링 시작 (2초마다 댓글 목록 갱신)
     if (!commentPollingInterval.value) {
-      commentPollingInterval.value = setInterval(fetchComments, 5000);
+      commentPollingInterval.value = setInterval(fetchComments, 2000);
     }
     
     // 채팅 탭이 활성화되어 있다면 스크롤 실행
@@ -1677,6 +1695,20 @@ watch(activeTab, (newTab) => {
       
       setTimeout(checkAndScroll, 100);
     });
+    
+    // 채팅 탭이 활성화되면 더 빠른 폴링 (1초마다)
+    if (commentPollingInterval.value) {
+      clearInterval(commentPollingInterval.value);
+      commentPollingInterval.value = setInterval(fetchComments, 1000);
+      console.log('채팅 탭 활성화 - 폴링 간격 1초로 변경');
+    }
+  } else if (newTab === 'baggage') {
+    // 동반 여행자 수하물 탭으로 변경되면 일반 폴링 (2초마다)
+    if (commentPollingInterval.value) {
+      clearInterval(commentPollingInterval.value);
+      commentPollingInterval.value = setInterval(fetchComments, 2000);
+      console.log('동반 여행자 수하물 탭 활성화 - 폴링 간격 2초로 변경');
+    }
   }
 });
 
