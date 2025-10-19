@@ -68,11 +68,14 @@
                   :key="suggestion.name"
                   clickable
                   v-ripple
-                  @click="selectSuggestion(suggestion.name)"
+                  @click="selectSuggestion(suggestion)"
                 >
                   <q-item-section>{{ suggestion.name }}</q-item-section>
                 </q-item>
               </q-list>
+              <div v-else-if="preferences.destination && destinationSuggestions.length === 0 && !selectedDestination" class="no-suggestions">
+                검색 결과가 없습니다. 다른 검색어를 시도해보세요.
+              </div>
           </div>
         </transition>
         <transition name="fade">
@@ -288,12 +291,14 @@ const selectedFlight = ref(null);
 const searchAttempted = ref(false);
 
 const destinationSuggestions = ref([]);
+const selectedDestination = ref(null); // 선택된 유효한 목적지 저장
 let debounceTimer = null;
 let isSuggestionSelected = false; // 추천어 클릭 여부를 판단하는 플래그
 
 const fetchDestinationSuggestions = async () => {
-  if (preferences.value.destination.length < 2) {
+  if (preferences.value.destination.length < 1) {
     destinationSuggestions.value = [];
+    selectedDestination.value = null;
     return;
   }
 
@@ -454,7 +459,7 @@ const progress = computed(() => (currentStep.value / stepDetails.length) * 100);
 
 const canGoToNextStep = computed(() => {
   switch (currentStep.value) {
-    case 1: return preferences.value.destination !== '';
+    case 1: return selectedDestination.value !== null; // 유효한 목적지가 선택되었을 때만
     case 2: return preferences.value.dates && preferences.value.dates.start && preferences.value.dates.end;
     case 3: return preferences.value.companion !== null;
     case 4: return preferences.value.themes.length > 0;
