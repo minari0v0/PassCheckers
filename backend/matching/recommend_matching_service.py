@@ -45,16 +45,14 @@ class RecommendMatchingService:
     def _load_cache(self):
         """매칭을 위한 데이터를 DB에서 불러와 캐시합니다."""
         try:
-            # 도시 및 국가 이름 로드 (한국어, 영어 모두 포함)
-            dest_results = self._execute_query("SELECT DISTINCT city_ko, city, country_ko, country FROM locations WHERE city_ko IS NOT NULL OR country_ko IS NOT NULL")
+            # 도시 이름만 로드 (국가명 제외)
+            dest_results = self._execute_query("SELECT DISTINCT city_ko, city FROM locations WHERE city_ko IS NOT NULL AND city_ko != ''")
             destinations = set()
             for row in dest_results:
                 if row.get('city_ko'): destinations.add(row['city_ko'])
                 if row.get('city'): destinations.add(row['city'])
-                if row.get('country_ko'): destinations.add(row['country_ko'])
-                if row.get('country'): destinations.add(row['country'])
             self.choices['destinations'] = list(destinations)
-            print(f"[DEBUG] Loaded {len(destinations)} destinations into cache: {list(destinations)[:20]}...") # Add debug log
+            print(f"[DEBUG] Loaded {len(destinations)} cities into cache: {list(destinations)[:20]}...") # Add debug log
 
             # 항공사 이름 로드 (한국어, 영어 모두 포함)
             airline_results = self._execute_query("SELECT DISTINCT airline_name_ko, airline_name_en FROM airlines WHERE airline_name_ko IS NOT NULL AND airline_name_en IS NOT NULL")

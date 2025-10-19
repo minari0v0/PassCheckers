@@ -56,145 +56,147 @@ def get_amadeus_token():
         raise Exception("Amadeus API 인증에 실패했습니다.")
 
 def _get_default_airport_code(destination):
-    """데이터베이스에서 찾지 못한 목적지에 대한 기본 공항 코드를 반환합니다."""
+    """데이터베이스에서 찾지 못한 목적지에 대한 기본 공항 코드를 반환합니다. (도시명만 지원)"""
     default_codes = {
-        # 국가명 매핑
-        '독일': 'FRA',  # 프랑크푸르트
-        'Germany': 'FRA',
-        'Chile': 'SCL',  # 산티아고
-        '칠레': 'SCL',
-        'Japan': 'NRT',  # 나리타
-        '일본': 'NRT',
-        'USA': 'LAX',  # 로스앤젤레스
-        '미국': 'LAX',
-        'France': 'CDG',  # 파리
-        '프랑스': 'CDG',
-        'UK': 'LHR',  # 런던
-        '영국': 'LHR',
-        'China': 'PEK',  # 베이징
-        '중국': 'PEK',
-        'Thailand': 'BKK',  # 방콕
-        '태국': 'BKK',
-        'Singapore': 'SIN',  # 싱가포르
+        # 주요 도시명 매핑 (국가명 제거)
+        '프랑크푸르트': 'FRA',
+        'Frankfurt': 'FRA',
+        '산티아고': 'SCL',
+        'Santiago': 'SCL',
+        '도쿄': 'NRT',
+        'Tokyo': 'NRT',
+        '나리타': 'NRT',
+        'Narita': 'NRT',
+        '로스앤젤레스': 'LAX',
+        'Los Angeles': 'LAX',
+        '파리': 'CDG',
+        'Paris': 'CDG',
+        '런던': 'LHR',
+        'London': 'LHR',
+        '베이징': 'PEK',
+        'Beijing': 'PEK',
+        '방콕': 'BKK',
+        'Bangkok': 'BKK',
         '싱가포르': 'SIN',
-        'Australia': 'SYD',  # 시드니
-        '호주': 'SYD',
-        'Canada': 'YYZ',  # 토론토
-        '캐나다': 'YYZ',
-        'Italy': 'FCO',  # 로마
-        '이탈리아': 'FCO',
-        'Spain': 'MAD',  # 마드리드
-        '스페인': 'MAD',
-        'Netherlands': 'AMS',  # 암스테르담
-        '네덜란드': 'AMS',
-        'Switzerland': 'ZUR',  # 취리히
-        '스위스': 'ZUR',
-        'Austria': 'VIE',  # 비엔나
-        '오스트리아': 'VIE',
-        'Belgium': 'BRU',  # 브뤼셀
-        '벨기에': 'BRU',
-        'Sweden': 'ARN',  # 스톡홀름
-        '스웨덴': 'ARN',
-        'Norway': 'OSL',  # 오슬로
-        '노르웨이': 'OSL',
-        'Denmark': 'CPH',  # 코펜하겐
-        '덴마크': 'CPH',
-        'Finland': 'HEL',  # 헬싱키
-        '핀란드': 'HEL',
-        'Poland': 'WAW',  # 바르샤바
-        '폴란드': 'WAW',
-        'Czech Republic': 'PRG',  # 프라하
-        '체코': 'PRG',
-        'Hungary': 'BUD',  # 부다페스트
-        '헝가리': 'BUD',
-        'Portugal': 'LIS',  # 리스본
-        '포르투갈': 'LIS',
-        'Greece': 'ATH',  # 아테네
-        '그리스': 'ATH',
-        'Turkey': 'IST',  # 이스탄불
-        '터키': 'IST',
-        'Russia': 'SVO',  # 모스크바
-        '러시아': 'SVO',
-        'Brazil': 'GRU',  # 상파울루
-        '브라질': 'GRU',
-        'Argentina': 'EZE',  # 부에노스아이레스
-        '아르헨티나': 'EZE',
-        'Mexico': 'MEX',  # 멕시코시티
-        '멕시코': 'MEX',
-        'India': 'DEL',  # 델리
-        '인도': 'DEL',
-        'Indonesia': 'CGK',  # 자카르타
-        '인도네시아': 'CGK',
-        'Malaysia': 'KUL',  # 쿠알라룸푸르
-        '말레이시아': 'KUL',
-        'Philippines': 'MNL',  # 마닐라
-        '필리핀': 'MNL',
-        'Vietnam': 'SGN',  # 호치민
-        '베트남': 'SGN',
-        'New Zealand': 'AKL',  # 오클랜드
-        '뉴질랜드': 'AKL',
-        'South Africa': 'JNB',  # 요하네스버그
-        '남아프리카': 'JNB',
-        'Egypt': 'CAI',  # 카이로
-        '이집트': 'CAI',
-        'Morocco': 'CMN',  # 카사블랑카
-        '모로코': 'CMN',
-        'Israel': 'TLV',  # 텔아비브
-        '이스라엘': 'TLV',
-        'UAE': 'DXB',  # 두바이
-        '아랍에미리트': 'DXB',
-        'Saudi Arabia': 'RUH',  # 리야드
-        '사우디아라비아': 'RUH',
-        'Qatar': 'DOH',  # 도하
-        '카타르': 'DOH',
-        'Kuwait': 'KWI',  # 쿠웨이트
+        'Singapore': 'SIN',
+        '시드니': 'SYD',
+        'Sydney': 'SYD',
+        '토론토': 'YYZ',
+        'Toronto': 'YYZ',
+        '로마': 'FCO',
+        'Rome': 'FCO',
+        '마드리드': 'MAD',
+        'Madrid': 'MAD',
+        '암스테르담': 'AMS',
+        'Amsterdam': 'AMS',
+        '취리히': 'ZUR',
+        'Zurich': 'ZUR',
+        '비엔나': 'VIE',
+        'Vienna': 'VIE',
+        '브뤼셀': 'BRU',
+        'Brussels': 'BRU',
+        '스톡홀름': 'ARN',
+        'Stockholm': 'ARN',
+        '오슬로': 'OSL',
+        'Oslo': 'OSL',
+        '코펜하겐': 'CPH',
+        'Copenhagen': 'CPH',
+        '헬싱키': 'HEL',
+        'Helsinki': 'HEL',
+        '바르샤바': 'WAW',
+        'Warsaw': 'WAW',
+        '프라하': 'PRG',
+        'Prague': 'PRG',
+        '부다페스트': 'BUD',
+        'Budapest': 'BUD',
+        '리스본': 'LIS',
+        'Lisbon': 'LIS',
+        '아테네': 'ATH',
+        'Athens': 'ATH',
+        '이스탄불': 'IST',
+        'Istanbul': 'IST',
+        '모스크바': 'SVO',
+        'Moscow': 'SVO',
+        '상파울루': 'GRU',
+        'Sao Paulo': 'GRU',
+        '부에노스아이레스': 'EZE',
+        'Buenos Aires': 'EZE',
+        '멕시코시티': 'MEX',
+        'Mexico City': 'MEX',
+        '델리': 'DEL',
+        'Delhi': 'DEL',
+        '자카르타': 'CGK',
+        'Jakarta': 'CGK',
+        '쿠알라룸푸르': 'KUL',
+        'Kuala Lumpur': 'KUL',
+        '마닐라': 'MNL',
+        'Manila': 'MNL',
+        '호치민': 'SGN',
+        'Ho Chi Minh City': 'SGN',
+        '오클랜드': 'AKL',
+        'Auckland': 'AKL',
+        '요하네스버그': 'JNB',
+        'Johannesburg': 'JNB',
+        '카이로': 'CAI',
+        'Cairo': 'CAI',
+        '카사블랑카': 'CMN',
+        'Casablanca': 'CMN',
+        '텔아비브': 'TLV',
+        'Tel Aviv': 'TLV',
+        '두바이': 'DXB',
+        'Dubai': 'DXB',
+        '리야드': 'RUH',
+        'Riyadh': 'RUH',
+        '도하': 'DOH',
+        'Doha': 'DOH',
         '쿠웨이트': 'KWI',
-        'Bahrain': 'BAH',  # 바레인
+        'Kuwait City': 'KWI',
         '바레인': 'BAH',
-        'Oman': 'MCT',  # 무스카트
-        '오만': 'MCT',
-        'Jordan': 'AMM',  # 암만
-        '요르단': 'AMM',
-        'Lebanon': 'BEY',  # 베이루트
-        '레바논': 'BEY',
-        'Iraq': 'BGW',  # 바그다드
-        '이라크': 'BGW',
-        'Iran': 'IKA',  # 테헤란
-        '이란': 'IKA',
-        'Afghanistan': 'KBL',  # 카불
-        '아프가니스탄': 'KBL',
-        'Pakistan': 'ISB',  # 이슬라마바드
-        '파키스탄': 'ISB',
-        'Bangladesh': 'DAC',  # 다카
-        '방글라데시': 'DAC',
-        'Sri Lanka': 'CMB',  # 콜롬보
-        '스리랑카': 'CMB',
-        'Nepal': 'KTM',  # 카트만두
-        '네팔': 'KTM',
-        'Bhutan': 'PBH',  # 파로
-        '부탄': 'PBH',
-        'Maldives': 'MLE',  # 말레
-        '몰디브': 'MLE',
-        'Myanmar': 'RGN',  # 양곤
-        '미얀마': 'RGN',
-        'Cambodia': 'PNH',  # 프놈펜
-        '캄보디아': 'PNH',
-        'Laos': 'VTE',  # 비엔티안
-        '라오스': 'VTE',
-        'Brunei': 'BWN',  # 반다르스리브가완
-        '브루나이': 'BWN',
-        'East Timor': 'DIL',  # 딜리
-        '동티모르': 'DIL',
-        'Mongolia': 'ULN',  # 울란바토르
-        '몽골': 'ULN',
-        'North Korea': 'FNJ',  # 평양
-        '북한': 'FNJ',
-        'Taiwan': 'TPE',  # 타이베이
-        '대만': 'TPE',
-        'Hong Kong': 'HKG',  # 홍콩
+        'Manama': 'BAH',
+        '무스카트': 'MCT',
+        'Muscat': 'MCT',
+        '암만': 'AMM',
+        'Amman': 'AMM',
+        '베이루트': 'BEY',
+        'Beirut': 'BEY',
+        '바그다드': 'BGW',
+        'Baghdad': 'BGW',
+        '테헤란': 'IKA',
+        'Tehran': 'IKA',
+        '카불': 'KBL',
+        'Kabul': 'KBL',
+        '이슬라마바드': 'ISB',
+        'Islamabad': 'ISB',
+        '다카': 'DAC',
+        'Dhaka': 'DAC',
+        '콜롬보': 'CMB',
+        'Colombo': 'CMB',
+        '카트만두': 'KTM',
+        'Kathmandu': 'KTM',
+        '파로': 'PBH',
+        'Paro': 'PBH',
+        '말레': 'MLE',
+        'Male': 'MLE',
+        '양곤': 'RGN',
+        'Yangon': 'RGN',
+        '프놈펜': 'PNH',
+        'Phnom Penh': 'PNH',
+        '비엔티안': 'VTE',
+        'Vientiane': 'VTE',
+        '반다르스리브가완': 'BWN',
+        'Bandar Seri Begawan': 'BWN',
+        '딜리': 'DIL',
+        'Dili': 'DIL',
+        '울란바토르': 'ULN',
+        'Ulaanbaatar': 'ULN',
+        '평양': 'FNJ',
+        'Pyongyang': 'FNJ',
+        '타이베이': 'TPE',
+        'Taipei': 'TPE',
         '홍콩': 'HKG',
-        'Macau': 'MFM',  # 마카오
+        'Hong Kong': 'HKG',
         '마카오': 'MFM',
+        'Macau': 'MFM',
     }
     
     # 정확한 매칭 시도
@@ -259,20 +261,8 @@ def find_flights(search_type, destination_city, departure_date, airline_query, f
     destination_code = None
     
     try:
-        # 먼저 도시명으로 조회 시도
+        # 도시명으로만 조회 (국가명 조회 제거)
         destination_code_result = _get_db_data("SELECT airport_code FROM location_details ld JOIN locations l ON l.location_id = ld.location_id WHERE l.city_ko = %s OR l.city = %s LIMIT 1", (corrected_destination, corrected_destination))
-        
-        # 도시명으로 찾지 못했다면 국가명으로 조회 시도
-        if not destination_code_result:
-            print(f"DEBUG: 도시명으로 조회 실패, 국가명으로 조회 시도: '{corrected_destination}'")
-            destination_code_result = _get_db_data("""
-                SELECT airport_code 
-                FROM location_details ld 
-                JOIN locations l ON l.location_id = ld.location_id 
-                WHERE l.country_ko = %s OR l.country = %s 
-                ORDER BY l.city_ko IS NOT NULL DESC, l.city IS NOT NULL DESC
-                LIMIT 1
-            """, (corrected_destination, corrected_destination))
         
         if destination_code_result:
             destination_code = destination_code_result['airport_code']
