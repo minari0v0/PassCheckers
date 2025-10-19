@@ -254,7 +254,7 @@
                 </button>
                 <button class="tab-btn" :class="{ active: activeTab === 'comments' }" @click="activeTab = 'comments'">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                  <span>댓글</span>
+                  <span>채팅</span>
                 </button>
               </div>
               <!-- 호스트 세션일 경우: 동반자 추가 버튼 -->
@@ -957,7 +957,7 @@ async function postComment() {
  * 브라우저 탭의 활성 상태에 따라 폴링을 제어합니다.
  */
 function handleVisibilityChange() {
-  if (!selectedRecordId.value) return; // 공유 세션이 아닐 때는 무시
+  if (!shareCode.value) return; // 공유 세션이 아닐 때는 무시
 
   if (document.hidden) {
     // 탭이 비활성화되면 폴링 중지
@@ -1574,9 +1574,18 @@ watch(shareCode, (newShareCode) => {
   if (newShareCode) {
     // shareCode가 생겼다는 것은 상세 정보 로드가 완료되었다는 의미이므로 댓글을 가져옵니다.
     fetchComments();
+    // 폴링 시작 (5초마다 댓글 목록 갱신)
+    if (!commentPollingInterval.value) {
+      commentPollingInterval.value = setInterval(fetchComments, 5000);
+    }
   } else {
     // shareCode가 없어졌다는 것은 상세 뷰를 나갔다는 의미이므로 댓글 목록을 초기화합니다.
     comments.value = [];
+    // 폴링 중지
+    if (commentPollingInterval.value) {
+      clearInterval(commentPollingInterval.value);
+      commentPollingInterval.value = null;
+    }
   }
 });
 
@@ -1591,6 +1600,7 @@ const handleClickOutside = (event) => {
 onMounted(async () => {
   window.addEventListener('resize', updateImageSize);
   document.addEventListener('click', handleClickOutside);
+  document.addEventListener('visibilitychange', handleVisibilityChange);
   
   // 초기 데이터 로딩 (다른 페이지들과 동일한 패턴)
   if (route.query.id) {
@@ -1605,6 +1615,7 @@ onMounted(async () => {
 onUnmounted(() => {
   window.removeEventListener('resize', updateImageSize);
   document.removeEventListener('click', handleClickOutside);
+  document.removeEventListener('visibilitychange', handleVisibilityChange);
   // 컴포넌트가 사라질 때 폴링 중지
   if (commentPollingInterval.value) {
     clearInterval(commentPollingInterval.value);
