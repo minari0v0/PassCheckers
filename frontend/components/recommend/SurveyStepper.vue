@@ -1074,10 +1074,6 @@ const submitSurvey = () => {
   box-shadow: 0 4px 12px rgba(117, 117, 117, 0.3) !important;
 }
 
-.prev-btn:active {
-  /* 확대 효과 제거 */
-}
-
 /* 다음 단계로 버튼과 패킹리스트 생성 버튼 커스텀 스타일 */
 .next-btn, .submit-btn {
   border: 2px solid #2196f3 !important;
@@ -1093,10 +1089,6 @@ const submitSurvey = () => {
   filter: brightness(1.1) !important;
   border-color: #1976d2 !important;
   box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3) !important;
-}
-
-.next-btn:active, .submit-btn:active {
-  /* 확대 효과 제거 */
 }
 
 /* Quasar 버튼의 기본 애니메이션 효과 제거 */
