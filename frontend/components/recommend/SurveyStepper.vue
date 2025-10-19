@@ -37,7 +37,7 @@
       <div class="step-content">
         <transition name="fade">
           <div v-if="currentStep === 1" class="input-wrapper">
-             <q-input 
+              <q-input 
                 filled 
                 v-model="preferences.destination" 
                 label="여행 목적지 (도시, 국가 등)" 
@@ -45,8 +45,23 @@
                 square 
                 class="custom-input" 
                 @keydown.enter.prevent="handleDestinationEnter"
-                hint="입력 후 Enter를 누르고 선택하세요"
-              />
+                hint="검색 후 목록에서 목적지를 선택하세요"
+              >
+                <template v-slot:append>
+                  <q-icon 
+                    v-if="preferences.destination && selectedDestination" 
+                    name="check_circle" 
+                    color="green" 
+                    size="sm"
+                  />
+                  <q-icon 
+                    v-else-if="preferences.destination && destinationSuggestions.length === 0 && !selectedDestination" 
+                    name="cancel" 
+                    color="red" 
+                    size="sm"
+                  />
+                </template>
+              </q-input>
               <q-list bordered separator v-if="destinationSuggestions.length > 0" class="suggestion-list">
                 <q-item
                   v-for="suggestion in destinationSuggestions"
@@ -320,13 +335,15 @@ watch(() => preferences.value.destination, (newQuery) => {
       fetchDestinationSuggestions();
     } else {
       destinationSuggestions.value = [];
+      selectedDestination.value = null;
     }
-  }, 300); // 300ms 디바운스 지연
+  }, 50); // 매우 짧은 디바운스 (50ms)
 });
 
 const selectSuggestion = (suggestion) => {
   isSuggestionSelected = true;
-  preferences.value.destination = suggestion;
+  preferences.value.destination = suggestion.name;
+  selectedDestination.value = suggestion; // 유효한 목적지로 저장
   destinationSuggestions.value = [];
 };
 
@@ -345,9 +362,14 @@ const handleDestinationEnter = async () => {
         if (bestMatch && bestMatch.name) {
             // 사용자 입력을 최적의 일치 항목으로 대체
             preferences.value.destination = bestMatch.name;
+            selectedDestination.value = bestMatch; // 유효한 목적지로 저장
+        } else {
+            // 매치되는 항목이 없으면 선택 해제
+            selectedDestination.value = null;
         }
     } catch (error) {
         console.error("Error fetching best match for destination:", error);
+        selectedDestination.value = null;
     }
   }
   // Enter를 누른 후 추천 목록 숨기기
@@ -799,6 +821,20 @@ const submitSurvey = () => {
   background: white;
   border: 1px solid #ddd;
   box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.no-suggestions {
+  position: absolute;
+  width: 100%;
+  top: 56px;
+  left: 0;
+  z-index: 10;
+  background: white;
+  border: 1px solid #ddd;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  padding: 12px 16px;
+  color: #888;
+  font-size: 0.9rem;
 }
 
 /* 항공편 검색 스타일 */
