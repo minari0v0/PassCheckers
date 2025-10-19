@@ -236,8 +236,13 @@ def find_flights(search_type, destination_city, departure_date, airline_query, f
         if not db_result: raise Exception(f"'{airline_query}'의 항공사 코드를 찾을 수 없습니다.")
         carrier_code = db_result['iata_code']
     elif search_type == 'flightNumber':
-        if not match: raise Exception("유효하지 않은 항공편명 형식입니다. (예: KE85)")
+        # 부분 검색 허용: 영문자 2-3자리 + 선택적 숫자
+        match = re.match(r"([A-Z]{2,3})(\d*)", flight_number_query.strip().upper())
+        if not match: raise Exception("유효하지 않은 항공편명 형식입니다. (예: KE, KE85)")
         carrier_code, flight_number_to_match = match.groups()
+        # 숫자가 없으면 None으로 설정 (부분 검색)
+        if not flight_number_to_match:
+            flight_number_to_match = None
 
     # 유사도 검사를 통해 목적지 이름 보정
     corrected_destination = destination_city
@@ -245,10 +250,45 @@ def find_flights(search_type, destination_city, departure_date, airline_query, f
         best_match = recommend_matching_service.find_best_match(destination_city, 'destinations')
         if best_match:
             corrected_destination = best_match['name']
+            print(f"DEBUG: 목적지 보정: '{destination_city}' -> '{corrected_destination}'")
+        else:
+            print(f"DEBUG: 목적지 보정 실패: '{destination_city}'")
 
-    destination_code_result = _get_db_data("SELECT airport_code FROM location_details ld JOIN locations l ON l.location_id = ld.location_id WHERE l.city_ko = %s OR l.city = %s LIMIT 1", (corrected_destination, corrected_destination))
-    if not destination_code_result: raise Exception(f"'{destination_city}'의 공항 코드를 찾을 수 없습니다.")
-    destination_code = destination_code_result['airport_code']
+    print(f"DEBUG: 목적지 코드 조회 시도: '{corrected_destination}'")
+    
+    destination_code = None
+    
+    try:
+        # 먼저 도시명으로 조회 시도
+        destination_code_result = _get_db_data("SELECT airport_code FROM location_details ld JOIN locations l ON l.location_id = ld.location_id WHERE l.city_ko = %s OR l.city = %s LIMIT 1", (corrected_destination, corrected_destination))
+        
+        # 도시명으로 찾지 못했다면 국가명으로 조회 시도
+        if not destination_code_result:
+            print(f"DEBUG: 도시명으로 조회 실패, 국가명으로 조회 시도: '{corrected_destination}'")
+            destination_code_result = _get_db_data("""
+                SELECT airport_code 
+                FROM location_details ld 
+                JOIN locations l ON l.location_id = ld.location_id 
+                WHERE l.country_ko = %s OR l.country = %s 
+                ORDER BY l.city_ko IS NOT NULL DESC, l.city IS NOT NULL DESC
+                LIMIT 1
+            """, (corrected_destination, corrected_destination))
+        
+        if destination_code_result:
+            destination_code = destination_code_result['airport_code']
+            print(f"DEBUG: 데이터베이스에서 목적지 코드 찾음: {destination_code}")
+        else:
+            print(f"DEBUG: 데이터베이스에서 목적지 코드를 찾을 수 없음: '{corrected_destination}'")
+            
+    except Exception as e:
+        print(f"DEBUG: 데이터베이스 조회 중 오류 발생: {e}")
+    
+    # 데이터베이스에서 찾지 못했다면 기본값 사용
+    if not destination_code:
+        destination_code = _get_default_airport_code(corrected_destination)
+        print(f"DEBUG: 기본값 사용: {destination_code}")
+    
+    print(f"DEBUG: 최종 목적지 코드: {destination_code}")
 
     token = get_amadeus_token()
     url = f"{AMADEUS_BASE_URL}/v2/shopping/flight-offers"
@@ -259,12 +299,24 @@ def find_flights(search_type, destination_city, departure_date, airline_query, f
         'departureDate': departure_date,
         'adults': 1,
         'nonStop': 'true',
-        'includedAirlineCodes': carrier_code,
-        'max': 10
+        'max': 50  # 더 많은 결과를 가져와서 필터링
     }
 
     try:
+        print(f"DEBUG: Amadeus API 요청 - URL: {url}")
+        print(f"DEBUG: 파라미터: {params}")
+        print(f"DEBUG: 항공사 코드: {carrier_code}")
+        
         response = requests.get(url, headers=headers, params=params)
+        print(f"DEBUG: 응답 상태 코드: {response.status_code}")
+        
+        if response.status_code != 200:
+            print(f"DEBUG: 에러 응답 내용: {response.text}")
+            if response.status_code == 429:
+                # Rate limit 에러는 사용자에게 친화적인 메시지 반환
+                raise Exception("API 요청 한도를 초과했습니다. 잠시 후 다시 시도해주세요.")
+            raise Exception(f"Amadeus API 에러: {response.status_code} - {response.text}")
+            
         response.raise_for_status()
         flight_data_raw = response.json()
         flight_data = flight_data_raw.get('data', [])
@@ -275,6 +327,11 @@ def find_flights(search_type, destination_city, departure_date, airline_query, f
             itinerary = flight['itineraries'][0]
             segment = itinerary['segments'][0]
             
+            # 항공사 코드로 필터링
+            if segment['carrierCode'] != carrier_code:
+                continue
+                
+            # 부분 검색이 아닌 경우에만 정확한 항공편명으로 필터링
             if flight_number_to_match and segment['number'] != flight_number_to_match:
                 continue
 
@@ -336,10 +393,19 @@ def find_flights(search_type, destination_city, departure_date, airline_query, f
             try:
                 print(f"Amadeus 응답 JSON: {e.response.json()}")
                 raise Exception(f"항공편 조회 실패: {e.response.json()}")
+                error_json = e.response.json()
+                print(f"Amadeus 응답 JSON: {error_json}")
+                raise Exception(f"항공편 조회 실패: {error_json}")
             except ValueError:
                 print(f"Amadeus 응답 텍스트: {e.response.text}")
                 raise Exception(f"항공편 조회 실패: {e.response.text}")
         raise Exception(f"항공편 조회 실패: {e}")
+    except Exception as e:
+        print(f"항공편 조회 중 예상치 못한 오류: {e}")
+        print(f"오류 타입: {type(e).__name__}")
+        import traceback
+        print(f"스택 트레이스: {traceback.format_exc()}")
+        raise Exception(f"항공편 조회 실패: {str(e)}")
 
 def get_safety_scores(latitude, longitude):
     """Amadeus Safe Place API를 호출하여 특정 위치의 안전 점수를 반환합니다."""
