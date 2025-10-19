@@ -61,9 +61,10 @@ def packing_recommendation():
             weather_data = get_weather_forecast(lat, lon)
         else:
             # 14일 이후의 여행: 과거 데이터 조회
-            year = start_date.year
+            # API는 과거 데이터만 제공하므로, 작년 데이터를 기준으로 조회합니다.
+            year_to_fetch = datetime.now().year - 1
             month = start_date.month
-            weather_data = get_historical_weather(loc_id, lat, lon, year, month)
+            weather_data = get_historical_weather(loc_id, lat, lon, year_to_fetch, month)
 
     except Exception as e:
         traceback.print_exc()
