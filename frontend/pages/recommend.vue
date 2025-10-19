@@ -83,36 +83,104 @@
 
       <!-- 결과 표시 -->
       <div v-else class="results-wrapper">
-        <div class="form-header">
+        <!-- 헤더와 항공편 정보를 같은 행에 배치 -->
+        <div class="form-header-with-flight">
+          <!-- 왼쪽: 제목과 버튼들 -->
+          <div class="form-header-left">
+            <h2 class="form-title">
+              나만의 패킹리스트
+              <span v-if="finalSelections && finalSelections.destination" class="destination-text">
+                - {{ finalSelections.destination }}
+              </span>
+            </h2>
+            <div class="form-buttons">
+              <q-btn 
+                v-if="locationId"
+                outline 
+                color="primary" 
+                label="여행지 정보 보기" 
+                @click="showInfoModal = true"
+                class="q-mr-sm custom-button"
+                no-caps
+                no-ripple
+              />
+              <q-btn 
+                v-if="locationId"
+                outline 
+                color="info"
+                label="여행후기 보기"
+                to="/community"
+                class="q-mr-sm custom-button"
+                no-caps
+                no-ripple
+              />
+              <q-btn 
+                v-if="packingList.length > 0"
+                outline 
+                color="secondary" 
+                label="내 목록에 추가" 
+                @click="openAddToListModal"
+                class="custom-button"
+                no-caps
+                no-ripple
+              />
+            </div>
+          </div>
           
-          <h2 class="form-title">나만의 패킹리스트</h2>
-          <q-btn 
-            v-if="locationId"
-            outline 
-            rounded
-            color="primary" 
-            label="여행지 정보 보기" 
-            @click="showInfoModal = true"
-            class="q-ml-md"
-          />
-          <q-btn 
-            v-if="locationId"
-            outline 
-            rounded
-            color="info"
-            label="여행후기 보기"
-            to="/community"
-            class="q-ml-sm"
-          />
-          <q-btn 
-            v-if="packingList.length > 0"
-            outline 
-            rounded
-            color="secondary" 
-            label="내 목록에 추가" 
-            @click="openAddToListModal"
-            class="q-ml-sm"
-          />
+          <!-- 오른쪽: 항공편 정보 카드들 -->
+          <div v-if="finalSelections && finalSelections.flight" class="flight-info-cards">
+            <!-- 항공편 정보 카드 -->
+            <q-card flat bordered class="flight-info-card">
+              <q-card-section class="q-pa-sm">
+                <div class="flight-info-content">
+                  <q-icon name="flight_takeoff" color="blue-grey-5" size="md" class="q-mr-sm"/>
+                  <div>
+                    <div class="text-weight-bold text-caption">{{ finalSelections.flight.carrierCode }}{{ finalSelections.flight.flightNumber }}</div>
+                    <div class="text-caption text-grey-7">항공편</div>
+                  </div>
+                </div>
+              </q-card-section>
+            </q-card>
+            
+            <!-- 기종 카드 -->
+            <q-card flat bordered class="flight-info-card">
+              <q-card-section class="q-pa-sm">
+                <div class="flight-info-content">
+                  <q-icon name="airplanemode_active" color="blue-grey-5" size="md" class="q-mr-sm"/>
+                  <div>
+                    <div class="text-weight-bold text-caption">{{ finalSelections.flight.aircraft }}</div>
+                    <div class="text-caption text-grey-7">기종</div>
+                  </div>
+                </div>
+              </q-card-section>
+            </q-card>
+            
+            <!-- 터미널 카드 -->
+            <q-card flat bordered class="flight-info-card">
+              <q-card-section class="q-pa-sm">
+                <div class="flight-info-content">
+                  <q-icon name="schedule" color="blue-grey-5" size="md" class="q-mr-sm"/>
+                  <div>
+                    <div class="text-weight-bold text-caption">T{{ finalSelections.flight.departureTerminal }}</div>
+                    <div class="text-caption text-grey-7">터미널</div>
+                  </div>
+                </div>
+              </q-card-section>
+            </q-card>
+            
+            <!-- 무료 수하물 카드 -->
+            <q-card flat bordered class="flight-info-card">
+              <q-card-section class="q-pa-sm">
+                <div class="flight-info-content">
+                  <q-icon name="luggage" color="blue-grey-5" size="md" class="q-mr-sm"/>
+                  <div>
+                    <div class="text-weight-bold text-caption">{{ finalSelections.flight.baggage.free }}</div>
+                    <div class="text-caption text-grey-7">무료수하물</div>
+                  </div>
+                </div>
+              </q-card-section>
+            </q-card>
+          </div>
         </div>
 
         <q-banner v-if="isHistorical" inline-actions rounded class="bg-blue-1 text-primary q-mb-md">
@@ -121,39 +189,6 @@
           </template>
           일기 예보를 확인하기 어려운 먼 날짜이므로, 과거 날씨 통계를 기반으로 추천해 드렸어요.
         </q-banner>
-
-        <!-- 항공편 정보 패널 -->
-        <div v-if="finalSelections && finalSelections.flight" class="row justify-end">
-          <q-card flat bordered class="q-mb-md col-auto flight-info-panel">
-            <q-card-section class="q-py-sm">
-              <div class="row items-center no-wrap">
-                <div class="col-auto row items-center no-wrap q-mr-md q-ml-sm">
-                  <q-icon name="flight_takeoff" color="blue-grey-5" size="md" class="q-mr-md"/>
-                  <div>
-                    <div class="text-weight-bold">{{ finalSelections.flight.carrierCode }}{{ finalSelections.flight.flightNumber }}</div>
-                    <div class="text-caption text-grey-7">기종: {{ finalSelections.flight.aircraft }}</div>
-                  </div>
-                </div>
-                <q-separator vertical spaced />
-                <div class="col-auto row items-center no-wrap q-mx-md">
-                  <q-icon name="schedule" color="blue-grey-5" size="sm" class="q-mr-sm"/>
-                  <div>
-                    <div class="text-body2">{{ formatFullDateTime(finalSelections.flight.departure) }} 출발</div>
-                    <div class="text-caption text-grey-7">터미널: T{{ finalSelections.flight.departureTerminal }}</div>
-                  </div>
-                </div>
-                <q-separator vertical spaced />
-                <div class="col row items-center no-wrap q-ml-md">
-                  <q-icon name="luggage" color="blue-grey-5" size="sm" class="q-mr-sm"/>
-                  <div>
-                    <div class="text-body2">무료수하물: {{ finalSelections.flight.baggage.free }}</div>
-                    <div class="text-caption text-grey-7">유료: {{ finalSelections.flight.baggage.paid }}</div>
-                  </div>
-                </div>
-              </div>
-            </q-card-section>
-          </q-card>
-        </div>
 
         <q-card class="output-card" flat style="padding: 1.5rem; background-color: #f8fbff; border: 1px solid #e3f0fa;">
           <div v-if="isLoading" class="loading-state">
@@ -165,12 +200,12 @@
             <!-- Left Column: Recommendation List -->
             <div class="recommendation-list">
               <q-card flat bordered class="q-mb-lg" v-for="group in packingList" :key="group.group_name">
-                <q-card-section>
+                <q-card-section class="card-header-light-blue">
                   <div class="text-h6">{{ getGroupTitle(group) }}</div>
                 </q-card-section>
                 <q-separator />
-                <q-list separator>
-                    <q-item v-for="item in (expandedGroups[group.group_name] ? group.items : group.items.slice(0, 3))" :key="item.name" class="q-py-md">
+                <q-list separator class="animated-list">
+                    <q-item v-for="item in (expandedGroups[group.group_name] ? group.items : group.items.slice(0, 3))" :key="item.name" class="q-py-md list-item-animated">
                         <q-item-section>
                             <div class="row items-baseline no-wrap">
                                 <span class="text-subtitle1 text-weight-medium q-mr-sm">{{ item.name }}</span>
@@ -195,15 +230,12 @@
                         </q-item-section>
                     </q-item>
                 </q-list>
-                <q-card-actions align="center" v-if="group.items.length > 3" style="border-top: 1px solid rgba(0, 0, 0, 0.12);">
-                  <q-btn 
-                    flat 
-                    color="primary" 
-                    :label="expandedGroups[group.group_name] ? '간략히 보기' : '더보기'" 
-                    @click="toggleGroup(group.group_name)" 
-                    :icon-right="expandedGroups[group.group_name] ? 'expand_less' : 'expand_more'"
-                  />
-                </q-card-actions>
+                <div v-if="group.items.length > 3" class="card-footer-custom" @click="toggleGroup(group.group_name)">
+                  <div class="footer-content">
+                    <span class="footer-text">{{ expandedGroups[group.group_name] ? '간략히 보기' : '더보기' }}</span>
+                    <q-icon :name="expandedGroups[group.group_name] ? 'expand_less' : 'expand_more'" class="footer-icon" />
+                  </div>
+                </div>
               </q-card>
             </div>
             
@@ -213,7 +245,7 @@
               <!-- Real-time Forecast Display -->
               <div class="forecast-container q-mb-lg" v-if="forecastData">
                 <q-card flat bordered>
-                  <q-card-section>
+                  <q-card-section class="card-header-light-blue">
                     <div class="text-h6">주간 예보 - {{ finalSelections.destination }}</div>
                   </q-card-section>
                   <q-separator />
@@ -234,7 +266,7 @@
               <!-- Historical Weather Chart -->
               <div class="weather-chart-container">
                 <q-card flat bordered v-if="historicalWeather">
-                  <q-card-section>
+                  <q-card-section class="card-header-light-blue">
                     <div class="text-h6">월별 날씨 요약 - {{ finalSelections.destination }}</div>
                   </q-card-section>
                   <q-separator />
@@ -711,10 +743,164 @@ const handleSurveyComplete = async (surveyData) => {
   margin-bottom: 1.5rem;
 }
 
+/* 새로운 헤더 레이아웃 스타일 */
+.form-header-with-flight {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  gap: 2rem;
+}
+
+.form-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.form-buttons {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.flight-info-cards {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.flight-info-card {
+  min-width: 120px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.flight-info-content {
+  display: flex;
+  align-items: center;
+  text-align: center;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .form-header-with-flight {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .flight-info-cards {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .flight-info-card {
+    flex: 1;
+    min-width: 80px;
+  }
+  
+  .form-buttons {
+    flex-wrap: wrap;
+  }
+}
+
 .form-title {
   font-size: 2rem;
   font-weight: 700;
   color: #34495e;
+}
+
+.destination-text {
+  color: var(--q-primary);
+  font-weight: 600;
+}
+
+/* 커스텀 버튼 스타일 */
+.custom-button {
+  border-radius: 4px !important;
+  transition: none !important;
+  transform: none !important;
+  box-shadow: none !important;
+  border: 2px solid !important;
+}
+
+.custom-button::before,
+.custom-button::after {
+  display: none !important;
+}
+
+.custom-button:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.custom-button:active {
+  transform: none !important;
+}
+
+/* 카드 헤더 하늘색 연하게 */
+.card-header-light-blue {
+  background-color: #e3f2fd !important;
+  border-bottom: 1px solid #bbdefb;
+}
+
+/* 카드 푸터 스타일 */
+.card-footer-custom {
+  background-color: #f5f5f5 !important;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+  padding: 12px 16px !important;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  user-select: none;
+}
+
+.card-footer-custom:hover {
+  background-color: rgba(33, 150, 243, 0.1) !important;
+  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.2);
+}
+
+.footer-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.footer-text {
+  color: #2196f3;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.footer-icon {
+  color: #2196f3;
+  font-size: 1.2rem;
+}
+
+/* 애니메이션 효과 */
+.animated-list {
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out;
+}
+
+.list-item-animated {
+  transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+}
+
+.list-item-animated-enter-active,
+.list-item-animated-leave-active {
+  transition: all 0.3s ease;
+}
+
+.list-item-animated-enter-from {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.list-item-animated-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
 }
 
 .output-card {
@@ -742,13 +928,6 @@ const handleSurveyComplete = async (surveyData) => {
   gap: 2.5rem;
 }
 
-.recommendation-list {
-  /* 왼쪽 열 스타일 */
-}
-
-.weather-chart-container {
-  /* 오른쪽 열 스타일 */
-}
 
 .weather-column {
   display: flex;
