@@ -291,6 +291,67 @@ def create_post():
         cursor.close()
         conn.close()
 
+@community_bp.route('/share-post', methods=['POST'])
+@jwt_required()
+def create_post_from_share():
+    """분석 결과에서 커뮤니티 게시물 작성 API"""
+    current_user_id = get_jwt_identity()
+    
+    analysis_id = request.form.get('analysis_id')
+    title = request.form.get('title')
+    content = request.form.get('content')
+    location = request.form.get('location')
+    summary = request.form.get('summary', '')
+    tags_json = request.form.get('tags', '[]')
+
+    if not all([analysis_id, title, content, location]):
+        return jsonify({'error': '필수 필드가 누락되었습니다.'}), 400
+
+    import json
+    try:
+        tags = json.loads(tags_json)
+    except (json.JSONDecodeError, TypeError):
+        return jsonify({'error': '잘못된 태그 형식입니다.'}), 400
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    try:
+        # 1. 분석 결과 및 이미지 ID 가져오기
+        cursor.execute("SELECT image_id FROM analysis_results WHERE id = %s AND user_id = %s", (analysis_id, current_user_id))
+        analysis_result = cursor.fetchone()
+
+        if not analysis_result:
+            return jsonify({'error': '분석 결과를 찾을 수 없거나 권한이 없습니다.'}), 404
+        
+        image_id = analysis_result['image_id']
+
+        # 2. 게시물 생성
+        cursor.execute(
+            "INSERT INTO posts (user_id, title, content, summary, location, image_id) VALUES (%s, %s, %s, %s, %s, %s)",
+            (current_user_id, title, content, summary, location, image_id)
+        )
+        post_id = cursor.lastrowid
+
+        # 3. 태그 처리
+        if tags:
+            for tag_name in tags:
+                cursor.execute("INSERT INTO tags (name) VALUES (%s) ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id)", (tag_name,))
+                tag_id = cursor.lastrowid
+                cursor.execute("INSERT INTO post_tags (post_id, tag_id) VALUES (%s, %s)", (post_id, tag_id))
+
+        conn.commit()
+        
+        return jsonify({'message': '게시물이 성공적으로 공유되었습니다.', 'post_id': post_id}), 201
+
+    except Exception as e:
+        conn.rollback()
+        print(f"Error in create_post_from_share: {e}")
+        return jsonify({'error': '게시물 공유 중 오류가 발생했습니다.'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
 @community_bp.route('/posts/<int:post_id>', methods=['PUT'])
 @jwt_required()
 def update_post(post_id):

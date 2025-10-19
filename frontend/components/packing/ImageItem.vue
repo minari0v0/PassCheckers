@@ -1,10 +1,17 @@
 <template>
   <div
+    v-if="isValidBbox"
     class="image-item"
-    :class="{ 'is-packed': isPacked, 'is-fully-prohibited': isFullyProhibited }"
+    :class="{ 
+      'is-packed': isPacked, 
+      'is-fully-prohibited': isFullyProhibited,
+      'is-highlighted': isHovered
+    }"
     :style="boxStyleWithColor"
     :draggable="!isPacked && !isFullyProhibited"
     @dragstart="onDragStart"
+    @mouseenter="onMouseEnter"
+    @mouseleave="onMouseLeave"
   >
     <div v-if="showLabel" class="item-label" :class="{ 'is-inside': isNearTop }">{{ item.item_name }}</div>
     
@@ -26,9 +33,14 @@ const props = defineProps({
   isFullyProhibited: { type: Boolean, default: false },
   color: { type: String, default: '#f39c12' }, // 색상 prop 추가
   showLabel: { type: Boolean, default: true }, // 라벨 표시 여부 prop 추가
+  isHovered: { type: Boolean, default: false }, // 외부 호버 상태
 });
 
-const emit = defineEmits(['item-dragstart']);
+const emit = defineEmits(['item-dragstart', 'mouseenter', 'mouseleave']);
+
+const isValidBbox = computed(() => {
+  return props.item.bbox && props.item.bbox.every(coord => coord !== null);
+});
 
 // hex to rgba 변환 헬퍼
 const hexToRgba = (hex, alpha) => {
@@ -77,6 +89,15 @@ const onDragStart = (event) => {
   event.dataTransfer.dropEffect = 'move';
   emit('item-dragstart', props.item);
 };
+
+const onMouseEnter = () => {
+  emit('mouseenter', props.item.item_id);
+}
+
+const onMouseLeave = () => {
+  emit('mouseleave', props.item.item_id);
+}
+
 </script>
 
 <style scoped>
@@ -85,11 +106,14 @@ const onDragStart = (event) => {
   border: 2px solid var(--item-color);
   background-color: var(--item-bg-color);
   cursor: grab;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease-in-out;
 }
 
-.image-item:hover {
+.image-item:hover,
+.image-item.is-highlighted {
   background-color: var(--item-bg-hover-color);
+  border-width: 3px;
+  transform: scale(1.02);
 }
 
 .item-label {

@@ -115,40 +115,41 @@
               <p>아직 수하물 분류 분석을 수행하지 않았습니다.</p>
             </div>
             <div v-else class="results-grid">
-            <div 
-              v-for="result in analysisResults" 
-              :key="result.id" 
-              class="result-card"
-            >
-              <div class="result-content">
-                <div class="result-image">
-                  <img 
-                    :src="getAnalysisImageUrl(result)" 
-                    :alt="result.title"
-                    @error="onImageError"
-                    class="analysis-image"
-                  />
-                </div>
-                <div class="result-info">
-                  <div class="result-header">
-                    <h4>{{ result.title }}</h4>
-                    <button 
-                      class="more-btn"
-                      @click="toggleAnalysisMenu(result.id)"
-                    >
-                      <i class="material-icons">more_vert</i>
-                    </button>
-                    <div v-if="showAnalysisMenu[result.id]" class="delete-menu">
-                      <button class="delete-btn" @click="deleteAnalysis(result.id)">
-                        <i class="material-icons">delete</i>
-                        삭제
-                      </button>
-                    </div>
+              <div 
+                v-for="result in analysisResults" 
+                :key="result.id" 
+                class="result-card"
+                @click="openDetailModal(result)"
+              >
+                <div class="result-content">
+                  <div class="result-image">
+                    <img 
+                      :src="getAnalysisImageUrl(result)" 
+                      :alt="result.title"
+                      @error="onImageError"
+                      class="analysis-image"
+                    />
                   </div>
-                  <p class="result-date">{{ formatDate(result.created_at) }}</p>
+                  <div class="result-info">
+                    <div class="result-header">
+                      <h4>{{ result.title }}</h4>
+                      <button 
+                        class="more-btn"
+                        @click.stop="toggleAnalysisMenu(result.id)"
+                      >
+                        <i class="material-icons">more_vert</i>
+                      </button>
+                      <div v-if="showAnalysisMenu[result.id]" class="delete-menu" v-click-outside="() => closeAnalysisMenu(result.id)">
+                        <button class="delete-btn" @click.stop="openDeleteConfirm(result)">
+                          <i class="material-icons">delete</i>
+                          <span>삭제</span>
+                        </button>
+                      </div>
+                    </div>
+                    <p class="result-date">{{ formatDate(result.created_at) }}</p>
+                  </div>
                 </div>
               </div>
-            </div>
             </div>
           </div>
         </div>
@@ -164,11 +165,37 @@
             <q-tabs v-model="activeTab" class="text-grey-7" active-color="primary">
               <q-tab name="likes" label="좋아요" />
               <q-tab name="bookmarks" label="저장" />
+              <q-tab name="my-posts" label="게시글" />
               <q-tab name="comments" label="댓글" />
             </q-tabs>
           </div>
 
           <div class="tab-content">
+            <!-- 내가 작성한 게시글 -->
+            <div v-if="activeTab === 'my-posts'">
+              <div v-if="myPosts.length === 0" class="empty-state">
+                <i class="material-icons">article</i>
+                <h3>작성한 게시글이 없습니다</h3>
+                <p>커뮤니티에 첫 게시글을 작성해보세요.</p>
+              </div>
+              <div v-else class="posts-list">
+                <div 
+                  v-for="post in myPosts" 
+                  :key="post.id" 
+                  class="post-item"
+                  @click="goToPost(post.id)"
+                >
+                  <h4>{{ post.title }}</h4>
+                  <p>{{ post.summary }}</p>
+                  <div class="post-meta">
+                    <span>좋아요 {{ post.likes_count }}</span>
+                    <span>댓글 {{ post.comments_count }}</span>
+                    <span>{{ formatDate(post.created_at) }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <!-- 좋아요한 게시글 -->
             <div v-if="activeTab === 'likes'">
               <div v-if="likedPosts.length === 0" class="empty-state">
@@ -289,11 +316,31 @@
       @confirmed="handleAccountDeletion"
       @cancelled="showDeletionModal = false"
     />
-    </div>
-  </template>
+
+    <!-- 분석 결과 삭제 확인 모달 -->
+    <AnalysisDeleteDialog
+      :show="showDeleteDialog"
+      :item="analysisToDelete"
+      @confirm="handleDeleteConfirm"
+      @cancel="handleDeleteCancel"
+    />
+
+    <!-- 분석 결과 상세 보기 모달 -->
+    <AnalysisDetailModal 
+      :show="showDetailModal"
+      :analysis-data="analysisToView"
+      @close="showDetailModal = false"
+      @delete="handleDetailModalDelete"
+    />
+  </div>
+</template>
   
-  <script setup>
+<script setup>
 // 로그인 검증 미들웨어 적용
+useHead({
+  title: '내 프로필 | PassCheckers'
+})
+
   definePageMeta({
     middleware: 'auth'
 })
@@ -306,6 +353,8 @@ import ProfileEditToast from '~/components/profile/ProfileEditToast.vue'
 import NicknameEditToast from '~/components/profile/NicknameEditToast.vue'
 import PasswordChangeToast from '~/components/profile/PasswordChangeToast.vue'
 import AccountDeletionToast from '~/components/profile/AccountDeletionToast.vue'
+import AnalysisDeleteDialog from '~/components/profile/AnalysisDeleteDialog.vue'
+import AnalysisDetailModal from '~/components/profile/AnalysisDetailModal.vue'
 
 const router = useRouter()
 const { user, getToken } = useAuth()
@@ -322,6 +371,7 @@ const userInfo = ref({
 })
 
 const analysisResults = ref([])
+const myPosts = ref([])
 const likedPosts = ref([])
 const bookmarkedPosts = ref([])
 const commentedPosts = ref([])
@@ -333,6 +383,13 @@ const showEditModal = ref(false)
 const showNicknameEditModal = ref(false)
 const showPasswordChangeModal = ref(false)
 const showDeletionModal = ref(false)
+
+// 분석 결과 관련 모달 상태
+const showDeleteDialog = ref(false)
+const analysisToDelete = ref(null)
+const showDetailModal = ref(false)
+const analysisToView = ref(null)
+const isDetailLoading = ref(false)
 
 // 사용자 정보 로드
 const loadUserInfo = async () => {
@@ -348,16 +405,13 @@ const loadUserInfo = async () => {
 
     if (response.ok) {
       const data = await response.json()
-      console.log('API Response:', data)
       const user = data.user
-      console.log('User data:', user)
       userInfo.value = {
         id: user.id,
         nickname: user.nickname,
         email: user.email,
         profileImageUrl: `${apiUrl}/api/users/${user.id}/profile-image`
       }
-      console.log('userInfo.value:', userInfo.value)
     } else {
       console.error('Failed to load user info:', await response.text())
     }
@@ -378,13 +432,34 @@ const loadAnalysisResults = async () => {
       }
     })
 
-            if (response.ok) {
-              const data = await response.json()
-              console.log('Analysis results:', data.results)
-              analysisResults.value = data.results || []
-            }
+    if (response.ok) {
+      const data = await response.json()
+      analysisResults.value = data.results || []
+    }
   } catch (error) {
     console.error('Failed to load analysis results:', error)
+  }
+}
+
+const loadMyPosts = async () => {
+  try {
+    const token = getToken()
+    if (!token) return
+
+    const response = await fetch(`${apiUrl}/api/user/my-posts`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+
+    if (response.ok) {
+      const data = await response.json()
+      myPosts.value = data.posts || []
+    } else {
+      console.error('Failed to load my posts:', await response.text())
+    }
+  } catch (error) {
+    console.error('Failed to load my posts:', error)
   }
 }
 
@@ -394,7 +469,7 @@ const loadUserActivity = async () => {
     const token = getToken()
     if (!token) return
 
-    const [likesRes, bookmarksRes, commentsRes] = await Promise.all([
+    const [likesRes, bookmarksRes, commentsRes, myPostsRes] = await Promise.all([
       fetch(`${apiUrl}/api/user/liked-posts`, {
         headers: { 'Authorization': `Bearer ${token}` }
       }),
@@ -403,22 +478,26 @@ const loadUserActivity = async () => {
       }),
       fetch(`${apiUrl}/api/user/commented-posts`, {
         headers: { 'Authorization': `Bearer ${token}` }
+      }),
+      fetch(`${apiUrl}/api/user/my-posts`, { // my-posts 추가
+        headers: { 'Authorization': `Bearer ${token}` }
       })
     ])
 
     if (likesRes.ok) {
-      const data = await likesRes.json()
-      likedPosts.value = data.posts || []
+      likedPosts.value = (await likesRes.json()).posts || []
     }
 
     if (bookmarksRes.ok) {
-      const data = await bookmarksRes.json()
-      bookmarkedPosts.value = data.posts || []
+      bookmarkedPosts.value = (await bookmarksRes.json()).posts || []
     }
 
     if (commentsRes.ok) {
-      const data = await commentsRes.json()
-      commentedPosts.value = data.posts || []
+      commentedPosts.value = (await commentsRes.json()).posts || []
+    }
+
+    if (myPostsRes.ok) { // my-posts 결과 처리
+      myPosts.value = (await myPostsRes.json()).posts || []
     }
   } catch (error) {
     console.error('Failed to load user activity:', error)
@@ -430,14 +509,36 @@ const toggleAnalysisMenu = (resultId) => {
   showAnalysisMenu.value = { [resultId]: !showAnalysisMenu.value[resultId] }
 }
 
-// 분석 결과 삭제
-const deleteAnalysis = async (resultId) => {
-  if (!confirm('분석 결과를 삭제하시겠습니까?')) return
+const closeAnalysisMenu = (resultId) => {
+  if (showAnalysisMenu.value[resultId]) {
+    showAnalysisMenu.value[resultId] = false;
+  }
+}
 
+// --- 삭제 로직 ---
+const openDeleteConfirm = (result) => {
+  analysisToDelete.value = result;
+  showDeleteDialog.value = true;
+  closeAnalysisMenu(result.id); // 메뉴 닫기
+}
+
+const handleDeleteCancel = () => {
+  showDeleteDialog.value = false;
+  analysisToDelete.value = null;
+}
+
+const handleDeleteConfirm = async () => {
+  if (!analysisToDelete.value) return;
+  await deleteAnalysis();
+  handleDeleteCancel(); // 모달 닫기 및 상태 초기화
+}
+
+const deleteAnalysis = async () => {
   try {
     const token = getToken()
-    if (!token) return
+    if (!token || !analysisToDelete.value) return
 
+    const resultId = analysisToDelete.value.id;
     const response = await fetch(`${apiUrl}/api/user/analysis-results/${resultId}`, {
       method: 'DELETE',
       headers: {
@@ -455,6 +556,39 @@ const deleteAnalysis = async (resultId) => {
   } catch (error) {
     console.error('Failed to delete analysis result:', error)
     alert('분석 결과 삭제 중 오류가 발생했습니다')
+  }
+}
+
+// --- 상세 보기 로직 ---
+const openDetailModal = async (result) => {
+  isDetailLoading.value = true;
+  showDetailModal.value = true;
+  analysisToView.value = null; // 이전 데이터 초기화
+
+  try {
+    const token = getToken();
+    const response = await fetch(`${apiUrl}/api/packing/${result.id}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!response.ok) throw new Error('상세 정보를 불러오는데 실패했습니다.');
+    const data = await response.json();
+    analysisToView.value = {
+      ...result, // 목록의 기본 정보
+      ...data,   // API로부터 받은 상세 정보 (items 포함)
+    };
+  } catch (error) {
+    console.error(error);
+    alert('상세 정보를 가져오는 중 오류가 발생했습니다.');
+    showDetailModal.value = false;
+  } finally {
+    isDetailLoading.value = false;
+  }
+}
+
+const handleDetailModalDelete = () => {
+  if (analysisToView.value) {
+    showDetailModal.value = false;
+    openDeleteConfirm(analysisToView.value);
   }
 }
 
@@ -1043,6 +1177,7 @@ onMounted(async () => {
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
+  cursor: pointer;
 }
 
 .result-card:hover {
@@ -1211,16 +1346,30 @@ onMounted(async () => {
 }
 
 .post-item h4 {
-  font-size: 0.875rem;
+  font-size: 1rem;
   font-weight: 600;
   color: #2c3e50;
-  margin: 0 0 4px 0;
+  margin: 0 0 8px 0;
 }
 
 .post-item p {
+  font-size: 0.875rem;
+  color: #555;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.post-item .post-meta {
+  display: flex;
+  gap: 16px;
   font-size: 0.75rem;
   color: #7fb3d3;
-  margin: 0;
+  margin-top: 8px;
 }
 
 /* 빈 상태 */

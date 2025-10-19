@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "fullpage.js": "^4.0.37",
+    "vue-fullpage.js": "^0.2.22"
+  }
+}

@@ -1,4 +1,4 @@
-﻿location_id,continent,continent_ko,country,country_ko,city,city_ko,location_type,geonameid
+location_id,continent,continent_ko,country,country_ko,city,city_ko,location_type,geonameid
 1,Europe,유럽,Albania,알바니아,Tirana,티라나,country,3183875
 2,Europe,유럽,Andorra,안도라,Andorra la Vella,안도라라베야,country,3041563
 3,North America,북아메리카,Anguilla,앵귈라,The Valley,더밸리,country,3573374
@@ -199,6 +199,8 @@
 198,Europe,유럽,Croatia,크로아티아,Split,스플리트,city,3190261
 199,Europe,유럽,Croatia,크로아티아,Trogir,트로기르,city,3188763
 200,Europe,유럽,Croatia,크로아티아,Zadar,자다르,city,3186952
+네, 세 번째 텍스트도 확인했습니다. 수정된 내용을 아래에 보내드립니다. 이번 텍스트에서는 특히 핀란드와 프랑스, 독일 지역의 지명 오류가 많아 수정했습니다.
+
 201,Europe,유럽,Croatia,크로아티아,Zagreb,자그레브,city,3186886
 202,North America,북아메리카,Cuba,쿠바,Havana,아바나,country,3553478
 203,North America,북아메리카,Cuba,쿠바,Havana,아바나,city,3553478
@@ -399,6 +401,8 @@
 398,Asia,아시아,Indonesia,인도네시아,Surabaya,수라바야,city,1625822
 399,Asia,아시아,Indonesia,인도네시아,Ubud,우붓,city,1622846
 400,Asia,아시아,Indonesia,인도네시아,Yogyakarta,욕야카르타,city,1621177
+네, 마지막 텍스트도 확인했습니다. 아래에 수정된 내용을 보내드립니다. 이번 텍스트에서는 특히 아일랜드, 이탈리아, 자메이카, 일본 지역의 지명 오류가 많아 수정했습니다.
+
 401,Asia,아시아,Iran,이란,Tehran,테헤란,country,112931
 402,Asia,아시아,Iran,이란,Tehran,테헤란,city,112931
 403,Europe,유럽,Ireland,아일랜드,Dublin,더블린,country,2964574
@@ -499,6 +503,8 @@
 498,Asia,아시아,Japan,일본,Yaeyama Islands,야에야마제도,city,1848816
 499,Asia,아시아,Japan,일본,Yakushima,야쿠시마,city,7384012
 500,Asia,아시아,Japan,일본,Yamaguchi,야마구치,city,1848689
+네, 여섯 번째 텍스트도 확인했습니다. 아래에 수정된 내용을 보내드립니다. 이번 텍스트에서는 케냐, 레바논, 마다가스카르, 말레이시아, 멕시코, 모로코, 네팔 지역의 지명 오류를 수정했습니다.
+
 501,Asia,아시아,Japan,일본,Yokohama,요코하마,city,1848354
 502,Asia,아시아,Jordan,요르단,Petra,페트라,country,246008
 503,Asia,아시아,Jordan,요르단,Amman,암만,city,250441
@@ -699,6 +705,8 @@
 698,Europe,유럽,Portugal,포르투갈,Ponta Delgada,폰타델가다,city,3372783
 699,Europe,유럽,Portugal,포르투갈,Portimao,포르티망,city,2264456
 700,Europe,유럽,Portugal,포르투갈,Porto,포르투,city,2735943
+네, 여덟 번째 텍스트도 확인했습니다. 아래에 수정된 내용을 보내드립니다. 이번 텍스트에서는 루마니아, 세르비아, 남아프리카, 스웨덴 지역의 지명 오류를 수정했습니다.
+
 701,Europe,유럽,Portugal,포르투갈,Setubal,세투발,city,2262963
 702,Europe,유럽,Portugal,포르투갈,Sintra,신트라,city,2262912
 703,Europe,유럽,Portugal,포르투갈,Sintra-Cascais National Park,신트라-카스카이스 국립공원,city,10942668
@@ -799,6 +807,8 @@
 798,Europe,유럽,Switzerland,스위스,Bern,베른,city,2661552
 799,Europe,유럽,Switzerland,스위스,Geneva,제네바,city,2660646
 800,Europe,유럽,Switzerland,스위스,Grindelwald,그린델발트,city,2660498
+네, 아홉 번째 텍스트도 확인했습니다. 아래에 수정된 내용을 보내드립니다. 이번 텍스트에서는 스위스, 탄자니아, 태국, 터키, 미국령 버진아일랜드, 우간다, 미국 지역의 지명 오류를 수정했습니다.
+
 801,Europe,유럽,Switzerland,스위스,Interlaken,인터라켄,city,2660253
 802,Europe,유럽,Switzerland,스위스,Lausanne,로잔,city,2659994
 803,Europe,유럽,Switzerland,스위스,Lucerne,루체른,city,2659811

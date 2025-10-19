@@ -1,12 +1,15 @@
 from flask import Flask, request, jsonify, send_file
 from flask_jwt_extended import JWTManager, create_access_token, create_refresh_token, jwt_required, get_jwt_identity
 from flask_cors import CORS
+from dotenv import load_dotenv
 import redis
 import pymysql
 import os
 import io
 from datetime import timedelta
 from config import Config
+
+load_dotenv()
 from models.user import User
 from urllib.parse import urlparse
 from functools import wraps
@@ -92,6 +95,19 @@ def init_db():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     """)
+
+    # 스키마 마이그레이션: users 테이블에 profile_image 컬럼이 없는 경우 추가
+    db_name = conn.db.decode() if isinstance(conn.db, bytes) else conn.db
+    cursor.execute("""        SELECT COUNT(*) as cnt
+        FROM information_schema.COLUMNS
+        WHERE TABLE_SCHEMA = %s
+        AND TABLE_NAME = 'users'
+        AND COLUMN_NAME = 'profile_image'
+    """, (db_name,))
+    if cursor.fetchone()['cnt'] == 0:
+        cursor.execute("ALTER TABLE users ADD COLUMN profile_image LONGBLOB NULL")
+        print("[DB MIGRATION] 'profile_image' column added to 'users' table.")
+
     
     # images 테이블 생성 (이미지 저장용)
     cursor.execute("""

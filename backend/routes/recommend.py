@@ -47,23 +47,26 @@ def packing_recommendation():
         traceback.print_exc()
         return jsonify({"error": f"위치 정보 조회 중 오류 발생: {e}"}), 500
 
-    # 2. 날짜를 기준으로 예보 또는 과거 데이터 조회 결정
+    # 2. 날씨 정보 조회 및 패킹 리스트 생성에 사용할 데이터 결정
     try:
         start_date = datetime.fromisoformat(preferences['dates']['from'])
         today = datetime.now()
-        
-        weather_data = {}
-        # start_date와 today의 시간대 정보를 무시하고 날짜만 비교
-        is_forecast_range = (start_date.date() - today.date()).days < 14
 
+        # --- 1. 월별 과거 날씨 데이터는 항상 조회 (요약 패널용)
+        historical_month = start_date.month
+        historical_year_to_fetch = datetime.now().year - 1
+        single_month_historical, yearly_historical_data = get_historical_weather(loc_id, lat, lon, historical_year_to_fetch, historical_month)
+
+        # --- 2. 짐 꾸리기 추천에 사용할 날씨 데이터 결정
+        is_forecast_range = (start_date.date() - today.date()).days < 14
+        weather_data_for_packing_list = {}
+        
         if is_forecast_range:
-            # 14일 이내의 여행: 실시간 예보 조회
-            weather_data = get_weather_forecast(lat, lon)
+            # 14일 이내 여행: 실시간 예보를 조회하여 사용
+            weather_data_for_packing_list = get_weather_forecast(lat, lon)
         else:
-            # 14일 이후의 여행: 과거 데이터 조회
-            year = start_date.year
-            month = start_date.month
-            weather_data = get_historical_weather(loc_id, lat, lon, year, month)
+            # 14일 이후 여행: 위에서 미리 받아둔 특정 월의 과거 데이터를 사용
+            weather_data_for_packing_list = single_month_historical
 
     except Exception as e:
         traceback.print_exc()
@@ -71,21 +74,21 @@ def packing_recommendation():
 
     # 3. 날씨 데이터와 사용자 선호도를 바탕으로 패킹 리스트 생성
     try:
-        recommendations = generate_packing_list(lat, lon, weather_data, preferences)
+        recommendations = generate_packing_list(lat, lon, weather_data_for_packing_list, preferences)
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": f"추천 리스트 생성 중 오류 발생: {e}"}), 500
 
+    # 4. 최종 응답 데이터 구성
     response_data = {
         "location_id": loc_id,
-        "packing_list": recommendations
+        "packing_list": recommendations,
+        "historical_weather": yearly_historical_data # 연간 데이터는 항상 포함
     }
 
-    # 실시간 예보 데이터가 있는 경우, JSON으로 변환하여 응답에 추가
-    if is_forecast_range and isinstance(weather_data, pd.DataFrame):
-        # DataFrame을 JSON 직렬화 가능한 형태로 변환 (예: 리스트 안의 딕셔너리)
-        # 날짜를 문자열로 변환
-        forecast_df = weather_data.reset_index()
+    # 14일 이내 여행일 경우, 응답에 실시간 예보 데이터 추가
+    if is_forecast_range and isinstance(weather_data_for_packing_list, pd.DataFrame):
+        forecast_df = weather_data_for_packing_list.reset_index()
         forecast_df['time'] = forecast_df['time'].dt.strftime('%Y-%m-%d')
         response_data["forecast_data"] = forecast_df.to_dict('records')
 

@@ -322,13 +322,13 @@ def get_analysis_detail(analysis_id):
 
                 # bbox 정보를 배열로 변환하고, 프론트엔드와 키 이름을 맞춤
                 for item in items:
-                    item['item_id'] = item.pop('id')
-                    item['item_name'] = item.pop('item_name_ko')
+                    item['item_id'] = item['id']  # packing.py 호환성을 위해 'item_id' 추가
+                    item['item_name'] = item['item_name_ko'] # packing.py 호환성을 위해 'item_name' 추가
                     item['bbox'] = [
-                        item.pop('bbox_x_min'), 
-                        item.pop('bbox_y_min'), 
-                        item.pop('bbox_x_max'), 
-                        item.pop('bbox_y_max')
+                        item.pop('bbox_x_min', 0), 
+                        item.pop('bbox_y_min', 0), 
+                        item.pop('bbox_x_max', 0), 
+                        item.pop('bbox_y_max', 0)
                     ]
                 
                 return jsonify({

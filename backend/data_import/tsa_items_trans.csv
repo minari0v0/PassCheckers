@@ -498,3 +498,5 @@
 497,튜브(액체),예 (3.4oz/100 ml 이상 또는 동일),예,"튜브에 담긴 치약, 화장품 등 모든 액체·겔류는 기내 반입 시 용기당 100ml 이하로 1L 투명 지퍼백에 넣어야 합니다. 위탁 수하물에는 용량 제한이 없으나, 내용물 유출 방지를 위해 안전하게 포장해야 합니다.",Tube (Liquid),"Any liquid or gel, such as toothpaste or cosmetics, in a tube must be in a container of 100ml or less and placed in a 1L transparent zip-top bag for carry-on. There are no volume limits for checked baggage, but it must be securely packed to prevent leaks.",yolo
 498,안경,예,예,NULL,Glasses,NULL,yolo
 499,지갑,예,예,NULL,Wallet,NULL,TSA
+500,앰플,예 (3.4oz/100 ml 이상 또는 동일),예,"화장품 앰플은 액체류로 분류되어, 기내 반입 시 100ml 이하의 개별 용기에 담아 1L 투명 지퍼백 안에 넣어야 합니다.",Ampoule,"Cosmetic ampoules are classified as liquids. For carry-on, they must be in individual containers of 100ml or less and placed within a 1L transparent zip-top bag.",ADD
+501,충전 케이블,예,예,,Charging Cable,,ADD

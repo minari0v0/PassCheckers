@@ -3,19 +3,81 @@
     <!-- 커뮤니티 공유 모달 -->
     <transition name="fade">
       <div v-if="showCommunityShareModal" class="modal-overlay">
-        <div class="confirm-dialog" v-click-outside="() => showCommunityShareModal = false">
+        <div class="confirm-dialog">
           <div key="confirm">
             <h3 class="dialog-title">커뮤니티에 공유</h3>
             <p class="dialog-message">
               수하물 분석을 커뮤니티에 공유합니다. 다른 여행자들에게 영감을 주세요!
             </p>
             <div class="community-form">
-              <input type="text" v-model="communityPostTitle" placeholder="게시물 제목을 입력하세요" class="form-input">
-              <textarea v-model="communityPostDescription" placeholder="간단한 설명을 추가하세요 (선택)" class="form-textarea"></textarea>
+              <!-- 제목 -->
+              <div class="form-group">
+                <label for="title">제목 <span class="required">*</span></label>
+                <input id="title" v-model="communityPost.title" type="text" placeholder="게시물 제목을 입력하세요" required maxlength="255" class="form-input">
+              </div>
+
+              <!-- 여행지 선택 -->
+              <div class="form-group">
+                <label for="location">여행지 <span class="required">*</span></label>
+                <div class="location-search" ref="locationSearchContainerRef">
+                  <input id="location" v-model="locationSearch" type="text" placeholder="국가 또는 도시를 검색하세요" autocomplete="off" @input="searchLocations" @focus="handleLocationFocus" @click.stop class="form-input">
+                  <div v-if="showLocationDropdown && locationResults.length > 0" class="location-dropdown location-dropdown-container">
+                    <div v-for="location in locationResults" :key="location.value" class="location-option" @click="selectLocation(location)">
+                      {{ location.label }}
+                    </div>
+                  </div>
+                  <div v-else-if="showLocationDropdown && locationSearch && locationResults.length === 0" class="location-dropdown">
+                    <div class="location-option-empty">
+                      검색 결과가 없습니다
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 내용 -->
+              <div class="form-group">
+                <label for="content">내용 <span class="required">*</span></label>
+                <textarea id="content" v-model="communityPost.content" placeholder="여행 경험과 팁을 공유해주세요..." required rows="6" class="form-textarea"></textarea>
+              </div>
+
+              <!-- 태그 (선택사항) -->
+              <div class="form-group">
+                <label>태그 (선택사항)</label>
+                <div class="tags-input-area">
+                  <div class="selected-tags">
+                    <span v-for="(tag, index) in communityPost.tags" :key="index" class="tag-chip">
+                      #{{ tag }}
+                      <button type="button" @click="removeTag(index)">
+                        <i class="material-icons">close</i>
+                      </button>
+                    </span>
+                    <input v-model="tagInput" type="text" placeholder="태그 입력 후 Enter" @keydown.enter.prevent="addTag" maxlength="20" class="form-input">
+                  </div>
+                </div>
+                <p class="help-text">태그는 최대 5개까지 추가할 수 있습니다</p>
+              </div>
             </div>
             <div class="dialog-actions">
               <button @click="showCommunityShareModal = false" class="btn-cancel">취소</button>
-              <button @click="handleShareToCommunity" class="btn-confirm" :disabled="!communityPostTitle">공유하기</button>
+              <button @click="handleShareToCommunity" class="btn-confirm" :disabled="!communityPost.title || !communityPost.location || !communityPost.content">공유하기</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <!-- 커뮤니티 공유 결과 모달 -->
+    <transition name="fade">
+      <div v-if="showShareResultModal" class="modal-overlay">
+        <div class="confirm-dialog">
+          <div key="result">
+            <h3 class="dialog-title">{{ shareSuccess ? '공유 완료' : '공유 실패' }}</h3>
+            <p class="dialog-message">
+              {{ shareResultMessage }}
+            </p>
+            <div class="dialog-actions">
+              <button @click="showShareResultModal = false" class="btn-cancel">확인</button>
+              <button v-if="shareSuccess" @click="goToNewPost" class="btn-confirm">게시물 보러가기</button>
             </div>
           </div>
         </div>
@@ -192,7 +254,7 @@
                 </button>
                 <button class="tab-btn" :class="{ active: activeTab === 'comments' }" @click="activeTab = 'comments'">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                  <span>댓글</span>
+                  <span>채팅</span>
                 </button>
               </div>
               <!-- 호스트 세션일 경우: 동반자 추가 버튼 -->
@@ -430,9 +492,13 @@
 
       <!-- 기록 선택 상태 -->
       <div v-else class="selection-view-container" key="selection-view">
-        <header class="selection-header">
-          <h1 class="page-title">수하물 공유</h1>
-          <p class="page-desc">동반 여행자와 공유하고 싶은 분석 기록을 선택해주세요.</p>
+        <header class="page-header">
+          <h1 class="page-title">
+            동반 여행자와 함께하는, <span class="highlight">수하물 공유</span>
+          </h1>
+          <p class="page-description">
+            분석한 수하물을 동반 여행자와 공유하고 함께 준비해보세요
+          </p>
         </header>
         <main>
           <div v-if="isLoading" class="records-loading-state">
@@ -477,21 +543,9 @@ import { useApiUrl } from '~/composables/useApiUrl';
 import ImageItem from '~/components/packing/ImageItem.vue';
 import { useRoute, useRouter } from 'vue-router';
 
-const vClickOutside = {
-  beforeMount(el, binding) {
-    el.clickOutsideEvent = function(event) {
-      // 클릭된 곳이 엘리먼트 외부인지 확인합니다.
-      if (!(el === event.target || el.contains(event.target))) {
-        // 외부라면, 전달된 메소드를 호출합니다.
-        binding.value(event);
-      }
-    };
-    document.body.addEventListener('mousedown', el.clickOutsideEvent);
-  },
-  unmounted(el) {
-    document.body.removeEventListener('mousedown', el.clickOutsideEvent);
-  },
-};
+useHead({
+  title: '수하물 공유 | PassCheckers'
+})
 
 definePageMeta({
   middleware: 'auth'
@@ -535,8 +589,20 @@ const showCombinedListModal = ref(false);
 
 // 커뮤니티 공유 관련 상태
 const showCommunityShareModal = ref(false);
-const communityPostTitle = ref('');
-const communityPostDescription = ref('');
+const communityPost = ref({
+  title: '',
+  content: '',
+  location: '',
+  tags: []
+});
+const locationSearch = ref('');
+const locationResults = ref([]);
+const showLocationDropdown = ref(false);
+const tagInput = ref('');
+const showShareResultModal = ref(false);
+const shareSuccess = ref(false);
+const shareResultMessage = ref('');
+const newPostId = ref(null);
 
 // 댓글 기능 관련 상태
 const activeTab = ref('baggage'); // 'baggage' 또는 'comments'
@@ -687,56 +753,146 @@ const combinedItems = computed(() => {
  * 커뮤니티 공유 모달을 엽니다.
  */
 function openCommunityShareModal() {
-  communityPostTitle.value = selectedRecord.value.destination || `나의 여행 짐 목록`;
-  communityPostDescription.value = '';
+  communityPost.value = {
+    title: selectedRecord.value.destination ? `${selectedRecord.value.destination} 여행 짐 목록` : '나의 여행 짐 목록',
+    content: '',
+    location: selectedRecord.value.destination || '',
+    tags: []
+  };
+  locationSearch.value = selectedRecord.value.destination || '';
+  tagInput.value = '';
   showCommunityShareModal.value = true;
 }
 
+let searchTimeout = null;
+
+// 여행지 입력 필드에 포커스가 갈 때 처리하는 함수
+const handleLocationFocus = () => {
+  if (locationSearch.value.trim().length > 0) {
+    showLocationDropdown.value = true;
+    searchLocations();
+  }
+};
+
+// 여행지를 검색하는 함수 (디바운스 적용)
+const searchLocations = () => {
+  if (searchTimeout) {
+    clearTimeout(searchTimeout);
+  }
+  
+  const searchValue = locationSearch.value.trim();
+  
+  if (searchValue.length === 0) {
+    locationResults.value = [];
+    showLocationDropdown.value = false;
+    return;
+  }
+  
+  showLocationDropdown.value = true;
+  
+  searchTimeout = setTimeout(async () => {
+    try {
+      const response = await fetch(getApiUrl(`/api/community/countries?search=${encodeURIComponent(searchValue)}`));
+      const data = await response.json();
+      
+      if (data.locations && data.locations.length > 0) {
+        locationResults.value = data.locations;
+        showLocationDropdown.value = true;
+      } else {
+        locationResults.value = [];
+        showLocationDropdown.value = true;
+      }
+    } catch (error) {
+      console.error('Failed to search locations:', error);
+      locationResults.value = [];
+    }
+  }, 50);
+};
+
+// 드롭다운에서 여행지를 선택하는 함수
+const selectLocation = (location) => {
+  locationSearch.value = location.label;
+  communityPost.value.location = location.value;
+  showLocationDropdown.value = false;
+  locationResults.value = [];
+};
+
+// 태그를 추가하는 함수 (최대 5개)
+const addTag = () => {
+  const tag = tagInput.value.trim();
+  if (tag && communityPost.value.tags.length < 5 && !communityPost.value.tags.includes(tag)) {
+    communityPost.value.tags.push(tag);
+    tagInput.value = '';
+  }
+};
+
+// 태그를 제거하는 함수
+const removeTag = (index) => {
+  communityPost.value.tags.splice(index, 1);
+};
+
+function goToNewPost() {
+      if (newPostId.value) {
+        window.location.href = `/community?postId=${newPostId.value}`;
+      }
+      showShareResultModal.value = false;
+    }
 /**
  * 수하물 분석을 커뮤니티에 공유합니다.
  */
 async function handleShareToCommunity() {
-  if (!communityPostTitle.value) {
-    alert('게시물 제목을 입력해주세요.');
+  if (!communityPost.value.title || !communityPost.value.location || !communityPost.value.content) {
+    shareSuccess.value = false;
+    shareResultMessage.value = '제목, 여행지, 내용을 모두 입력해주세요.';
+    showShareResultModal.value = true;
     return;
   }
 
-  // --- 백엔드 구현 후 아래 주석을 해제하고 실제 API와 연동하세요 ---
-  /*
   try {
-    const url = getApiUrl('/api/community/posts');
-    const { data, error } = await useFetch(url, {
+    const token = localStorage.getItem('access_token');
+    if (!token) {
+      shareSuccess.value = false;
+      shareResultMessage.value = '로그인이 필요합니다.';
+      showShareResultModal.value = true;
+      return;
+    }
+
+    const postData = new FormData();
+    postData.append('analysis_id', selectedRecord.value.id);
+    postData.append('title', communityPost.value.title);
+    postData.append('content', communityPost.value.content);
+    postData.append('location', communityPost.value.location);
+    postData.append('summary', communityPost.value.content.substring(0, 200));
+    postData.append('tags', JSON.stringify(communityPost.value.tags));
+
+    const url = getApiUrl('/api/community/share-post');
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+        'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify({
-        analysis_id: selectedRecord.value.id,
-        title: communityPostTitle.value,
-        description: communityPostDescription.value,
-      })
+      body: postData
     });
 
-    if (error.value) {
-      console.error('커뮤니티 공유 실패:', error.value);
-      alert('커뮤니티 공유에 실패했습니다.');
-    } else {
-      alert('커뮤니티에 성공적으로 공유되었습니다.');
+    if (response.ok) {
+      const data = await response.json();
+      shareSuccess.value = true;
+      shareResultMessage.value = '커뮤니티에 성공적으로 공유되었습니다.';
+      newPostId.value = data.post_id;
       showCommunityShareModal.value = false;
-      // 성공 시 커뮤니티 게시물로 이동 (API 응답에 따라 postId 등을 사용)
-      router.push(`/community/${data.value.postId}`); 
+      showShareResultModal.value = true;
+    } else {
+      const error = await response.json();
+      shareSuccess.value = false;
+      shareResultMessage.value = error.error || '커뮤니티 공유에 실패했습니다.';
+      showShareResultModal.value = true;
     }
   } catch (e) {
     console.error('커뮤니티 공유 중 예외 발생:', e);
-    alert('오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+    shareSuccess.value = false;
+    shareResultMessage.value = '오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
+    showShareResultModal.value = true;
   }
-  */
-
-  // 임시 프론트엔드 전용 로직 (백엔드 구현 전까지 사용)
-  alert(`[임시] 커뮤니티 공유 성공!\n제목: ${communityPostTitle.value}`);
-  showCommunityShareModal.value = false;
-  router.push('/community'); // 임시로 커뮤니티 목록 페이지로 이동
 }
 
 /**
@@ -746,14 +902,53 @@ async function fetchComments() {
   if (!shareCode.value) return;
   try {
     const url = getApiUrl(`/api/share/${shareCode.value}/comments`);
-    const { data, error } = await useFetch(url, {
+    const response = await fetch(url, {
       headers: { 'Authorization': `Bearer ${localStorage.getItem('access_token')}` }
     });
 
-    if (error.value) {
-      console.error('댓글 목록을 가져오는 데 실패했습니다:', error.value);
-    } else {
-      comments.value = data.value;
+    if (!response.ok) {
+      console.error('댓글 목록을 가져오는 데 실패했습니다:', response.status);
+      return;
+    }
+
+    const data = await response.json();
+    const previousLength = comments.value.length;
+    const previousComments = [...comments.value]; // 이전 댓글 복사
+    comments.value = data;
+    
+    // 채팅 탭이 활성화되어 있을 때만 스크롤 처리
+    if (activeTab.value === 'comments') {
+      await nextTick();
+      
+      // 새로운 채팅이 추가된 경우
+      if (data.length > previousLength) {
+        // 사용자가 맨 아래 근처에 있으면 스크롤
+        scrollToBottomIfNearBottom();
+        console.log('새로운 채팅 추가 - 스크롤 실행');
+      }
+      // 기존 채팅이 수정된 경우 (내용이 변경됨)
+      else if (data.length === previousLength && data.length > 0) {
+        const hasContentChange = data.some((newComment, index) => {
+          const oldComment = previousComments[index];
+          return oldComment && (
+            newComment.content !== oldComment.content ||
+            newComment.updated_at !== oldComment.updated_at
+          );
+        });
+        
+        if (hasContentChange) {
+          // 사용자가 맨 아래 근처에 있으면 스크롤
+          scrollToBottomIfNearBottom();
+          console.log('채팅 내용 변경 - 스크롤 실행');
+        }
+      }
+      // 처음 로드되는 경우
+      else if (previousLength === 0 && data.length > 0) {
+        setTimeout(() => {
+          scrollToBottom();
+        }, 100);
+        console.log('채팅 처음 로드 - 스크롤 실행');
+      }
     }
   } catch (e) {
     console.error('댓글 목록 요청 중 예외 발생:', e);
@@ -770,29 +965,30 @@ async function postComment() {
   isSendingComment.value = true;
   try {
     const url = getApiUrl(`/api/share/${shareCode.value}/comments`);
-    const { data, error } = await useFetch(url, {
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('access_token')}`
       },
-      body: { content: newComment.value }
+      body: JSON.stringify({ content: newComment.value })
     });
 
-    if (error.value) {
-      console.error('댓글 작성 실패:', error.value);
+    if (!response.ok) {
+      console.error('댓글 작성 실패:', response.status);
       alert('댓글 작성에 실패했습니다.');
-    } else {
-      newComment.value = ''; // 입력창 초기화
-      // 댓글 작성 성공 시, 즉시 목록을 다시 불러옵니다.
-      await fetchComments();
-      // 댓글 목록의 맨 아래로 스크롤합니다.
-      await nextTick();
-      const wrapper = commentListWrapperRef.value;
-      if (wrapper) {
-        wrapper.scrollTop = wrapper.scrollHeight;
-      }
+      return;
     }
+
+    newComment.value = ''; // 입력창 초기화
+    
+    // 내가 채팅을 보낼 때는 즉시 스크롤 (사용자가 맨 아래에 있다고 가정)
+    await nextTick();
+    scrollToBottom();
+    console.log('내 채팅 전송 후 즉시 스크롤');
+    
+    // 댓글 작성 성공 시, 즉시 목록을 다시 불러옵니다.
+    await fetchComments();
   } catch (e) {
     console.error('댓글 작성 중 예외 발생:', e);
     alert('댓글 작성 중 오류가 발생했습니다.');
@@ -802,10 +998,43 @@ async function postComment() {
 }
 
 /**
+ * 채팅창 스크롤을 맨 아래로 이동시킵니다.
+ * 사용자가 이미 맨 아래 근처에 있을 때만 스크롤합니다.
+ */
+function scrollToBottomIfNearBottom() {
+  const wrapper = commentListWrapperRef.value;
+  if (wrapper) {
+    const isNearBottom = wrapper.scrollTop + wrapper.clientHeight >= wrapper.scrollHeight - 150; // 150px로 범위 확대
+    if (isNearBottom) {
+      wrapper.scrollTop = wrapper.scrollHeight;
+      console.log('사용자가 맨 아래 근처 - 스크롤 실행');
+    } else {
+      console.log('사용자가 위쪽에 있음 - 스크롤하지 않음');
+    }
+  } else {
+    // wrapper가 없으면 강제로 스크롤 시도
+    scrollToBottom();
+  }
+}
+
+/**
+ * 채팅창 스크롤을 강제로 맨 아래로 이동시킵니다.
+ */
+function scrollToBottom() {
+  const wrapper = commentListWrapperRef.value;
+  if (wrapper && wrapper.scrollHeight > 0) {
+    wrapper.scrollTop = wrapper.scrollHeight;
+    console.log('채팅창 스크롤 이동 성공');
+  } else {
+    console.log('채팅창 wrapper를 찾을 수 없거나 내용이 없습니다.');
+  }
+}
+
+/**
  * 브라우저 탭의 활성 상태에 따라 폴링을 제어합니다.
  */
 function handleVisibilityChange() {
-  if (!selectedRecordId.value) return; // 공유 세션이 아닐 때는 무시
+  if (!shareCode.value) return; // 공유 세션이 아닐 때는 무시
 
   if (document.hidden) {
     // 탭이 비활성화되면 폴링 중지
@@ -817,7 +1046,10 @@ function handleVisibilityChange() {
     // 탭이 다시 활성화되면 즉시 데이터를 가져오고 폴링 재시작
     fetchComments();
     if (!commentPollingInterval.value) {
-      commentPollingInterval.value = setInterval(fetchComments, 5000);
+      // 현재 활성화된 탭에 따라 폴링 간격 설정
+      const interval = activeTab.value === 'comments' ? 1000 : 2000;
+      commentPollingInterval.value = setInterval(fetchComments, interval);
+      console.log(`탭 활성화 - 폴링 간격 ${interval}ms로 설정`);
     }
   }
 }
@@ -992,11 +1224,28 @@ function groupItems(items) {
  * 사용자의 분석 기록 목록을 가져옵니다.
  */
 async function fetchAnalyses() {
-  if (!user.value) return;
+  // 인증 상태 확인
+  const token = localStorage.getItem('access_token');
+  if (!token) {
+    console.warn('인증 토큰이 없습니다.');
+    return;
+  }
+  
   isLoading.value = true;
   try {
-    const url = getApiUrl(`/api/analysis/history/${user.value.id}`);
-    const token = localStorage.getItem('access_token');
+    // 사용자 정보가 없으면 토큰에서 사용자 ID 추출 시도
+    let userId = user.value?.id;
+    if (!userId) {
+      try {
+        const tokenPayload = JSON.parse(atob(token.split('.')[1]));
+        userId = tokenPayload.user_id || tokenPayload.id;
+      } catch (e) {
+        console.error('토큰에서 사용자 ID를 추출할 수 없습니다:', e);
+        return;
+      }
+    }
+    
+    const url = getApiUrl(`/api/analysis/history/${userId}`);
     const { data, error } = await useFetch(url, {
       headers: {
         'Authorization': `Bearer ${token}`
@@ -1030,12 +1279,18 @@ async function fetchAnalyses() {
  * @param {number} id - 분석 기록 ID
  */
 async function loadAnalysisDetail(id) {
+  // 인증 상태 확인
+  const token = localStorage.getItem('access_token');
+  if (!token) {
+    console.warn('인증 토큰이 없습니다.');
+    return;
+  }
+  
   transitionName.value = 'slide-left';
   selectedRecordId.value = id;
   isLoading.value = true;
   try {
     const url = getApiUrl(`/api/analysis/detail/${id}`);
-    const token = localStorage.getItem('access_token');
     const { data, error } = await useFetch(url, {
       server: false,
       headers: {
@@ -1373,27 +1628,24 @@ watch(() => partners.value.length, (newLength, oldLength) => {
   }, 1500);
 });
 
-// 인증 상태 및 라우트 변경을 감지하여 뷰를 업데이트합니다.
-watch([isInitialized, () => route.query.id], ([initialized, analysisId]) => {
-  // 인증 절차가 완료되었고, 사용자 정보도 있어야 진행합니다.
-  if (initialized && user.value) {
-    if (analysisId) {
-      // 상세 페이지. 상세 데이터가 없거나 ID가 다르면 로드합니다.
-      if (!detailedRecord.value || detailedRecord.value.analysis.id != analysisId) {
-        loadAnalysisDetail(analysisId);
-      }
-    } else {
-      // 목록 페이지.
-      if (selectedRecordId.value) { // 상세 페이지에 있다가 목록으로 돌아온 경우 상태 초기화
-        transitionName.value = 'slide-right';
-        selectedRecordId.value = null;
-        detailedRecord.value = null;
-        partners.value = [];
-        partnerCode.value = '';
-        showAddForm.value = false;
-      }
-      fetchAnalyses();
+// 라우트 변경을 감지하여 뷰를 업데이트합니다.
+watch(() => route.query.id, (analysisId) => {
+  if (analysisId) {
+    // 상세 페이지. 상세 데이터가 없거나 ID가 다르면 로드합니다.
+    if (!detailedRecord.value || detailedRecord.value.analysis.id != analysisId) {
+      loadAnalysisDetail(analysisId);
     }
+  } else {
+    // 목록 페이지.
+    if (selectedRecordId.value) { // 상세 페이지에 있다가 목록으로 돌아온 경우 상태 초기화
+      transitionName.value = 'slide-right';
+      selectedRecordId.value = null;
+      detailedRecord.value = null;
+      partners.value = [];
+      partnerCode.value = '';
+      showAddForm.value = false;
+    }
+    fetchAnalyses();
   }
 }, { immediate: true });
 
@@ -1402,19 +1654,98 @@ watch(shareCode, (newShareCode) => {
   if (newShareCode) {
     // shareCode가 생겼다는 것은 상세 정보 로드가 완료되었다는 의미이므로 댓글을 가져옵니다.
     fetchComments();
+    // 폴링 시작 (2초마다 댓글 목록 갱신)
+    if (!commentPollingInterval.value) {
+      commentPollingInterval.value = setInterval(fetchComments, 2000);
+    }
+    
+    // 채팅 탭이 활성화되어 있다면 스크롤 실행
+    if (activeTab.value === 'comments') {
+      nextTick(() => {
+        setTimeout(() => {
+          scrollToBottom();
+        }, 300); // 채팅 데이터 로드 후 스크롤
+      });
+    }
   } else {
     // shareCode가 없어졌다는 것은 상세 뷰를 나갔다는 의미이므로 댓글 목록을 초기화합니다.
     comments.value = [];
+    // 폴링 중지
+    if (commentPollingInterval.value) {
+      clearInterval(commentPollingInterval.value);
+      commentPollingInterval.value = null;
+    }
   }
 });
 
+// 채팅 탭 활성화 시 스크롤을 맨 아래로 이동
+watch(activeTab, (newTab) => {
+  if (newTab === 'comments') {
+    // 채팅 탭이 활성화되면 스크롤을 맨 아래로 이동
+    // DOM 렌더링이 완전히 완료된 후 스크롤 실행
+    nextTick(() => {
+      // 채팅 탭이 실제로 렌더링되었는지 확인
+      const checkAndScroll = () => {
+        const wrapper = commentListWrapperRef.value;
+        if (wrapper && wrapper.scrollHeight > 0) {
+          // 채팅창이 렌더링되고 내용이 있으면 스크롤
+          wrapper.scrollTop = wrapper.scrollHeight;
+          console.log('채팅 탭 활성화 시 스크롤 완료');
+        } else {
+          // 아직 렌더링되지 않았으면 100ms 후 다시 시도
+          setTimeout(checkAndScroll, 100);
+        }
+      };
+      
+      setTimeout(checkAndScroll, 100);
+    });
+    
+    // 채팅 탭이 활성화되면 더 빠른 폴링 (1초마다)
+    if (commentPollingInterval.value) {
+      clearInterval(commentPollingInterval.value);
+      commentPollingInterval.value = setInterval(fetchComments, 1000);
+      console.log('채팅 탭 활성화 - 폴링 간격 1초로 변경');
+    }
+  } else if (newTab === 'baggage') {
+    // 동반 여행자 수하물 탭으로 변경되면 일반 폴링 (2초마다)
+    if (commentPollingInterval.value) {
+      clearInterval(commentPollingInterval.value);
+      commentPollingInterval.value = setInterval(fetchComments, 2000);
+      console.log('동반 여행자 수하물 탭 활성화 - 폴링 간격 2초로 변경');
+    }
+  }
+});
+
+const locationSearchContainerRef = ref(null);
+const handleClickOutside = (event) => {
+  if (locationSearchContainerRef.value && !locationSearchContainerRef.value.contains(event.target)) {
+    showLocationDropdown.value = false;
+  }
+};
+
 // --- 생명주기 ---
-onMounted(() => {
+onMounted(async () => {
   window.addEventListener('resize', updateImageSize);
+  document.addEventListener('click', handleClickOutside);
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+  
+  // 기본 탭을 동반 여행자 수하물로 설정
+  activeTab.value = 'baggage';
+  
+  // 초기 데이터 로딩 (다른 페이지들과 동일한 패턴)
+  if (route.query.id) {
+    // 상세 페이지인 경우
+    await loadAnalysisDetail(route.query.id);
+  } else {
+    // 목록 페이지인 경우
+    await fetchAnalyses();
+  }
 });
 
 onUnmounted(() => {
   window.removeEventListener('resize', updateImageSize);
+  document.removeEventListener('click', handleClickOutside);
+  document.removeEventListener('visibilitychange', handleVisibilityChange);
   // 컴포넌트가 사라질 때 폴링 중지
   if (commentPollingInterval.value) {
     clearInterval(commentPollingInterval.value);
@@ -1479,20 +1810,27 @@ onUnmounted(() => {
   font-family: var(--main-font);
 }
 
-.selection-header {
-  margin-bottom: 2rem;
+.page-header {
+  text-align: center;
+  margin-top: 48px;
+  margin-bottom: 32px;
 }
 
 .page-title {
   font-size: 2.2rem;
   font-weight: bold;
-  color: #333;
-  margin-bottom: 0.5rem;
+  margin: 0;
+  color: #222;
 }
 
-.page-desc {
-  font-size: 1.1rem;
+.page-title .highlight {
+  color: var(--main-blue, #2196f3);
+}
+
+.page-description {
   color: #888;
+  margin-top: 8px;
+  font-size: 1rem;
 }
 
 /* --- Records Grid --- */
@@ -1873,6 +2211,293 @@ onUnmounted(() => {
 
 .item-list-overlay::-webkit-scrollbar-thumb:hover {
   background-color: rgba(255, 255, 255, 0.5);
+}
+
+.confirm-dialog {
+  max-width: 800px;
+  width: 100%;
+}
+
+
+.community-form {
+  padding: 24px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.form-group {
+  margin-bottom: 24px;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.form-input,
+.form-textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+
+.form-input:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: #2196f3;
+  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+}
+
+.location-search {
+  position: relative;
+}
+
+.location-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  margin-top: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 1010; /* Ensure it's above the modal overlay */
+}
+
+.location-option {
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.location-option:hover {
+  background: #f5f5f5;
+  color: #2196f3;
+}
+
+.location-option-empty {
+  padding: 12px 16px;
+  color: #999;
+  text-align: center;
+}
+
+.tags-input-area {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 8px;
+  min-height: 48px;
+}
+
+.selected-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.tag-chip {
+  background: #e3f2fd;
+  color: #2196f3;
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tag-chip button {
+  background: none;
+  border: none;
+  color: #2196f3;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+.tag-chip button i {
+  font-size: 16px;
+}
+
+.selected-tags .form-input {
+  flex: 1;
+  min-width: 150px;
+  border: none;
+  outline: none;
+  padding: 6px;
+  font-size: 0.9rem;
+}
+
+.help-text {
+  font-size: 0.85rem;
+  color: #999;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.required {
+  color: #f44336;
+}
+
+.confirm-dialog {
+  max-width: 800px;
+  width: 100%;
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  border-bottom: none;
+}
+
+.dialog-header .dialog-title {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #1565c0;
+}
+
+.community-form {
+  padding: 24px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.form-group {
+  margin-bottom: 24px;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.form-input,
+.form-textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+
+.form-input:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: #2196f3;
+  box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+}
+
+.location-search {
+  position: relative;
+}
+
+.location-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  margin-top: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 1010; /* Ensure it's above the modal overlay */
+}
+
+.location-option {
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.location-option:hover {
+  background: #f5f5f5;
+  color: #2196f3;
+}
+
+.location-option-empty {
+  padding: 12px 16px;
+  color: #999;
+  text-align: center;
+}
+
+.tags-input-area {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 8px;
+  min-height: 48px;
+}
+
+.selected-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.tag-chip {
+  background: #e3f2fd;
+  color: #2196f3;
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tag-chip button {
+  background: none;
+  border: none;
+  color: #2196f3;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+
+.tag-chip button i {
+  font-size: 16px;
+}
+
+.selected-tags .form-input {
+  flex: 1;
+  min-width: 150px;
+  border: none;
+  outline: none;
+  padding: 6px;
+  font-size: 0.9rem;
+}
+
+.help-text {
+  font-size: 0.85rem;
+  color: #999;
+  margin-top: 4px;
+  margin-bottom: 0;
+}
+
+.required {
+  color: #f44336;
 }
 
 .item-list-overlay {
@@ -2661,7 +3286,7 @@ onUnmounted(() => {
   border-radius: 16px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   width: 100%;
-  max-width: 400px;
+  max-width: 800px;
   text-align: center;
 }
 

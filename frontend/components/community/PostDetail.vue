@@ -87,176 +87,178 @@
         </div>
 
         <!-- 댓글 섹션 -->
-        <div v-if="showComments" class="comments-section">
-          <h3 class="comments-title">댓글 {{ getTotalCommentCount() }}개</h3>
+        <transition name="comment-section-fade">
+          <div v-if="showComments" class="comments-section">
+            <h3 class="comments-title">댓글 {{ getTotalCommentCount() }}개</h3>
           
-                 <!-- 댓글 목록 -->
-                 <div class="comments-list">
-                   <div v-for="comment in comments" :key="comment.id" class="comment-item">
-                     <div class="comment-avatar">
-                       <img 
-                         :src="getAuthorProfileImage(comment.author_id, comment.profile_image)" 
-                         @error="onProfileImageError"
-                         alt="프로필"
-                         class="profile-image"
-                       />
-                     </div>
-                     <div class="comment-content">
-                       <div class="comment-header">
-                         <span class="comment-author">{{ comment.author }}</span>
-                         <span class="comment-date">
-                           {{ formatDate(isEdited(comment) ? comment.updated_at : comment.created_at) }}
-                           <span v-if="isEdited(comment)" class="edited-badge">수정됨</span>
-                         </span>
-                         <div class="comment-menu">
-                           <button class="menu-btn" @click.stop="toggleCommentMenu(comment.id)">
-                             <i class="material-icons">more_vert</i>
-                           </button>
-                           <div v-if="showMenuFor === comment.id" class="menu-dropdown" @click.stop>
-                             <template v-if="comment.is_author">
-                               <button class="menu-item edit-item" @click.stop="startEditComment(comment.id, comment.content)">
-                                 <i class="material-icons">edit</i>
-                                 수정
-                               </button>
-                               <button class="menu-item delete-item" @click.stop="deleteComment(comment.id)">
-                                 <i class="material-icons">delete</i>
-                                 삭제
-                               </button>
-                             </template>
-                             <div v-else class="menu-item-disabled">
-                               수정 권한이 없습니다
-                             </div>
-                           </div>
-                         </div>
+                   <!-- 댓글 목록 -->
+                   <transition-group name="comment-fade" tag="div" class="comments-list">
+                     <div v-for="comment in comments" :key="comment.id" class="comment-item">
+                       <div class="comment-avatar">
+                         <img 
+                           :src="getAuthorProfileImage(comment.author_id, comment.profile_image)" 
+                           @error="onProfileImageError"
+                           alt="프로필"
+                           class="profile-image"
+                         />
                        </div>
-                       
-                       <!-- 수정 모드가 아닌 경우: 댓글 내용 표시 -->
-                       <p v-if="editingCommentId !== comment.id" class="comment-text">{{ comment.content }}</p>
-                       
-                       <!-- 수정 모드인 경우: 수정 폼 표시 -->
-                       <div v-else class="edit-comment-form" @mousedown.stop @touchstart.stop>
-                         <textarea
-                           v-model="editingCommentText"
-                           class="edit-textarea"
-                           rows="3"
-                         ></textarea>
-                         <div class="edit-actions">
-                           <button class="edit-cancel-btn" @click="cancelEditComment">취소</button>
-                           <button class="edit-save-btn" @click="saveEditComment(comment.id)" :disabled="!editingCommentText.trim()">
-                             저장
-                           </button>
-                         </div>
-                       </div>
-                       
-                       <!-- 답글이 없는 경우: 댓글 바로 아래에 답글 버튼 -->
-                       <button v-if="!comment.replies || comment.replies.length === 0" class="reply-btn" @click="startReply(comment.id)">
-                         <i class="material-icons">reply</i>
-                         답글
-                       </button>
-                       
-                       <!-- 답글 목록 -->
-                       <div v-if="comment.replies && comment.replies.length > 0" class="replies-list">
-                         <div v-for="reply in comment.replies" :key="reply.id" class="reply-item">
-                           <div class="reply-avatar">
-                             <img 
-                               :src="getAuthorProfileImage(reply.author_id, reply.profile_image)" 
-                               @error="onProfileImageError"
-                               alt="프로필"
-                               class="profile-image"
-                             />
-                           </div>
-                           <div class="reply-content">
-                             <div class="reply-header">
-                               <span class="reply-author">{{ reply.author }}</span>
-                               <span class="reply-date">
-                                 {{ formatDate(isEdited(reply) ? reply.updated_at : reply.created_at) }}
-                                 <span v-if="isEdited(reply)" class="edited-badge">수정됨</span>
-                               </span>
-                               <div class="reply-menu">
-                                 <button class="menu-btn" @click.stop="toggleCommentMenu(reply.id)">
-                                   <i class="material-icons">more_vert</i>
+                       <div class="comment-content">
+                         <div class="comment-header">
+                           <span class="comment-author">{{ comment.author }}</span>
+                           <span class="comment-date">
+                             {{ formatDate(isEdited(comment) ? comment.updated_at : comment.created_at) }}
+                             <span v-if="isEdited(comment)" class="edited-badge">수정됨</span>
+                           </span>
+                           <div class="comment-menu">
+                             <button class="menu-btn" @click.stop="toggleCommentMenu(comment.id)">
+                               <i class="material-icons">more_vert</i>
+                             </button>
+                             <div v-if="showMenuFor === comment.id" class="menu-dropdown" @click.stop>
+                               <template v-if="comment.is_author">
+                                 <button class="menu-item edit-item" @click.stop="startEditComment(comment.id, comment.content)">
+                                   <i class="material-icons">edit</i>
+                                   수정
                                  </button>
-                                 <div v-if="showMenuFor === reply.id" class="menu-dropdown" @click.stop>
-                                   <template v-if="reply.is_author">
-                                     <button class="menu-item edit-item" @click.stop="startEditComment(reply.id, reply.content)">
-                                       <i class="material-icons">edit</i>
-                                       수정
-                                     </button>
-                                     <button class="menu-item delete-item" @click.stop="deleteComment(reply.id)">
-                                       <i class="material-icons">delete</i>
-                                       삭제
-                                     </button>
-                                   </template>
-                                   <div v-else class="menu-item-disabled">
-                                     수정 권한이 없습니다
-                                   </div>
-                                 </div>
-                               </div>
-                             </div>
-                             
-                             <!-- 수정 모드가 아닌 경우: 답글 내용 표시 -->
-                             <p v-if="editingCommentId !== reply.id" class="reply-text">{{ reply.content }}</p>
-                             
-                             <!-- 수정 모드인 경우: 수정 폼 표시 -->
-                             <div v-else class="edit-comment-form" @mousedown.stop @touchstart.stop>
-                               <textarea
-                                 v-model="editingCommentText"
-                                 class="edit-textarea"
-                                 rows="2"
-                               ></textarea>
-                               <div class="edit-actions">
-                                 <button class="edit-cancel-btn" @click="cancelEditComment">취소</button>
-                                 <button class="edit-save-btn" @click="saveEditComment(reply.id)" :disabled="!editingCommentText.trim()">
-                                   저장
+                                 <button class="menu-item delete-item" @click.stop="deleteComment(comment.id)">
+                                   <i class="material-icons">delete</i>
+                                   삭제
                                  </button>
+                               </template>
+                               <div v-else class="menu-item-disabled">
+                                 수정 권한이 없습니다
                                </div>
                              </div>
                            </div>
                          </div>
                          
-                         <!-- 답글이 있는 경우: 답글 목록 아래에 답글 버튼 -->
-                         <button class="reply-btn reply-btn-bottom" @click="startReply(comment.id)">
+                         <!-- 수정 모드가 아닌 경우: 댓글 내용 표시 -->
+                         <p v-if="editingCommentId !== comment.id" class="comment-text">{{ comment.content }}</p>
+                         
+                         <!-- 수정 모드인 경우: 수정 폼 표시 -->
+                         <div v-else class="edit-comment-form" @mousedown.stop @touchstart.stop>
+                           <textarea
+                             v-model="editingCommentText"
+                             class="edit-textarea"
+                             rows="3"
+                           ></textarea>
+                           <div class="edit-actions">
+                             <button class="edit-cancel-btn" @click="cancelEditComment">취소</button>
+                             <button class="edit-save-btn" @click="saveEditComment(comment.id)" :disabled="!editingCommentText.trim()">
+                               저장
+                             </button>
+                           </div>
+                         </div>
+                         
+                         <!-- 답글이 없는 경우: 댓글 바로 아래에 답글 버튼 -->
+                         <button v-if="!comment.replies || comment.replies.length === 0" class="reply-btn" @click="startReply(comment.id)">
                            <i class="material-icons">reply</i>
                            답글
                          </button>
-                       </div>
-                       
-                       <!-- 답글 입력 폼 -->
-                       <div v-if="replyingTo === comment.id" class="reply-form">
-                         <textarea
-                           v-model="replyText"
-                           placeholder="답글을 작성하세요..."
-                           rows="2"
-                           class="reply-textarea"
-                         ></textarea>
-                         <div class="reply-actions">
-                           <button class="reply-cancel-btn" @click="cancelReply">취소</button>
-                           <button class="reply-submit-btn" @click="submitReply(comment.id)" :disabled="!replyText.trim()">
-                             등록
+                         
+                         <!-- 답글 목록 -->
+                         <div v-if="comment.replies && comment.replies.length > 0" class="replies-list">
+                           <div v-for="reply in comment.replies" :key="reply.id" class="reply-item">
+                             <div class="reply-avatar">
+                               <img 
+                                 :src="getAuthorProfileImage(reply.author_id, reply.profile_image)" 
+                                 @error="onProfileImageError"
+                                 alt="프로필"
+                                 class="profile-image"
+                               />
+                             </div>
+                             <div class="reply-content">
+                               <div class="reply-header">
+                                 <span class="reply-author">{{ reply.author }}</span>
+                                 <span class="reply-date">
+                                   {{ formatDate(isEdited(reply) ? reply.updated_at : reply.created_at) }}
+                                   <span v-if="isEdited(reply)" class="edited-badge">수정됨</span>
+                                 </span>
+                                 <div class="reply-menu">
+                                   <button class="menu-btn" @click.stop="toggleCommentMenu(reply.id)">
+                                     <i class="material-icons">more_vert</i>
+                                   </button>
+                                   <div v-if="showMenuFor === reply.id" class="menu-dropdown" @click.stop>
+                                     <template v-if="reply.is_author">
+                                       <button class="menu-item edit-item" @click.stop="startEditComment(reply.id, reply.content)">
+                                         <i class="material-icons">edit</i>
+                                         수정
+                                       </button>
+                                       <button class="menu-item delete-item" @click.stop="deleteComment(reply.id)">
+                                         <i class="material-icons">delete</i>
+                                         삭제
+                                       </button>
+                                     </template>
+                                     <div v-else class="menu-item-disabled">
+                                       수정 권한이 없습니다
+                                     </div>
+                                   </div>
+                                 </div>
+                               </div>
+                               
+                               <!-- 수정 모드가 아닌 경우: 답글 내용 표시 -->
+                               <p v-if="editingCommentId !== reply.id" class="reply-text">{{ reply.content }}</p>
+                               
+                               <!-- 수정 모드인 경우: 수정 폼 표시 -->
+                               <div v-else class="edit-comment-form" @mousedown.stop @touchstart.stop>
+                                 <textarea
+                                   v-model="editingCommentText"
+                                   class="edit-textarea"
+                                   rows="2"
+                                 ></textarea>
+                                 <div class="edit-actions">
+                                   <button class="edit-cancel-btn" @click="cancelEditComment">취소</button>
+                                   <button class="edit-save-btn" @click="saveEditComment(reply.id)" :disabled="!editingCommentText.trim()">
+                                     저장
+                                   </button>
+                                 </div>
+                               </div>
+                             </div>
+                           </div>
+                           
+                           <!-- 답글이 있는 경우: 답글 목록 아래에 답글 버튼 -->
+                           <button class="reply-btn reply-btn-bottom" @click="startReply(comment.id)">
+                             <i class="material-icons">reply</i>
+                             답글
                            </button>
+                         </div>
+                         
+                         <!-- 답글 입력 폼 -->
+                         <div v-if="replyingTo === comment.id" class="reply-form">
+                           <textarea
+                             v-model="replyText"
+                             placeholder="답글을 작성하세요..."
+                             rows="2"
+                             class="reply-textarea"
+                           ></textarea>
+                           <div class="reply-actions">
+                             <button class="reply-cancel-btn" @click="cancelReply">취소</button>
+                             <button class="reply-submit-btn" @click="submitReply(comment.id)" :disabled="!replyText.trim()">
+                               등록
+                             </button>
+                           </div>
                          </div>
                        </div>
                      </div>
-                   </div>
 
-                   <div v-if="comments.length === 0" class="no-comments">
-                     첫 댓글을 작성해보세요!
-                   </div>
-                 </div>
+                     <div v-if="comments.length === 0" class="no-comments">
+                       첫 댓글을 작성해보세요!
+                     </div>
+                   </transition-group>
 
-          <!-- 댓글 작성 -->
-          <div class="comment-separator"></div>
-          <div class="comment-input-area">
-            <textarea
-              v-model="newComment"
-              placeholder="댓글을 작성하세요..."
-              rows="3"
-            ></textarea>
-            <button class="submit-comment-btn" @click="submitComment" :disabled="!newComment.trim()">
-              등록
-            </button>
+            <!-- 댓글 작성 -->
+            <div class="comment-separator"></div>
+            <div class="comment-input-area">
+              <textarea
+                v-model="newComment"
+                placeholder="댓글을 작성하세요..."
+                rows="3"
+              ></textarea>
+              <button class="submit-comment-btn" @click="submitComment" :disabled="!newComment.trim()">
+                등록
+              </button>
+            </div>
           </div>
-        </div>
+        </transition>
       </div>
     </div>
   </div>
@@ -1583,6 +1585,33 @@ onUnmounted(() => {
   text-align: center;
   color: #999;
   padding: 40px 20px;
+}
+
+/* Comment Transitions */
+.comment-fade-enter-active,
+.comment-fade-leave-active {
+  transition: all 0.3s ease;
+}
+.comment-fade-enter-from,
+.comment-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+.comment-fade-move {
+  transition: transform 0.3s ease;
+}
+
+.comment-section-fade-enter-active, 
+.comment-section-fade-leave-active {
+  transition: all 0.4s ease;
+  max-height: 1000px; /* 충분히 큰 값 */
+  overflow: hidden;
+}
+.comment-section-fade-enter-from, 
+.comment-section-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
+  max-height: 0;
 }
 
 @media (max-width: 768px) {

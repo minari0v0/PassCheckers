@@ -61,92 +61,72 @@ Your task is to predict the final weight for a list of items provided in a JSON 
 def _calculate_weight_from_weights_table(avg_weight_value, avg_weight_unit, weight_range, bbox_ratio, item_name=None):
     """
     weights 테이블의 기본 무게 데이터를 bbox_ratio에 따라 조정하여 예측 무게를 계산합니다.
-    
-    Args:
-        avg_weight_value: 평균 무게 값
-        avg_weight_unit: 평균 무게 단위 (g 또는 kg)
-        weight_range: 무게 범위 문자열 (예: "200-500g")
-        bbox_ratio: 이미지에서의 바운딩 박스 비율
-        item_name: 아이템 이름 (선택적, 특별한 조정을 위해)
-    
-    Returns:
-        dict: {"value": float, "unit": str} 또는 None
+    (수정됨: 모든 단위를 그램(g)으로 통일하여 계산 후, 최종적으로 단위를 결정합니다.)
     """
     try:
-        # 무게 범위에서 최소값과 최대값 추출
-        weight_range_clean = weight_range.replace('g', '').replace('kg', '').strip()
+        # --- 1. 모든 무게를 그램(g) 단위로 통일 --- 
+
+        # 평균 무게를 그램으로 변환
+        base_avg_weight_g = float(avg_weight_value)
+        if avg_weight_unit == 'kg':
+            base_avg_weight_g *= 1000
+
+        # 무게 범위(range)를 파싱하고 그램으로 변환
+        min_weight_g, max_weight_g = 0, 0
+        weight_range_clean = weight_range.replace('kg', '').replace('g', '').strip()
         if '-' in weight_range_clean:
             min_weight_str, max_weight_str = weight_range_clean.split('-')
-            min_weight = float(min_weight_str.strip())
-            max_weight = float(max_weight_str.strip())
+            min_weight_g = float(min_weight_str.strip())
+            max_weight_g = float(max_weight_str.strip())
+            
+            # 범위에 'kg'이 있었다면 그램으로 변환
+            if 'kg' in weight_range:
+                min_weight_g *= 1000
+                max_weight_g *= 1000
         else:
-            # 범위가 명확하지 않은 경우 평균값 기준으로 ±30% 범위 설정
-            base_weight = float(avg_weight_value)
-            min_weight = base_weight * 0.7
-            max_weight = base_weight * 1.3
+            # 범위가 명확하지 않은 경우 평균값(그램) 기준으로 ±30% 범위 설정
+            min_weight_g = base_avg_weight_g * 0.7
+            max_weight_g = base_avg_weight_g * 1.3
+
+        # --- 2. Bbox ratio 및 아이템 특성에 따른 계수 계산 ---
         
-        # bbox_ratio에 따른 무게 조정 (더 세밀한 조정)
-        # bbox_ratio가 클수록 무게가 더 무거워지도록 조정
-        if bbox_ratio < 0.05:
-            # 극도로 작은 비율: 최소값 근처
-            weight_multiplier = 0.6
-        elif bbox_ratio < 0.1:
-            # 매우 작은 비율: 최소값 근처
-            weight_multiplier = 0.75
-        elif bbox_ratio < 0.15:
-            # 작은 비율: 최소값과 평균값 사이
-            weight_multiplier = 0.85
-        elif bbox_ratio < 0.25:
-            # 중간-작은 비율: 평균값 근처
-            weight_multiplier = 0.95
-        elif bbox_ratio < 0.35:
-            # 중간 비율: 평균값
-            weight_multiplier = 1.0
-        elif bbox_ratio < 0.45:
-            # 중간-큰 비율: 평균값과 최대값 사이
-            weight_multiplier = 1.1
-        elif bbox_ratio < 0.6:
-            # 큰 비율: 최대값 근처
-            weight_multiplier = 1.2
-        else:
-            # 매우 큰 비율: 최대값
-            weight_multiplier = 1.3
+        # bbox_ratio에 따른 무게 조정
+        if bbox_ratio < 0.05: weight_multiplier = 0.6
+        elif bbox_ratio < 0.1: weight_multiplier = 0.75
+        elif bbox_ratio < 0.15: weight_multiplier = 0.85
+        elif bbox_ratio < 0.25: weight_multiplier = 0.95
+        elif bbox_ratio < 0.35: weight_multiplier = 1.0
+        elif bbox_ratio < 0.45: weight_multiplier = 1.1
+        elif bbox_ratio < 0.6: weight_multiplier = 1.2
+        else: weight_multiplier = 1.3
         
         # 아이템별 특성에 따른 추가 조정
         item_adjustment = 1.0
         if item_name:
             item_name_lower = item_name.lower()
-            # 가방류는 보수적으로 처리
             if any(keyword in item_name_lower for keyword in ['가방', '백', 'bag', 'backpack']):
-                if bbox_ratio > 0.3:
-                    item_adjustment = 1.1  # 큰 가방은 조금 더 무겁게
-                else:
-                    item_adjustment = 0.9  # 작은 가방은 조금 더 가볍게
-            
-            # 전자제품은 크기에 민감하게 반응
-            elif any(keyword in item_name_lower for keyword in ['노트북', 'laptop', '태블릿', 'tablet', '폰', 'phone']):
-                item_adjustment = 1.0  # 전자제품은 기본 조정 유지
-            
-            # 의류는 크기 변화가 무게에 덜 영향
+                item_adjustment = 1.1 if bbox_ratio > 0.3 else 0.9
             elif any(keyword in item_name_lower for keyword in ['티셔츠', 'shirt', '바지', 'pants', '옷', 'clothes']):
-                item_adjustment = 0.95  # 의류는 조금 더 보수적으로
+                item_adjustment = 0.95
+
+        # --- 3. 최종 무게 계산 (그램 단위) ---
+
+        predicted_weight_g = base_avg_weight_g * weight_multiplier * item_adjustment
         
-        # 최종 무게 계산
-        predicted_weight = float(avg_weight_value) * weight_multiplier * item_adjustment
+        # 계산된 무게를 최소/최대 범위 내로 제한
+        predicted_weight_g = max(min_weight_g, min(predicted_weight_g, max_weight_g))
         
-        # 무게 범위 내로 제한
-        predicted_weight = max(min_weight, min(predicted_weight, max_weight))
-        
-        # 단위 결정 (1kg 이상이면 kg, 아니면 g)
-        if predicted_weight >= 1000 and avg_weight_unit == 'g':
+        # --- 4. 최종 단위 결정 및 반환 ---
+
+        if predicted_weight_g >= 1000:
             return {
-                "value": round(predicted_weight / 1000, 2),
+                "value": round(predicted_weight_g / 1000, 2),
                 "unit": "kg"
             }
         else:
             return {
-                "value": round(predicted_weight, 1),
-                "unit": avg_weight_unit
+                "value": round(predicted_weight_g, 1),
+                "unit": "g"
             }
             
     except (ValueError, TypeError) as e:
@@ -180,6 +160,12 @@ def _get_default_weight_for_item(item_name):
         return "200g", "150-250g"
     elif any(keyword in item_name_lower for keyword in ['충전기', 'charger']):
         return "150g", "100-200g"
+    elif any(keyword in item_name_lower for keyword in ['카메라', 'camera']):
+        return "350g", "200-600g"
+    elif any(keyword in item_name_lower for keyword in ['고데기', 'hair iron']):
+        return "400g", "250-700g"
+    elif any(keyword in item_name_lower for keyword in ['보조배터리', '보조 배터리', 'power bank']):
+        return "300g", "100-500g"
     
     # 가방류
     elif any(keyword in item_name_lower for keyword in ['가방', '백', 'bag']):
@@ -213,6 +199,16 @@ def _get_default_weight_for_item(item_name):
     elif any(keyword in item_name_lower for keyword in ['치약', 'toothpaste']):
         return "100g", "50-150g"
     
+    # 액세서리
+    elif any(keyword in item_name_lower for keyword in ['모자', 'hat', 'cap']):
+        return "150g", "80-300g"
+    elif any(keyword in item_name_lower for keyword in ['선글라스', 'sunglasses', '안경', 'glasses']):
+        return "50g", "30-80g"
+    elif any(keyword in item_name_lower for keyword in ['스카프', 'scarf']):
+        return "100g", "50-200g"
+    elif any(keyword in item_name_lower for keyword in ['장갑', 'gloves']):
+        return "80g", "50-150g"
+
     # 기타 일반적인 물품
     elif any(keyword in item_name_lower for keyword in ['책', 'book']):
         return "300g", "200-500g"
@@ -303,14 +299,15 @@ def get_predicted_weights_for_analysis(analysis_id: int):
                 
                 # weights 테이블에 기본 무게 데이터가 있는 경우
                 if item.get('avg_weight_value') and item.get('weight_range'):
-                    # bbox_ratio 계산
-                    bbox_width = item['bbox_x_max'] - item['bbox_x_min']
-                    bbox_height = item['bbox_y_max'] - item['bbox_y_min']
-
-                    if item['image_width'] and item['image_height'] and item['image_width'] > 0 and item['image_height'] > 0:
-                        bbox_ratio = (bbox_width * bbox_height) / (item['image_width'] * item['image_height'])
+                    # Bbox ratio 계산 (좌표가 None이 아닌 경우에만)
+                    if item.get('bbox_x_max') is not None and item.get('bbox_x_min') is not None and \
+                        item.get('bbox_y_max') is not None and item.get('bbox_y_min') is not None:
+                        bbox_width = item['bbox_x_max'] - item['bbox_x_min']
+                        bbox_height = item['bbox_y_max'] - item['bbox_y_min']
                     else:
-                        bbox_ratio = 0
+                        bbox_width = 0
+                        bbox_height = 0
+                    bbox_ratio = float(bbox_width * bbox_height)
                     
                     # weights 테이블의 기본 무게를 bbox_ratio에 따라 조정
                     predicted_weight = _calculate_weight_from_weights_table(
@@ -352,13 +349,15 @@ def get_predicted_weights_for_analysis(analysis_id: int):
                 
                 # Gemini API용 데이터 준비
                 for item in items_without_weights:
-                    bbox_width = item['bbox_x_max'] - item['bbox_x_min']
-                    bbox_height = item['bbox_y_max'] - item['bbox_y_min']
-
-                    if item['image_width'] and item['image_height'] and item['image_width'] > 0 and item['image_height'] > 0:
-                        bbox_ratio = (bbox_width * bbox_height) / (item['image_width'] * item['image_height'])
+                    # Bbox ratio 계산 (좌표가 None이 아닌 경우에만)
+                    if item.get('bbox_x_max') is not None and item.get('bbox_x_min') is not None and \
+                       item.get('bbox_y_max') is not None and item.get('bbox_y_min') is not None:
+                        bbox_width = item['bbox_x_max'] - item['bbox_x_min']
+                        bbox_height = item['bbox_y_max'] - item['bbox_y_min']
                     else:
-                        bbox_ratio = 0
+                        bbox_width = 0
+                        bbox_height = 0
+                    bbox_ratio = float(bbox_width * bbox_height)
 
                     # 아이템별 기본 무게 설정
                     default_weight, default_range = _get_default_weight_for_item(item['item_name_ko'])
