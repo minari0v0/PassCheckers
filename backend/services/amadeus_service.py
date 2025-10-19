@@ -55,6 +55,161 @@ def get_amadeus_token():
         print(f"Amadeus 토큰 요청 실패: {e}")
         raise Exception("Amadeus API 인증에 실패했습니다.")
 
+def _get_default_airport_code(destination):
+    """데이터베이스에서 찾지 못한 목적지에 대한 기본 공항 코드를 반환합니다."""
+    default_codes = {
+        # 국가명 매핑
+        '독일': 'FRA',  # 프랑크푸르트
+        'Germany': 'FRA',
+        'Chile': 'SCL',  # 산티아고
+        '칠레': 'SCL',
+        'Japan': 'NRT',  # 나리타
+        '일본': 'NRT',
+        'USA': 'LAX',  # 로스앤젤레스
+        '미국': 'LAX',
+        'France': 'CDG',  # 파리
+        '프랑스': 'CDG',
+        'UK': 'LHR',  # 런던
+        '영국': 'LHR',
+        'China': 'PEK',  # 베이징
+        '중국': 'PEK',
+        'Thailand': 'BKK',  # 방콕
+        '태국': 'BKK',
+        'Singapore': 'SIN',  # 싱가포르
+        '싱가포르': 'SIN',
+        'Australia': 'SYD',  # 시드니
+        '호주': 'SYD',
+        'Canada': 'YYZ',  # 토론토
+        '캐나다': 'YYZ',
+        'Italy': 'FCO',  # 로마
+        '이탈리아': 'FCO',
+        'Spain': 'MAD',  # 마드리드
+        '스페인': 'MAD',
+        'Netherlands': 'AMS',  # 암스테르담
+        '네덜란드': 'AMS',
+        'Switzerland': 'ZUR',  # 취리히
+        '스위스': 'ZUR',
+        'Austria': 'VIE',  # 비엔나
+        '오스트리아': 'VIE',
+        'Belgium': 'BRU',  # 브뤼셀
+        '벨기에': 'BRU',
+        'Sweden': 'ARN',  # 스톡홀름
+        '스웨덴': 'ARN',
+        'Norway': 'OSL',  # 오슬로
+        '노르웨이': 'OSL',
+        'Denmark': 'CPH',  # 코펜하겐
+        '덴마크': 'CPH',
+        'Finland': 'HEL',  # 헬싱키
+        '핀란드': 'HEL',
+        'Poland': 'WAW',  # 바르샤바
+        '폴란드': 'WAW',
+        'Czech Republic': 'PRG',  # 프라하
+        '체코': 'PRG',
+        'Hungary': 'BUD',  # 부다페스트
+        '헝가리': 'BUD',
+        'Portugal': 'LIS',  # 리스본
+        '포르투갈': 'LIS',
+        'Greece': 'ATH',  # 아테네
+        '그리스': 'ATH',
+        'Turkey': 'IST',  # 이스탄불
+        '터키': 'IST',
+        'Russia': 'SVO',  # 모스크바
+        '러시아': 'SVO',
+        'Brazil': 'GRU',  # 상파울루
+        '브라질': 'GRU',
+        'Argentina': 'EZE',  # 부에노스아이레스
+        '아르헨티나': 'EZE',
+        'Mexico': 'MEX',  # 멕시코시티
+        '멕시코': 'MEX',
+        'India': 'DEL',  # 델리
+        '인도': 'DEL',
+        'Indonesia': 'CGK',  # 자카르타
+        '인도네시아': 'CGK',
+        'Malaysia': 'KUL',  # 쿠알라룸푸르
+        '말레이시아': 'KUL',
+        'Philippines': 'MNL',  # 마닐라
+        '필리핀': 'MNL',
+        'Vietnam': 'SGN',  # 호치민
+        '베트남': 'SGN',
+        'New Zealand': 'AKL',  # 오클랜드
+        '뉴질랜드': 'AKL',
+        'South Africa': 'JNB',  # 요하네스버그
+        '남아프리카': 'JNB',
+        'Egypt': 'CAI',  # 카이로
+        '이집트': 'CAI',
+        'Morocco': 'CMN',  # 카사블랑카
+        '모로코': 'CMN',
+        'Israel': 'TLV',  # 텔아비브
+        '이스라엘': 'TLV',
+        'UAE': 'DXB',  # 두바이
+        '아랍에미리트': 'DXB',
+        'Saudi Arabia': 'RUH',  # 리야드
+        '사우디아라비아': 'RUH',
+        'Qatar': 'DOH',  # 도하
+        '카타르': 'DOH',
+        'Kuwait': 'KWI',  # 쿠웨이트
+        '쿠웨이트': 'KWI',
+        'Bahrain': 'BAH',  # 바레인
+        '바레인': 'BAH',
+        'Oman': 'MCT',  # 무스카트
+        '오만': 'MCT',
+        'Jordan': 'AMM',  # 암만
+        '요르단': 'AMM',
+        'Lebanon': 'BEY',  # 베이루트
+        '레바논': 'BEY',
+        'Iraq': 'BGW',  # 바그다드
+        '이라크': 'BGW',
+        'Iran': 'IKA',  # 테헤란
+        '이란': 'IKA',
+        'Afghanistan': 'KBL',  # 카불
+        '아프가니스탄': 'KBL',
+        'Pakistan': 'ISB',  # 이슬라마바드
+        '파키스탄': 'ISB',
+        'Bangladesh': 'DAC',  # 다카
+        '방글라데시': 'DAC',
+        'Sri Lanka': 'CMB',  # 콜롬보
+        '스리랑카': 'CMB',
+        'Nepal': 'KTM',  # 카트만두
+        '네팔': 'KTM',
+        'Bhutan': 'PBH',  # 파로
+        '부탄': 'PBH',
+        'Maldives': 'MLE',  # 말레
+        '몰디브': 'MLE',
+        'Myanmar': 'RGN',  # 양곤
+        '미얀마': 'RGN',
+        'Cambodia': 'PNH',  # 프놈펜
+        '캄보디아': 'PNH',
+        'Laos': 'VTE',  # 비엔티안
+        '라오스': 'VTE',
+        'Brunei': 'BWN',  # 반다르스리브가완
+        '브루나이': 'BWN',
+        'East Timor': 'DIL',  # 딜리
+        '동티모르': 'DIL',
+        'Mongolia': 'ULN',  # 울란바토르
+        '몽골': 'ULN',
+        'North Korea': 'FNJ',  # 평양
+        '북한': 'FNJ',
+        'Taiwan': 'TPE',  # 타이베이
+        '대만': 'TPE',
+        'Hong Kong': 'HKG',  # 홍콩
+        '홍콩': 'HKG',
+        'Macau': 'MFM',  # 마카오
+        '마카오': 'MFM',
+    }
+    
+    # 정확한 매칭 시도
+    if destination in default_codes:
+        return default_codes[destination]
+    
+    # 부분 매칭 시도 (대소문자 무시)
+    destination_lower = destination.lower()
+    for key, code in default_codes.items():
+        if destination_lower in key.lower() or key.lower() in destination_lower:
+            return code
+    
+    # 기본값: 인천공항 (ICN)
+    return 'ICN'
+
 def _get_db_data(sql, params):
     """데이터베이스에서 단일 조회를 수행합니다."""
     from app import get_db_connection # 순환 참조 방지를 위한 지역 import
@@ -81,7 +236,6 @@ def find_flights(search_type, destination_city, departure_date, airline_query, f
         if not db_result: raise Exception(f"'{airline_query}'의 항공사 코드를 찾을 수 없습니다.")
         carrier_code = db_result['iata_code']
     elif search_type == 'flightNumber':
-        match = re.match(r"([a-zA-Z0-9]{2})(\d+)", flight_number_query.strip().upper())
         if not match: raise Exception("유효하지 않은 항공편명 형식입니다. (예: KE85)")
         carrier_code, flight_number_to_match = match.groups()
 
