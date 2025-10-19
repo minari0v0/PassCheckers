@@ -98,7 +98,7 @@
                 v-if="locationId"
                 outline 
                 color="primary" 
-                label="여행지 정보 보기" 
+                label="여행지 관련 정보" 
                 @click="showInfoModal = true"
                 class="q-mr-sm custom-button"
                 no-caps
@@ -108,7 +108,7 @@
                 v-if="locationId"
                 outline 
                 color="info"
-                label="여행후기 보기"
+                label="여행자 소통 공간"
                 to="/community"
                 class="q-mr-sm custom-button"
                 no-caps
@@ -118,7 +118,7 @@
                 v-if="packingList.length > 0"
                 outline 
                 color="secondary" 
-                label="내 목록에 추가" 
+                label="수하물 목록 추가" 
                 @click="openAddToListModal"
                 class="custom-button"
                 no-caps
@@ -293,16 +293,19 @@
     
       <!-- "내 목록에 추가" 모달 -->
       <q-dialog v-model="showAddToListModal">
-        <q-card style="width: 900px; max-width: 90vw;">
-          <q-card-section class="row items-center q-pb-none">
-            <div class="text-h6">내 짐 목록에 추가</div>
+        <q-card class="modal-card-custom" style="width: 900px; max-width: 90vw; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column;">
+          <q-card-section class="modal-header-custom">
+            <div class="modal-title">내 짐 목록에 추가</div>
             <q-space />
-            <q-btn icon="close" flat round dense v-close-popup />
+            <q-btn icon="close" flat round dense v-close-popup class="modal-close-btn" />
           </q-card-section>
+          
+          <!-- 스크롤 가능한 컨텐츠 영역 -->
+          <div class="modal-content-scrollable">
 
           <!-- 분석 기록 선택 -->
           <q-card-section v-if="analysisHistory.length > 0">
-            <div class="text-subtitle1 q-mb-sm">1. 추가할 목록 선택</div>
+            <div class="text-subtitle1 q-mb-sm">추가할 목록 선택</div>
             <q-list bordered separator style="border-radius: 8px;">
               <q-item v-for="item in analysisHistory" :key="item.id" tag="label" v-ripple>
                 <q-item-section avatar top>
@@ -388,11 +391,13 @@
             <q-btn to="/classification" unelevated color="primary" label="수하물 분류하러 가기" class="q-mt-sm" />
           </q-card-section>
 
+          </div>
+          
+          <!-- 하단 버튼 영역 (스크롤되지 않음) -->
           <q-separator />
-
-          <q-card-actions align="right" class="q-pa-md bg-grey-1">
-            <q-btn flat label="취소" color="primary" v-close-popup />
-            <q-btn v-if="analysisHistory.length > 0" unelevated label="선택한 목록에 추가" color="primary" @click="saveItemsToList" :disable="!selectedAnalysisId" />
+          <q-card-actions align="right" class="q-pa-md bg-grey-1 modal-footer-custom">
+            <q-btn flat label="취소" color="primary" v-close-popup class="modal-bottom-btn" />
+            <q-btn v-if="analysisHistory.length > 0" unelevated label="선택한 목록에 추가" color="primary" @click="saveItemsToList" :disable="!selectedAnalysisId" class="modal-bottom-btn" />
           </q-card-actions>
         </q-card>
       </q-dialog>
@@ -908,6 +913,112 @@ const handleSurveyComplete = async (surveyData) => {
 .list-item-animated-leave-to {
   opacity: 0;
   transform: translateY(-10px);
+}
+
+/* 모달 스타일 */
+.modal-card-custom {
+  border-radius: 12px !important;
+}
+
+.modal-header-custom {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  border-bottom: 2px solid #90caf9;
+  padding: 20px 24px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+.modal-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1976d2;
+  flex: 1;
+}
+
+.modal-close-btn {
+  transition: none !important;
+  transform: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  border-radius: 50% !important;
+  width: 32px !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  margin-left: auto !important;
+  flex-shrink: 0 !important;
+}
+
+.modal-close-btn::before,
+.modal-close-btn::after {
+  display: none !important;
+}
+
+.modal-close-btn:hover {
+  transform: none !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+  background: transparent !important;
+}
+
+.modal-bottom-btn {
+  border-radius: 6px !important;
+  transition: none !important;
+  transform: none !important;
+  box-shadow: none !important;
+  border: 2px solid !important;
+}
+
+.modal-bottom-btn::before,
+.modal-bottom-btn::after {
+  display: none !important;
+}
+
+.modal-bottom-btn:hover {
+  transform: none !important;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.3) !important;
+}
+
+.modal-bottom-btn:active {
+  transform: none !important;
+}
+
+/* 모달 스크롤 영역 처리 */
+.modal-content-scrollable {
+  overflow-y: auto;
+  flex: 1;
+  max-height: calc(90vh - 120px); /* 헤더와 푸터 높이 제외 */
+}
+
+.modal-content-scrollable::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal-content-scrollable::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.modal-content-scrollable::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 4px;
+}
+
+.modal-content-scrollable::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
+
+/* 모달 푸터 */
+.modal-footer-custom {
+  border-radius: 0 0 12px 12px !important;
+  flex-shrink: 0;
+}
+
+/* 스크롤 가능한 리스트 영역 */
+.modal-card-custom .q-list {
+  border-radius: 8px !important;
+}
+
+.modal-card-custom .q-card {
+  border-radius: 8px !important;
 }
 
 .output-card {
