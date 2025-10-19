@@ -178,8 +178,8 @@
       <div class="navigation-footer">
         <q-btn unelevated color="grey-7" size="lg" @click="prevStep" v-if="currentStep > 1" class="nav-btn prev-btn" icon="arrow_back" label="이전" />
         <q-space />
-        <q-btn v-if="currentStep < stepDetails.length" label="다음 단계로" unelevated color="primary" size="lg" @click="nextStep" :disable="!canGoToNextStep" class="nav-btn next-btn" icon-right="arrow_forward" />
-        <q-btn v-if="currentStep === stepDetails.length" label="패킹리스트 생성" unelevated color="primary" size="lg" @click="submitSurvey" :disable="!canSubmit" class="nav-btn submit-btn" icon-right="inventory" />
+        <q-btn v-if="currentStep < stepDetails.length" label="다음 단계로" unelevated color="primary" size="lg" @click="nextStep" :disable="!canGoToNextStep" class="nav-btn next-btn" icon-right="arrow_forward" no-caps no-ripple />
+        <q-btn v-if="currentStep === stepDetails.length" label="패킹리스트 생성" unelevated color="primary" size="lg" @click="submitSurvey" :disable="!canSubmit" class="nav-btn submit-btn" icon-right="inventory" no-caps no-ripple />
       </div>
     </div>
 
@@ -819,5 +819,44 @@ const submitSurvey = () => {
     text-align: center;
     color: #888;
     padding: 2rem;
+}
+
+/* 다음 단계로 버튼과 패킹리스트 생성 버튼 커스텀 스타일 */
+.next-btn, .submit-btn {
+  border: 2px solid #2196f3 !important;
+  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.2) !important;
+  transition: all 0.3s ease !important;
+}
+
+.next-btn {
+  border-radius: 20px !important;
+}
+
+.next-btn:hover {
+  filter: brightness(1.1) !important;
+  border-color: #1976d2 !important;
+  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3) !important;
+}
+
+.submit-btn:hover {
+  transform: scale(1.05) !important;
+  background-color: white !important;
+  color: #2196f3 !important;
+  border-color: #1976d2 !important;
+  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3) !important;
+}
+
+.next-btn:active {
+  /* 확대 효과 제거 */
+}
+
+.submit-btn:active {
+  transform: scale(1.02) !important;
+}
+
+/* Quasar 버튼의 기본 애니메이션 효과 제거 */
+.next-btn::before, .next-btn::after,
+.submit-btn::before, .submit-btn::after {
+  display: none !important;
 }
 </style>
