@@ -391,8 +391,6 @@ def find_flights(search_type, destination_city, departure_date, airline_query, f
         if e.response is not None:
             print(f"Amadeus 응답 상태 코드: {e.response.status_code}")
             try:
-                print(f"Amadeus 응답 JSON: {e.response.json()}")
-                raise Exception(f"항공편 조회 실패: {e.response.json()}")
                 error_json = e.response.json()
                 print(f"Amadeus 응답 JSON: {error_json}")
                 raise Exception(f"항공편 조회 실패: {error_json}")
