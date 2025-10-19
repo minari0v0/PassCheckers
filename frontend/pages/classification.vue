@@ -44,6 +44,8 @@
             :loading="isUploading"
             :disable="isUploading"
             @click="triggerFileInput"
+            no-caps
+            no-ripple
           />
           <input
             ref="fileInput"
@@ -254,5 +256,30 @@ const handleDragLeave = () => {
   background-color: #f8fbff !important;
   transform: scale(1.02);
   transition: all 0.2s ease;
+}
+
+/* 파일 업로드 버튼 커스텀 스타일 */
+.file-upload-btn {
+  border: 2px solid #2196f3 !important;
+  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.2) !important;
+  transition: all 0.3s ease !important;
+}
+
+.file-upload-btn:hover {
+  transform: scale(1.05) !important;
+  background-color: white !important;
+  color: #2196f3 !important;
+  border-color: #1976d2 !important;
+  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3) !important;
+}
+
+.file-upload-btn:active {
+  transform: scale(1.02) !important;
+}
+
+/* Quasar 버튼의 기본 애니메이션 효과 제거 */
+.file-upload-btn::before,
+.file-upload-btn::after {
+  display: none !important;
 }
 </style>
