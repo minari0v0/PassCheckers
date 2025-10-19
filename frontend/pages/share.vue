@@ -1140,11 +1140,28 @@ function groupItems(items) {
  * 사용자의 분석 기록 목록을 가져옵니다.
  */
 async function fetchAnalyses() {
-  if (!user.value) return;
+  // 인증 상태 확인
+  const token = localStorage.getItem('access_token');
+  if (!token) {
+    console.warn('인증 토큰이 없습니다.');
+    return;
+  }
+  
   isLoading.value = true;
   try {
-    const url = getApiUrl(`/api/analysis/history/${user.value.id}`);
-    const token = localStorage.getItem('access_token');
+    // 사용자 정보가 없으면 토큰에서 사용자 ID 추출 시도
+    let userId = user.value?.id;
+    if (!userId) {
+      try {
+        const tokenPayload = JSON.parse(atob(token.split('.')[1]));
+        userId = tokenPayload.user_id || tokenPayload.id;
+      } catch (e) {
+        console.error('토큰에서 사용자 ID를 추출할 수 없습니다:', e);
+        return;
+      }
+    }
+    
+    const url = getApiUrl(`/api/analysis/history/${userId}`);
     const { data, error } = await useFetch(url, {
       headers: {
         'Authorization': `Bearer ${token}`
@@ -1178,12 +1195,18 @@ async function fetchAnalyses() {
  * @param {number} id - 분석 기록 ID
  */
 async function loadAnalysisDetail(id) {
+  // 인증 상태 확인
+  const token = localStorage.getItem('access_token');
+  if (!token) {
+    console.warn('인증 토큰이 없습니다.');
+    return;
+  }
+  
   transitionName.value = 'slide-left';
   selectedRecordId.value = id;
   isLoading.value = true;
   try {
     const url = getApiUrl(`/api/analysis/detail/${id}`);
-    const token = localStorage.getItem('access_token');
     const { data, error } = await useFetch(url, {
       server: false,
       headers: {
@@ -1521,27 +1544,24 @@ watch(() => partners.value.length, (newLength, oldLength) => {
   }, 1500);
 });
 
-// 인증 상태 및 라우트 변경을 감지하여 뷰를 업데이트합니다.
-watch([isInitialized, () => route.query.id], ([initialized, analysisId]) => {
-  // 인증 절차가 완료되었고, 사용자 정보도 있어야 진행합니다.
-  if (initialized && user.value) {
-    if (analysisId) {
-      // 상세 페이지. 상세 데이터가 없거나 ID가 다르면 로드합니다.
-      if (!detailedRecord.value || detailedRecord.value.analysis.id != analysisId) {
-        loadAnalysisDetail(analysisId);
-      }
-    } else {
-      // 목록 페이지.
-      if (selectedRecordId.value) { // 상세 페이지에 있다가 목록으로 돌아온 경우 상태 초기화
-        transitionName.value = 'slide-right';
-        selectedRecordId.value = null;
-        detailedRecord.value = null;
-        partners.value = [];
-        partnerCode.value = '';
-        showAddForm.value = false;
-      }
-      fetchAnalyses();
+// 라우트 변경을 감지하여 뷰를 업데이트합니다.
+watch(() => route.query.id, (analysisId) => {
+  if (analysisId) {
+    // 상세 페이지. 상세 데이터가 없거나 ID가 다르면 로드합니다.
+    if (!detailedRecord.value || detailedRecord.value.analysis.id != analysisId) {
+      loadAnalysisDetail(analysisId);
     }
+  } else {
+    // 목록 페이지.
+    if (selectedRecordId.value) { // 상세 페이지에 있다가 목록으로 돌아온 경우 상태 초기화
+      transitionName.value = 'slide-right';
+      selectedRecordId.value = null;
+      detailedRecord.value = null;
+      partners.value = [];
+      partnerCode.value = '';
+      showAddForm.value = false;
+    }
+    fetchAnalyses();
   }
 }, { immediate: true });
 
@@ -1564,9 +1584,18 @@ const handleClickOutside = (event) => {
 };
 
 // --- 생명주기 ---
-onMounted(() => {
+onMounted(async () => {
   window.addEventListener('resize', updateImageSize);
   document.addEventListener('click', handleClickOutside);
+  
+  // 초기 데이터 로딩 (다른 페이지들과 동일한 패턴)
+  if (route.query.id) {
+    // 상세 페이지인 경우
+    await loadAnalysisDetail(route.query.id);
+  } else {
+    // 목록 페이지인 경우
+    await fetchAnalyses();
+  }
 });
 
 onUnmounted(() => {
