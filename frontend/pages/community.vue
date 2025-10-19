@@ -552,6 +552,11 @@ const loadRecentPosts = async () => {
 
 // 마운트 시 데이터 로드
 onMounted(async () => {
+  const initialSearch = route.query.search;
+  if (initialSearch && typeof initialSearch === 'string') {
+    searchQuery.value = initialSearch;
+  }
+
   await loadPosts()
   loadPopularTags()
   loadPopularLocations()

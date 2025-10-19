@@ -430,6 +430,13 @@ const isHistorical = ref(false);
 const locationId = ref(null);
 const expandedGroups = ref({});
 
+const communityLink = computed(() => {
+  if (finalSelections.value && finalSelections.value.destination) {
+    return `/community?search=${encodeURIComponent(finalSelections.value.destination)}`;
+  }
+  return '/community';
+});
+
 // --- "정보" 모달 상태 ---
 const showInfoModal = ref(false);
 

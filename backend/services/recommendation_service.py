@@ -100,7 +100,7 @@ def get_weather_forecast(latitude, longitude):
         return None
 
 def _fetch_and_save_historical_weather(location_id, latitude, longitude, year, cursor):
-    """Open-Meteo에서 과거 날씨를 가져와 DB에 저장합니다."""
+    """Open-Meteo에서 과거 날씨를 가져와 DB에 저장하고, 저장된 데이터를 즉시 반환합니다."""
     base_url = "https://archive-api.open-meteo.com/v1/archive"
     params = {
         'latitude': latitude, 'longitude': longitude,
@@ -118,33 +118,57 @@ def _fetch_and_save_historical_weather(location_id, latitude, longitude, year, c
         }).rename(columns={
             'temperature_2m_max': 'avg_max_temp', 'temperature_2m_min': 'avg_min_temp', 'precipitation_sum': 'monthly_precipitation_mm'
         })
+
+        saved_data = []
         for month_index, row in monthly_df.iterrows():
+            month = month_index.month
+            avg_min = row['avg_min_temp']
+            avg_max = row['avg_max_temp']
+            precip = row['monthly_precipitation_mm']
+            
             cursor.execute(
                 "INSERT INTO location_weather (location_id, month, avg_min_temp, avg_max_temp, monthly_precipitation_mm) VALUES (%s, %s, %s, %s, %s)",
-                (location_id, month_index.month, row['avg_min_temp'], row['avg_max_temp'], row['monthly_precipitation_mm'])
+                (location_id, month, avg_min, avg_max, precip)
             )
-        return monthly_df
+            # DB에 저장된 값과 동일한 형식으로 리스트에 추가
+            saved_data.append({
+                'month': month,
+                'avg_min_temp': float(avg_min),
+                'avg_max_temp': float(avg_max),
+                'monthly_precipitation_mm': float(precip)
+            })
+        return saved_data
     except requests.exceptions.RequestException as e:
         print(f"과거 날씨 API 요청 오류: {e}")
         return None
 
 def get_historical_weather(location_id, latitude, longitude, year, month):
-    """과거 날씨를 DB 또는 API에서 조회합니다."""
+    """
+    과거 날씨를 DB 또는 API에서 조회합니다.
+    항상 (해당 월의 날씨 dict, 1년치 날씨 list) 튜플을 반환합니다.
+    """
     conn = get_db_connection()
     try:
         with conn.cursor() as cursor:
-            cursor.execute("SELECT avg_min_temp, avg_max_temp, monthly_precipitation_mm FROM location_weather WHERE location_id = %s AND month = %s", (location_id, month))
-            result = cursor.fetchone()
-            if result:
-                return result
+            # 먼저 1년치 전체 데이터를 조회 시도
+            cursor.execute("SELECT month, avg_min_temp, avg_max_temp, monthly_precipitation_mm FROM location_weather WHERE location_id = %s ORDER BY month ASC", (location_id,))
+            yearly_results = cursor.fetchall()
+            
+            if yearly_results:
+                # 데이터가 DB에 있으면, 해당 월의 데이터만 찾아서 반환
+                single_month_result = next((item for item in yearly_results if item['month'] == month), {})
+                return single_month_result, yearly_results
             else:
-                monthly_data = _fetch_and_save_historical_weather(location_id, latitude, longitude, year, cursor)
+                # 데이터가 DB에 없으면, API에서 가져와서 저장
+                yearly_data_list = _fetch_and_save_historical_weather(location_id, latitude, longitude, year, cursor)
                 conn.commit()
-                if monthly_data is not None and not monthly_data.empty:
-                    target_month_data = monthly_data[monthly_data.index.month == month]
-                    if not target_month_data.empty:
-                        return target_month_data.iloc[0].to_dict()
-                return {}
+
+                if not yearly_data_list:
+                    return {}, []
+
+                # 저장 후, 해당 월의 데이터만 찾아서 반환
+                single_month_data = next((item for item in yearly_data_list if item['month'] == month), {})
+                return single_month_data, yearly_data_list
     finally:
         if conn: conn.close()
 
