@@ -492,9 +492,13 @@
 
       <!-- 기록 선택 상태 -->
       <div v-else class="selection-view-container" key="selection-view">
-        <header class="selection-header">
-          <h1 class="page-title">수하물 공유</h1>
-          <p class="page-desc">동반 여행자와 공유하고 싶은 분석 기록을 선택해주세요.</p>
+        <header class="page-header">
+          <h1 class="page-title">
+            동반 여행자와 함께하는, <span class="highlight">수하물 공유</span>
+          </h1>
+          <p class="page-description">
+            분석한 수하물을 동반 여행자와 공유하고 함께 준비해보세요
+          </p>
         </header>
         <main>
           <div v-if="isLoading" class="records-loading-state">
@@ -1665,20 +1669,27 @@ onUnmounted(() => {
   font-family: var(--main-font);
 }
 
-.selection-header {
-  margin-bottom: 2rem;
+.page-header {
+  text-align: center;
+  margin-top: 48px;
+  margin-bottom: 32px;
 }
 
 .page-title {
   font-size: 2.2rem;
   font-weight: bold;
-  color: #333;
-  margin-bottom: 0.5rem;
+  margin: 0;
+  color: #222;
 }
 
-.page-desc {
-  font-size: 1.1rem;
+.page-title .highlight {
+  color: var(--main-blue, #2196f3);
+}
+
+.page-description {
   color: #888;
+  margin-top: 8px;
+  font-size: 1rem;
 }
 
 /* --- Records Grid --- */
