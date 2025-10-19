@@ -59,6 +59,9 @@
             unelevated 
             @click="startSurvey"
             style="border-radius: 12px; padding: 12px 24px; font-size: 1.1rem;"
+            class="packing-start-btn"
+            no-caps
+            no-ripple
           />
         </div>
       </div>
@@ -823,5 +826,30 @@ const handleSurveyComplete = async (surveyData) => {
 
 .modal-close:hover {
   background-color: #e3f2fd;
+}
+
+/* 패킹리스트 생성 시작 버튼 커스텀 스타일 */
+.packing-start-btn {
+  border: 2px solid #2196f3 !important;
+  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.2) !important;
+  transition: all 0.3s ease !important;
+}
+
+.packing-start-btn:hover {
+  transform: scale(1.05) !important;
+  background-color: white !important;
+  color: #2196f3 !important;
+  border-color: #1976d2 !important;
+  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3) !important;
+}
+
+.packing-start-btn:active {
+  transform: scale(1.02) !important;
+}
+
+/* Quasar 버튼의 기본 애니메이션 효과 제거 */
+.packing-start-btn::before,
+.packing-start-btn::after {
+  display: none !important;
 }
 </style>
