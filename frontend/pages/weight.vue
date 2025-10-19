@@ -188,7 +188,7 @@
                       class="shadow-1 overflow-hidden"
                       style="border-radius: 8px; margin-bottom: 12px;"
                       icon="folder_open"
-                      :label="category"
+                      :label="String(category)"
                       :caption="`${items.length}개 품목`"
                       header-class="bg-grey-2 text-grey-8 text-weight-bold"
                       expand-icon-class="text-grey-8"
@@ -252,7 +252,7 @@ interface ClassificationHistory {
 
 interface WeightItem {
   item_name_ko: string;
-  predicted_weight_value: number | string | null;
+  predicted_weight_value: number | null;
   predicted_weight_unit: string | null;
 }
 
@@ -452,7 +452,7 @@ const adjustedWeightData = computed(() => {
   let totalWeightGrams = 0;
 
   const adjustedItems = weightData.value.items.map(item => {
-    const originalValue = item.predicted_weight_value !== null ? parseFloat(item.predicted_weight_value as string) : null;
+    const originalValue = item.predicted_weight_value;
     let adjustedValue = originalValue;
     let adjustedUnit = item.predicted_weight_unit;
 
@@ -611,7 +611,7 @@ const recommendedCarrier = computed(() => {
 const formatWeight = (value: number, unit: string | null) => {
   if (unit === 'g') return `${Math.round(value)}g`;
   if (unit === 'kg') return `${parseFloat(value.toFixed(2))}kg`;
-  return value;
+  return `${value}`;
 };
 
 // 이미지 로드 디버깅 함수들
