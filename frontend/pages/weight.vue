@@ -230,6 +230,10 @@ import { useQuasar } from 'quasar';
 // ApexCharts는 클라이언트 측에서만 동적으로 import 합니다.
 const VueApexCharts = shallowRef<Component | null>(null);
 
+useHead({
+  title: '무게 예측 | PassCheckers'
+})
+
 // 로그인 한 회원만 볼 수 있는 접근 권한 적용
 definePageMeta({
   middleware: 'auth'
