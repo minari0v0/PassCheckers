@@ -898,14 +898,44 @@ async function fetchComments() {
   if (!shareCode.value) return;
   try {
     const url = getApiUrl(`/api/share/${shareCode.value}/comments`);
-    const { data, error } = await useFetch(url, {
+    const response = await fetch(url, {
       headers: { 'Authorization': `Bearer ${localStorage.getItem('access_token')}` }
     });
 
-    if (error.value) {
-      console.error('댓글 목록을 가져오는 데 실패했습니다:', error.value);
-    } else {
-      comments.value = data.value;
+    if (!response.ok) {
+      console.error('댓글 목록을 가져오는 데 실패했습니다:', response.status);
+      return;
+    }
+
+    const data = await response.json();
+    const previousLength = comments.value.length;
+    comments.value = data;
+    
+    // 새로운 채팅이 추가되었고, 사용자가 맨 아래 근처에 있으면 스크롤
+    if (data.length > previousLength) {
+      await nextTick();
+      scrollToBottomIfNearBottom();
+    }
+    
+    // 채팅 탭이 활성화되어 있고, 처음 로드되는 경우 강제로 맨 아래로 스크롤
+    if (activeTab.value === 'comments' && previousLength === 0 && data.length > 0) {
+      await nextTick();
+      setTimeout(() => {
+        scrollToBottom();
+      }, 100);
+    }
+    
+    // 채팅 탭이 활성화되어 있고, 데이터가 있는 경우 항상 스크롤 확인
+    if (activeTab.value === 'comments' && data.length > 0) {
+      await nextTick();
+      setTimeout(() => {
+        const wrapper = commentListWrapperRef.value;
+        if (wrapper && wrapper.scrollHeight > wrapper.clientHeight) {
+          // 스크롤이 필요한 경우에만 스크롤
+          wrapper.scrollTop = wrapper.scrollHeight;
+          console.log('채팅 데이터 로드 후 스크롤 완료');
+        }
+      }, 100);
     }
   } catch (e) {
     console.error('댓글 목록 요청 중 예외 발생:', e);
@@ -922,34 +952,62 @@ async function postComment() {
   isSendingComment.value = true;
   try {
     const url = getApiUrl(`/api/share/${shareCode.value}/comments`);
-    const { data, error } = await useFetch(url, {
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${localStorage.getItem('access_token')}`
       },
-      body: { content: newComment.value }
+      body: JSON.stringify({ content: newComment.value })
     });
 
-    if (error.value) {
-      console.error('댓글 작성 실패:', error.value);
+    if (!response.ok) {
+      console.error('댓글 작성 실패:', response.status);
       alert('댓글 작성에 실패했습니다.');
-    } else {
-      newComment.value = ''; // 입력창 초기화
-      // 댓글 작성 성공 시, 즉시 목록을 다시 불러옵니다.
-      await fetchComments();
-      // 댓글 목록의 맨 아래로 스크롤합니다.
-      await nextTick();
-      const wrapper = commentListWrapperRef.value;
-      if (wrapper) {
-        wrapper.scrollTop = wrapper.scrollHeight;
-      }
+      return;
     }
+
+    newComment.value = ''; // 입력창 초기화
+    // 댓글 작성 성공 시, 즉시 목록을 다시 불러옵니다.
+    await fetchComments();
+    // 댓글 목록의 맨 아래로 스크롤합니다.
+    await nextTick();
+    scrollToBottom();
   } catch (e) {
     console.error('댓글 작성 중 예외 발생:', e);
     alert('댓글 작성 중 오류가 발생했습니다.');
   } finally {
     isSendingComment.value = false;
+  }
+}
+
+/**
+ * 채팅창 스크롤을 맨 아래로 이동시킵니다.
+ * 사용자가 이미 맨 아래 근처에 있을 때만 스크롤합니다.
+ */
+function scrollToBottomIfNearBottom() {
+  const wrapper = commentListWrapperRef.value;
+  if (wrapper) {
+    const isNearBottom = wrapper.scrollTop + wrapper.clientHeight >= wrapper.scrollHeight - 100;
+    if (isNearBottom) {
+      wrapper.scrollTop = wrapper.scrollHeight;
+    }
+  } else {
+    // wrapper가 없으면 강제로 스크롤 시도
+    scrollToBottom();
+  }
+}
+
+/**
+ * 채팅창 스크롤을 강제로 맨 아래로 이동시킵니다.
+ */
+function scrollToBottom() {
+  const wrapper = commentListWrapperRef.value;
+  if (wrapper && wrapper.scrollHeight > 0) {
+    wrapper.scrollTop = wrapper.scrollHeight;
+    console.log('채팅창 스크롤 이동 성공');
+  } else {
+    console.log('채팅창 wrapper를 찾을 수 없거나 내용이 없습니다.');
   }
 }
 
@@ -1578,6 +1636,15 @@ watch(shareCode, (newShareCode) => {
     if (!commentPollingInterval.value) {
       commentPollingInterval.value = setInterval(fetchComments, 5000);
     }
+    
+    // 채팅 탭이 활성화되어 있다면 스크롤 실행
+    if (activeTab.value === 'comments') {
+      nextTick(() => {
+        setTimeout(() => {
+          scrollToBottom();
+        }, 300); // 채팅 데이터 로드 후 스크롤
+      });
+    }
   } else {
     // shareCode가 없어졌다는 것은 상세 뷰를 나갔다는 의미이므로 댓글 목록을 초기화합니다.
     comments.value = [];
@@ -1586,6 +1653,30 @@ watch(shareCode, (newShareCode) => {
       clearInterval(commentPollingInterval.value);
       commentPollingInterval.value = null;
     }
+  }
+});
+
+// 채팅 탭 활성화 시 스크롤을 맨 아래로 이동
+watch(activeTab, (newTab) => {
+  if (newTab === 'comments') {
+    // 채팅 탭이 활성화되면 스크롤을 맨 아래로 이동
+    // DOM 렌더링이 완전히 완료된 후 스크롤 실행
+    nextTick(() => {
+      // 채팅 탭이 실제로 렌더링되었는지 확인
+      const checkAndScroll = () => {
+        const wrapper = commentListWrapperRef.value;
+        if (wrapper && wrapper.scrollHeight > 0) {
+          // 채팅창이 렌더링되고 내용이 있으면 스크롤
+          wrapper.scrollTop = wrapper.scrollHeight;
+          console.log('채팅 탭 활성화 시 스크롤 완료');
+        } else {
+          // 아직 렌더링되지 않았으면 100ms 후 다시 시도
+          setTimeout(checkAndScroll, 100);
+        }
+      };
+      
+      setTimeout(checkAndScroll, 100);
+    });
   }
 });
 
@@ -1601,6 +1692,9 @@ onMounted(async () => {
   window.addEventListener('resize', updateImageSize);
   document.addEventListener('click', handleClickOutside);
   document.addEventListener('visibilitychange', handleVisibilityChange);
+  
+  // 기본 탭을 동반 여행자 수하물로 설정
+  activeTab.value = 'baggage';
   
   // 초기 데이터 로딩 (다른 페이지들과 동일한 패턴)
   if (route.query.id) {
