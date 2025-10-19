@@ -1,5 +1,6 @@
 <template>
   <div
+    v-if="isValidBbox"
     class="image-item"
     :class="{ 
       'is-packed': isPacked, 
@@ -36,6 +37,10 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['item-dragstart', 'mouseenter', 'mouseleave']);
+
+const isValidBbox = computed(() => {
+  return props.item.bbox && props.item.bbox.every(coord => coord !== null);
+});
 
 // hex to rgba 변환 헬퍼
 const hexToRgba = (hex, alpha) => {

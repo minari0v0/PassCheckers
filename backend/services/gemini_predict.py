@@ -299,13 +299,15 @@ def get_predicted_weights_for_analysis(analysis_id: int):
                 
                 # weights 테이블에 기본 무게 데이터가 있는 경우
                 if item.get('avg_weight_value') and item.get('weight_range'):
-                    # bbox_ratio 계산 (좌표가 0-1 사이로 정규화되었다고 가정)
-                    if item.get('bbox_x_max') is not None and item.get('bbox_x_min') is not None and                        item.get('bbox_y_max') is not None and item.get('bbox_y_min') is not None:
+                    # Bbox ratio 계산 (좌표가 None이 아닌 경우에만)
+                    if item.get('bbox_x_max') is not None and item.get('bbox_x_min') is not None and \
+                        item.get('bbox_y_max') is not None and item.get('bbox_y_min') is not None:
                         bbox_width = item['bbox_x_max'] - item['bbox_x_min']
                         bbox_height = item['bbox_y_max'] - item['bbox_y_min']
-                        bbox_ratio = float(bbox_width * bbox_height)
                     else:
-                        bbox_ratio = 0
+                        bbox_width = 0
+                        bbox_height = 0
+                    bbox_ratio = float(bbox_width * bbox_height)
                     
                     # weights 테이블의 기본 무게를 bbox_ratio에 따라 조정
                     predicted_weight = _calculate_weight_from_weights_table(
@@ -347,14 +349,15 @@ def get_predicted_weights_for_analysis(analysis_id: int):
                 
                 # Gemini API용 데이터 준비
                 for item in items_without_weights:
-                    # bbox_ratio 계산 (좌표가 0-1 사이로 정규화되었다고 가정)
+                    # Bbox ratio 계산 (좌표가 None이 아닌 경우에만)
                     if item.get('bbox_x_max') is not None and item.get('bbox_x_min') is not None and \
                        item.get('bbox_y_max') is not None and item.get('bbox_y_min') is not None:
                         bbox_width = item['bbox_x_max'] - item['bbox_x_min']
                         bbox_height = item['bbox_y_max'] - item['bbox_y_min']
-                        bbox_ratio = float(bbox_width * bbox_height)
                     else:
-                        bbox_ratio = 0
+                        bbox_width = 0
+                        bbox_height = 0
+                    bbox_ratio = float(bbox_width * bbox_height)
 
                     # 아이템별 기본 무게 설정
                     default_weight, default_range = _get_default_weight_for_item(item['item_name_ko'])
