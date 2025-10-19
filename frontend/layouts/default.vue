@@ -143,7 +143,7 @@ const menu = [
   { label: '수하물 패킹', path: '/packing' },
   { label: '수하물 무게 예측', path: '/weight' },
   { label: '수하물 공유', path: '/share' },
-  { label: '여행 추천', path: '/recommend' },
+  { label: '여행 준비 추천', path: '/recommend' },
   { label: '여행 정보', path: '/info' },
   { label: '커뮤니티', path: '/community' }
 ]

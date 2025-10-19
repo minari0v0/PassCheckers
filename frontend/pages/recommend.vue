@@ -5,9 +5,9 @@
       <!-- 상단 안내문구 -->
       <section style="text-align:center; margin-top:48px; margin-bottom:32px;">
                   <h1 style="font-size:2.2rem; font-weight:bold;">
-                    <span style="color:var(--main-blue);">스마트</span> 패킹리스트
+                    여행 계획을 준비하는 당신을 위한, <span style="color:var(--main-blue);">여행 준비 추천</span>
                   </h1>        <p style="color:#888; margin-top:8px;">
-          여행지, 날짜만 알려주시면 AI가 날씨와 현지 상황을 분석해 완벽한 여행 준비물을 추천해 드립니다.
+          여행지, 날짜만 알려주시면 날씨와 현지 상황을 분석해 완벽한 여행 준비물을 추천해 드립니다.
         </p>
       </section>
 
