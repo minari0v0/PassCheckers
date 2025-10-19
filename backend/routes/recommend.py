@@ -88,5 +88,15 @@ def packing_recommendation():
         forecast_df = weather_data.reset_index()
         forecast_df['time'] = forecast_df['time'].dt.strftime('%Y-%m-%d')
         response_data["forecast_data"] = forecast_df.to_dict('records')
+    else:
+        # 14일 이후 여행의 경우, 월별 과거 날씨 데이터 추가
+        try:
+            from services.recommendation_service import get_yearly_historical_weather
+            historical_weather = get_yearly_historical_weather(loc_id)
+            if historical_weather:
+                response_data["historical_weather"] = historical_weather
+                print(f"월별 과거 날씨 데이터 추가: {len(historical_weather)}개월")
+        except Exception as e:
+            print(f"월별 과거 날씨 데이터 조회 실패: {e}")
 
     return jsonify(response_data)

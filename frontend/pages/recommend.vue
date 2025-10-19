@@ -642,6 +642,8 @@ const handleSurveyComplete = async (surveyData) => {
     const data = await response.json();
     packingList.value = data.packing_list;
     locationId.value = data.location_id || null;
+    
+    // 실시간 예보 데이터 처리
     if (data.forecast_data) {
       const processedForecast = data.forecast_data.map(day => ({
         ...day,
@@ -649,11 +651,18 @@ const handleSurveyComplete = async (surveyData) => {
       }));
       forecastData.value = processedForecast;
     }
-    if (data.location_id) {
+    
+    // 월별 과거 날씨 데이터 처리 (API 응답에서 직접 받음)
+    if (data.historical_weather) {
+      historicalWeather.value = data.historical_weather;
+      console.log('월별 과거 날씨 데이터 수신:', data.historical_weather);
+    } else if (data.location_id) {
+      // 백업: 별도 API 호출 (기존 방식)
       const weatherEndpoint = getApiUrl(`/api/locations/${data.location_id}/weather/historical`);
       const weatherResponse = await fetch(weatherEndpoint);
       if (weatherResponse.ok) {
         historicalWeather.value = await weatherResponse.json();
+        console.log('별도 API로 월별 과거 날씨 데이터 수신:', historicalWeather.value);
       }
     }
   } catch (error) {
