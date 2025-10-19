@@ -145,7 +145,46 @@
                             v-model="flightQuery"
                             label="항공편명 (예: KE85)"
                             class="custom-input"
-                        />
+                            hint="항공편명을 입력하세요 (최소 2자리, 예: KE, KE85)"
+                        >
+                            <template v-slot:append>
+                                <q-icon 
+                                    v-if="flightQuery && selectedFlight" 
+                                    name="check_circle" 
+                                    color="green" 
+                                    size="sm"
+                                />
+                                <q-icon 
+                                    v-else-if="flightQuery && !validFlightNumber" 
+                                    name="cancel" 
+                                    color="red" 
+                                    size="sm"
+                                />
+                            </template>
+                        </q-input>
+                        <q-list bordered separator v-if="flightSuggestions.length > 0" class="suggestion-list">
+                            <q-item
+                                v-for="flight in flightSuggestions"
+                                :key="flight.id"
+                                clickable
+                                v-ripple
+                                @click="selectFlightSuggestion(flight)"
+                            >
+                                <q-item-section>
+                                    <q-item-label>{{ flight.carrierCode }}{{ flight.flightNumber }}</q-item-label>
+                                    <q-item-label caption>출발: {{ formatFlightTime(flight.departure) }} / 도착: {{ formatFlightTime(flight.arrival) }}</q-item-label>
+                                    <q-item-label caption v-if="flight.baggage" class="baggage-info">
+                                        <q-icon name="luggage" size="xs" class="q-mr-xs"/> 무료: <strong>{{ flight.baggage.free }}</strong> / 유료: <strong>{{ flight.baggage.paid }}</strong>
+                                    </q-item-label>
+                                </q-item-section>
+                            </q-item>
+                        </q-list>
+                        <div v-else-if="flightQuery && validFlightNumber && !preferences.dates?.start" class="no-suggestions">
+                            먼저 여행 날짜를 선택해주세요.
+                        </div>
+                        <div v-else-if="flightQuery && validFlightNumber && flightSuggestions.length === 0 && !selectedFlight && preferences.dates?.start" class="no-suggestions">
+                            해당 항공편을 찾을 수 없습니다.
+                        </div>
                     </div>
                     <div class="input-wrapper" v-if="flightSearchType === 'airlineName'" style="flex-grow: 1; max-width: none; margin: 0;">
                         <q-input 
@@ -153,21 +192,37 @@
                             v-model="flightQuery"
                             label="항공사 이름 (예: 대한항공)"
                             class="custom-input"
-                        />
+                            hint="검색 후 목록에서 항공사를 선택하세요"
+                        >
+                            <template v-slot:append>
+                                <q-icon 
+                                    v-if="flightQuery && selectedAirline" 
+                                    name="check_circle" 
+                                    color="green" 
+                                    size="sm"
+                                />
+                                <q-icon 
+                                    v-else-if="flightQuery && airlineSuggestions.length === 0 && !selectedAirline" 
+                                    name="cancel" 
+                                    color="red" 
+                                    size="sm"
+                                />
+                            </template>
+                        </q-input>
                         <q-list bordered separator v-if="airlineSuggestions.length > 0" class="suggestion-list">
                             <q-item
                             v-for="suggestion in airlineSuggestions"
                             :key="suggestion.name"
                             clickable
                             v-ripple
-                            @click="selectAirlineSuggestion(suggestion.name)"
+                            @click="selectAirlineSuggestion(suggestion)"
                             >
                             <q-item-section>{{ suggestion.name }}</q-item-section>
                             </q-item>
                         </q-list>
-                    </div>
-                    <div>
-                        <q-btn unelevated color="primary" label="항공편 검색" @click="searchFlights" :loading="isSearchingFlights" class="search-btn" no-caps no-ripple />
+                        <div v-else-if="flightQuery && airlineSuggestions.length === 0 && !selectedAirline" class="no-suggestions">
+                            검색 결과가 없습니다. 다른 검색어를 시도해보세요.
+                        </div>
                     </div>
                 </div>
 
@@ -255,7 +310,11 @@
               <q-icon name="flight" class="selection-icon" />
               <div>
                 <div class="selection-label">항공편</div>
-                <div class="selection-value">{{ selectedFlight ? `${selectedFlight.carrierCode}${selectedFlight.flightNumber}` : '아직 선택 안함' }}</div>
+                <div class="selection-value">
+                  <span v-if="selectedFlight">{{ selectedFlight.carrierCode }}{{ selectedFlight.flightNumber }}</span>
+                  <span v-else-if="selectedAirline">{{ selectedAirline.name }}</span>
+                  <span v-else>아직 선택 안함</span>
+                </div>
               </div>
             </div>
           </div>
@@ -266,7 +325,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, nextTick } from 'vue';
 import { DatePicker } from 'v-calendar';
 import 'v-calendar/style.css';
 import { useApiUrl } from '~/composables/useApiUrl';
@@ -289,6 +348,9 @@ const isSearchingFlights = ref(false);
 const flightList = ref([]);
 const selectedFlight = ref(null);
 const searchAttempted = ref(false);
+const selectedAirline = ref(null); // 선택된 유효한 항공사 저장
+const validFlightNumber = ref(false); // 유효한 항공편명인지 확인
+const flightSuggestions = ref([]); // 항공편명 검색 결과
 
 const destinationSuggestions = ref([]);
 const selectedDestination = ref(null); // 선택된 유효한 목적지 저장
@@ -386,6 +448,7 @@ const airlineSuggestions = ref([]);
 const fetchAirlineSuggestions = async () => {
   if (flightQuery.value.length < 1) {
     airlineSuggestions.value = [];
+    selectedAirline.value = null;
     return;
   }
 
@@ -420,14 +483,142 @@ watch(() => flightQuery.value, (newQuery) => {
       fetchAirlineSuggestions();
     } else {
       airlineSuggestions.value = [];
+      selectedAirline.value = null;
     }
-  }, 300);
+    
+    // 항공편명 검색인 경우 유효성 검사 및 실시간 검색
+    if (flightSearchType.value === 'flightNumber') {
+      validFlightNumber.value = validateFlightNumber(newQuery);
+      console.log('✈️ 항공편명 검색 조건 확인:', {
+        query: newQuery,
+        validFlightNumber: validFlightNumber.value,
+        destination: preferences.value.destination,
+        date: preferences.value.dates?.start
+      });
+      
+      if (validFlightNumber.value && preferences.value.destination && preferences.value.dates?.start) {
+        console.log('🚀 항공편 검색 실행');
+        searchFlightsByNumber();
+      } else {
+        console.log('⏸️ 항공편 검색 조건 미충족, 리스트 초기화');
+        flightSuggestions.value = [];
+      }
+    }
+  }, 50); // 매우 짧은 디바운스 (50ms)
+});
+
+// 날짜가 변경될 때 항공편 검색 실행
+watch(() => preferences.value.dates, (newDates) => {
+  if (flightSearchType.value === 'flightNumber' && validFlightNumber.value && newDates?.start) {
+    searchFlightsByNumber();
+  }
+}, { deep: true });
+
+// 검색 타입이 변경될 때 이전 선택 정보 초기화
+watch(flightSearchType, (newType, oldType) => {
+  if (newType !== oldType) {
+    // 검색 타입이 변경되면 이전 선택 정보 초기화
+    selectedFlight.value = null;
+    selectedAirline.value = null;
+    flightSuggestions.value = [];
+    airlineSuggestions.value = [];
+    validFlightNumber.value = false;
+    flightQuery.value = '';
+    
+    console.log(`검색 타입 변경: ${oldType} → ${newType}, 선택 정보 초기화`);
+  }
 });
 
 const selectAirlineSuggestion = (suggestion) => {
   isSuggestionSelected = true;
-  flightQuery.value = suggestion;
+  flightQuery.value = suggestion.name;
+  selectedAirline.value = suggestion; // 유효한 항공사로 저장
   airlineSuggestions.value = [];
+  // 입력 필드에서 포커스 제거하여 리스트가 다시 나타나지 않도록 함
+  nextTick(() => {
+    const inputs = document.querySelectorAll('input[type="text"]');
+    inputs.forEach(input => {
+      if (input.value === suggestion.name) {
+        input.blur();
+      }
+    });
+  });
+};
+
+const selectFlightSuggestion = (flight) => {
+  isSuggestionSelected = true;
+  selectedFlight.value = flight;
+  // 선택한 항공편의 전체 번호로 텍스트 필드 업데이트
+  flightQuery.value = `${flight.carrierCode}${flight.flightNumber}`;
+  flightSuggestions.value = [];
+  // 입력 필드에서 포커스 제거하여 리스트가 다시 나타나지 않도록 함
+  nextTick(() => {
+    const inputs = document.querySelectorAll('input[type="text"]');
+    inputs.forEach(input => {
+      if (input.value === flightQuery.value) {
+        input.blur();
+      }
+    });
+  });
+};
+
+// 항공편명 유효성 검사 함수 (최소 2자리 이상)
+const validateFlightNumber = (flightNumber) => {
+  if (!flightNumber || flightNumber.trim().length < 2) return false;
+  // 최소 2자리 이상의 영문자로 시작하는 패턴 (예: KE, KE8, KE85)
+  const flightPattern = /^[A-Z]{2,3}(\d{0,4})?$/i;
+  return flightPattern.test(flightNumber.trim());
+};
+
+// 항공편명으로 항공편 검색 함수
+const searchFlightsByNumber = async () => {
+  console.log('🔍 항공편 검색 시작:', {
+    validFlightNumber: validFlightNumber.value,
+    destination: preferences.value.destination,
+    date: preferences.value.dates?.start,
+    flightQuery: flightQuery.value
+  });
+
+  if (!validFlightNumber.value || !preferences.value.destination || !preferences.value.dates?.start) {
+    console.log('❌ 검색 조건 미충족, 검색 중단');
+    flightSuggestions.value = [];
+    return;
+  }
+
+  try {
+    const endpoint = getApiUrl('/api/flights');
+    const requestBody = {
+      searchType: 'flightNumber',
+      destination: preferences.value.destination,
+      date: preferences.value.dates.start.toISOString().split('T')[0],
+      flightNumber: flightQuery.value.trim().toUpperCase()
+    };
+    
+    console.log('📤 API 요청:', requestBody);
+    
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody)
+    });
+
+    console.log('📥 API 응답 상태:', response.status);
+
+    if (!response.ok) {
+      console.error(`API Error: ${response.status} ${response.statusText}`);
+      flightSuggestions.value = [];
+      return;
+    }
+    
+    const data = await response.json();
+    console.log('📋 검색 결과:', data);
+    flightSuggestions.value = data || [];
+    
+    console.log('✅ 항공편 검색 완료, 결과 개수:', flightSuggestions.value.length);
+  } catch (error) {
+    console.error("Error searching flights by number:", error);
+    flightSuggestions.value = [];
+  }
 };
 
 
@@ -466,7 +657,14 @@ const canGoToNextStep = computed(() => {
     default: return false;
   }
 });
-const canSubmit = computed(() => selectedFlight.value !== null);
+const canSubmit = computed(() => {
+  // 항공편명 검색인 경우: 항공편이 선택되었을 때만
+  if (flightSearchType.value === 'flightNumber') {
+    return selectedFlight.value !== null;
+  }
+  // 항공사 검색인 경우: 유효한 항공사가 선택되었을 때만
+  return selectedAirline.value !== null;
+});
 
 const getLabel = (options, id) => options.find(opt => opt.id === id)?.label || '';
 const getLabels = (options, ids) => ids.map(id => getLabel(options, id));
@@ -901,29 +1099,10 @@ const submitSurvey = () => {
   /* 확대 효과 제거 */
 }
 
-/* 항공편 검색 버튼 커스텀 스타일 */
-.search-btn {
-  border: 2px solid #2196f3 !important;
-  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.2) !important;
-  transition: all 0.3s ease !important;
-  border-radius: 20px !important;
-}
-
-.search-btn:hover {
-  filter: brightness(1.1) !important;
-  border-color: #1976d2 !important;
-  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3) !important;
-}
-
-.search-btn:active {
-  /* 확대 효과 제거 */
-}
-
 /* Quasar 버튼의 기본 애니메이션 효과 제거 */
 .prev-btn::before, .prev-btn::after,
 .next-btn::before, .next-btn::after,
-.submit-btn::before, .submit-btn::after,
-.search-btn::before, .search-btn::after {
+.submit-btn::before, .submit-btn::after {
   display: none !important;
 }
 </style>
