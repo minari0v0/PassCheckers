@@ -38,16 +38,38 @@ def get_location_details(city_name):
     conn = get_db_connection()
     try:
         with conn.cursor() as cursor:
-            sql = """
+            # 먼저 도시 타입으로 검색 (우선순위)
+            sql_city = """
                 SELECT ld.latitude, ld.longitude, l.location_id 
                 FROM locations l
                 JOIN location_details ld ON l.location_id = ld.location_id
-                WHERE l.city_ko = %s OR l.city = %s
+                WHERE (l.city_ko = %s OR l.city = %s) 
+                AND l.location_type = 'city'
+                ORDER BY l.city_ko = %s DESC, l.city = %s DESC
+                LIMIT 1
             """
-            cursor.execute(sql, (city_name, city_name))
+            cursor.execute(sql_city, (city_name, city_name, city_name, city_name))
             result = cursor.fetchone()
+            
             if result:
                 return float(result['latitude']), float(result['longitude']), result['location_id']
+            
+            # 도시 타입에서 찾지 못했으면 국가 타입으로 검색 (fallback)
+            sql_country = """
+                SELECT ld.latitude, ld.longitude, l.location_id 
+                FROM locations l
+                JOIN location_details ld ON l.location_id = ld.location_id
+                WHERE (l.country_ko = %s OR l.country = %s) 
+                AND l.location_type = 'country'
+                ORDER BY l.country_ko = %s DESC, l.country = %s DESC
+                LIMIT 1
+            """
+            cursor.execute(sql_country, (city_name, city_name, city_name, city_name))
+            result = cursor.fetchone()
+            
+            if result:
+                return float(result['latitude']), float(result['longitude']), result['location_id']
+            
             return None, None, None
     finally:
         if conn:
