@@ -337,6 +337,10 @@
   
 <script setup>
 // 로그인 검증 미들웨어 적용
+useHead({
+  title: '내 프로필 | PassCheckers'
+})
+
   definePageMeta({
     middleware: 'auth'
 })

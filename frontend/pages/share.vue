@@ -543,6 +543,10 @@ import { useApiUrl } from '~/composables/useApiUrl';
 import ImageItem from '~/components/packing/ImageItem.vue';
 import { useRoute, useRouter } from 'vue-router';
 
+useHead({
+  title: '수하물 공유 | PassCheckers'
+})
+
 definePageMeta({
   middleware: 'auth'
 });

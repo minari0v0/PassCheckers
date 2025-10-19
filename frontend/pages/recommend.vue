@@ -375,6 +375,10 @@ import InfoDetailComponent from '~/components/info/DetailComponent.vue';
 import { useApiUrl } from '~/composables/useApiUrl';
 import { useAuth } from '~/composables/useAuth';
 
+useHead({
+  title: '여행 추천 | PassChekcers'
+})
+
 definePageMeta({ middleware: 'auth' });
 
 // --- 컴포저블 ---

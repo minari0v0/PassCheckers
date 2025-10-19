@@ -91,6 +91,10 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useApiUrl } from '~/composables/useApiUrl'
 
+useHead({
+  title: '로그인 회원가입 | PassCheckers'
+})
+
 const userId = ref('')
 const password = ref('')
 const autoLogin = ref(true)

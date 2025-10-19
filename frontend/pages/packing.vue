@@ -254,6 +254,10 @@ import PackedItem from '~/components/packing/PackedItem.vue';
 import CelebrationAnimation from '~/components/CelebrationAnimation.vue';
 import PackingSummary from '~/components/packing/PackingSummary.vue';
 
+useHead({
+  title: '수하물 패킹 | PassCheckers'
+})
+
 definePageMeta({ middleware: 'auth' });
 
 const { user } = useAuth();

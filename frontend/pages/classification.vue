@@ -95,6 +95,10 @@ import { useQuasar } from 'quasar'
 import ClassificationResult from '~/components/classification/ClassificationResult.vue'
 import { useApiUrl } from '~/composables/useApiUrl'
 
+useHead({
+  title: '수하물 분석 | PassCheckers'
+})
+
 definePageMeta({
   middleware: 'auth'
 })

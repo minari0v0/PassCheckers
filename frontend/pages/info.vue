@@ -165,6 +165,10 @@ import InteractiveMap from '~/components/info/InteractiveMap.vue';
 import InfoDetailComponent from '~/components/info/DetailComponent.vue';
 import { useApiUrl } from '~/composables/useApiUrl';
 
+useHead({
+  title: '여행 정보 | PassCheckers'
+})
+
 definePageMeta({ middleware: 'auth' });
 
 const continents = ref([]);

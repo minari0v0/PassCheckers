@@ -101,6 +101,10 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
+useHead({
+  title: '로그인 회원가입 | PassCheckers'
+})
+
 const email = ref('')
 const password = ref('')
 const name = ref('')

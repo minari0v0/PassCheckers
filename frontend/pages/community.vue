@@ -226,6 +226,10 @@ import { useRoute } from 'vue-router'
 import WritePost from '~/components/community/WritePost.vue'
 import PostDetail from '~/components/community/PostDetail.vue'
 
+useHead({
+  title: '커뮤니티 | PassCheckers'
+})
+
 definePageMeta({
   middleware: 'auth'
 })
