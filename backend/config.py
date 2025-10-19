@@ -1,7 +1,9 @@
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+# 루트 디렉토리의 .env 파일 로드
+env_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env')
+load_dotenv(env_path)
 
 class Config:
     # Flask 설정
@@ -16,16 +18,17 @@ class Config:
     REDIS_URL = os.environ.get('REDIS_URL') or 'redis://localhost:6379/0'
     
     # MySQL 설정
-    DATABASE_URL = os.environ.get('DATABASE_URL') or 'mysql+pymysql://username:password@localhost:3306/passcheckers'
+    DATABASE_URL = os.environ.get('DATABASE_URL') or 'mysql+pymysql://root:123456@localhost:3306/passcheckers'
     
     # CORS 설정
     CORS_ORIGINS = [
-        "http://localhost:3000",  # Nuxt 개발 서버
-        "http://localhost:3001",
-        "http://127.0.0.1:3000",
-        "http://127.0.0.1:3001",
-        "http://192.168.0.26:3000",
-        "http://192.168.123.41:3000",
-        "http://172.16.14.218:3000",
-        "http://172.16.30.9:3000"
-    ] 
+        "http://localhost:3000",
+        "http://passcheckers.kro.kr",
+        "http://172.30.1.61" #임시 개발용 IP
+    ]
+    
+    # Amadeus API 설정
+    AMADEUS_TEST_API_KEY = os.environ.get('AMADEUS_TEST_API_KEY')
+    AMADEUS_TEST_API_SECRET = os.environ.get('AMADEUS_TEST_API_SECRET')
+    AMADEUS_PROD_API_KEY = os.environ.get('AMADEUS_PROD_API_KEY')
+    AMADEUS_PROD_API_SECRET = os.environ.get('AMADEUS_PROD_API_SECRET')

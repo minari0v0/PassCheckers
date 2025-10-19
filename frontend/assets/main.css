@@ -1,3 +1,64 @@
+
+:root {
+    --toastify-color-light: #fff;
+    --toastify-color-dark: #121212;
+    --toastify-color-info: #3498db;
+    --toastify-color-success: #07bc0c;
+    --toastify-color-warning: #f1c40f;
+    --toastify-color-error: #e74c3c;
+    --toastify-color-transparent: rgba(255, 255, 255, 0.7);
+  
+    --toastify-icon-color-info: var(--toastify-color-info);
+    --toastify-icon-color-success: var(--toastify-color-success);
+    --toastify-icon-color-warning: var(--toastify-color-warning);
+    --toastify-icon-color-error: var(--toastify-color-error);
+  
+    --toastify-toast-width: 320px;
+    --toastify-toast-background: #fff;
+    --toastify-toast-min-height: 64px;
+    --toastify-toast-max-height: 800px;
+    --toastify-font-family: sans-serif;
+    --toastify-z-index: 9999;
+  
+    --toastify-text-color-light: #757575;
+    --toastify-text-color-dark: #fff;
+  
+    /*Used only for colored theme*/
+    --toastify-text-color-info: #fff;
+    --toastify-text-color-success: #fff;
+    --toastify-text-color-warning: #fff;
+    --toastify-text-color-error: #fff;
+  
+    --toastify-spinner-color: #616161;
+    --toastify-spinner-color-empty-area: #e0e0e0;
+  
+    /*Used only for colored theme*/
+    --toastify-spinner-color-info: #fff;
+    --toastify-spinner-color-success: #fff;
+    --toastify-spinner-color-warning: #fff;
+    --toastify-spinner-color-error: #fff;
+  
+    --toastify-progress-bar-color: linear-gradient(
+      to right,
+      #4cd964,
+      #5ac8fa,
+      #007aff,
+      #34aadc,
+      #5856d6,
+      #ff2d55
+    );
+    /*Used only for colored theme*/
+    --toastify-progress-bar-color-info: var(--toastify-color-info);
+    --toastify-progress-bar-color-success: var(--toastify-color-success);
+    --toastify-progress-bar-color-warning: var(--toastify-color-warning);
+    --toastify-progress-bar-color-error: var(--toastify-color-error);
+    --toastify-progress-bar-opacity: 1;
+  
+    --toastify-update-icon-color: #757575;
+  
+    --toastify-drag-icon-color: #757575;
+  }
+
 body {
   background: #f5f7fa;
   font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', Arial, sans-serif;
@@ -150,3 +211,56 @@ p {
   border-color: #1565c0 !important;
   color: #fff !important;
 } 
+
+/* weight.vue 페이지의 계절 버튼 커스텀 스타일 */
+.season-btn {
+  border-radius: 16px !important;
+  border: 1px solid #e0e0e0 !important;
+  background: #fff !important;
+}
+
+/* --- 호버 상태 --- */
+/* 호버 시 텍스트 색상 오버라이드 */
+.season-btn.summer:hover {
+  color: #D32F2F !important;
+}
+.season-btn.autumn:hover {
+  color: #FFA000 !important;
+}
+.season-btn.winter:hover {
+  color: #0288D1 !important;
+}
+
+/* 호버 애니메이션 배경 오버라이드 (약간 더 진한 파스텔 색상) */
+.season-btn.summer::after {
+  background: #ffcdd2 !important; /* 더 진한 파스텔 핑크 */
+}
+.season-btn.autumn::after {
+  background: #ffecb3 !important; /* 더 진한 파스텔 옐로우 */
+}
+.season-btn.winter::after {
+  background: #b3e5fc !important; /* 더 진한 파스텔 블루 */
+}
+
+/* --- 선택된 상태 --- */
+/* 원본의 더 밝은 파스텔 색상 사용 */
+.season-btn.summer.selected {
+  background: #FFEBEE !important;
+  border-color: #FFCDD2 !important;
+  color: #D32F2F !important;
+}
+.season-btn.autumn.selected {
+  background: #FFF8E1 !important;
+  border-color: #FFECB3 !important;
+  color: #FFA000 !important;
+}
+.season-btn.winter.selected {
+  background: #E1F5FE !important;
+  border-color: #B3E5FC !important;
+  color: #0288D1 !important;
+}
+
+/* 선택된 버튼의 애니메이션을 숨겨서 정적 배경색을 표시 */
+.season-btn.selected::after {
+  display: none !important;
+}

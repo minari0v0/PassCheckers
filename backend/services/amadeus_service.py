@@ -1,0 +1,438 @@
+# -*- coding: utf-8 -*-
+"""
+Amadeus API 연동을 담당하는 서비스 (인증, 항공편 검색, 안전 정보 등)
+"""
+import requests
+import re
+from config import Config
+from matching.recommend_matching_service import recommend_matching_service
+
+# --- API 환경 설정 ---
+# 운영 환경을 사용하려면 아래 주석을 해제하고, 테스트 환경 줄을 주석 처리하세요.
+#AMADEUS_BASE_URL = "https://api.amadeus.com"  # 운영 환경
+AMADEUS_BASE_URL = "https://test.api.amadeus.com" # 테스트 환경
+
+
+def get_amadeus_token():
+    """Amadeus API 액세스 토큰을 가져옵니다. (캐시 확인 후 없으면 새로 발급)"""
+    from app import redis_client # 순환 참조 방지를 위한 지역 import
+    
+    cache_key = f"amadeus_token:{AMADEUS_BASE_URL}"
+    token = redis_client.get(cache_key)
+    if token:
+        return token.decode('utf-8')
+
+    # AMADEUS_BASE_URL에 따라 올바른 API 키를 선택합니다.
+    if "test" in AMADEUS_BASE_URL:
+        api_key = Config.AMADEUS_TEST_API_KEY
+        api_secret = Config.AMADEUS_TEST_API_SECRET
+    else:
+        api_key = Config.AMADEUS_PROD_API_KEY
+        api_secret = Config.AMADEUS_PROD_API_SECRET
+
+    if not api_key or not api_secret:
+        raise ValueError("선택된 환경(Test/Prod)에 대한 Amadeus API 키가 .env 파일에 설정되지 않았습니다.")
+
+    url = f"{AMADEUS_BASE_URL}/v1/security/oauth2/token"
+    headers = {'Content-Type': 'application/x-www-form-urlencoded'}
+    data = {
+        'grant_type': 'client_credentials',
+        'client_id': api_key,
+        'client_secret': api_secret
+    }
+    
+    try:
+        response = requests.post(url, headers=headers, data=data)
+        response.raise_for_status()
+        token_data = response.json()
+        access_token = token_data['access_token']
+        expires_in = token_data['expires_in']
+        
+        redis_client.set(cache_key, access_token, ex=expires_in - 300)
+        print("새 Amadeus 토큰 발급 및 캐시 완료.")
+        return access_token
+    except requests.exceptions.RequestException as e:
+        print(f"Amadeus 토큰 요청 실패: {e}")
+        raise Exception("Amadeus API 인증에 실패했습니다.")
+
+def _get_default_airport_code(destination):
+    """데이터베이스에서 찾지 못한 목적지에 대한 기본 공항 코드를 반환합니다. (도시명만 지원)"""
+    default_codes = {
+        # 주요 도시명 매핑 (국가명 제거)
+        '프랑크푸르트': 'FRA',
+        'Frankfurt': 'FRA',
+        '산티아고': 'SCL',
+        'Santiago': 'SCL',
+        '도쿄': 'NRT',
+        'Tokyo': 'NRT',
+        '나리타': 'NRT',
+        'Narita': 'NRT',
+        '로스앤젤레스': 'LAX',
+        'Los Angeles': 'LAX',
+        '파리': 'CDG',
+        'Paris': 'CDG',
+        '런던': 'LHR',
+        'London': 'LHR',
+        '베이징': 'PEK',
+        'Beijing': 'PEK',
+        '방콕': 'BKK',
+        'Bangkok': 'BKK',
+        '싱가포르': 'SIN',
+        'Singapore': 'SIN',
+        '시드니': 'SYD',
+        'Sydney': 'SYD',
+        '토론토': 'YYZ',
+        'Toronto': 'YYZ',
+        '로마': 'FCO',
+        'Rome': 'FCO',
+        '마드리드': 'MAD',
+        'Madrid': 'MAD',
+        '암스테르담': 'AMS',
+        'Amsterdam': 'AMS',
+        '취리히': 'ZUR',
+        'Zurich': 'ZUR',
+        '비엔나': 'VIE',
+        'Vienna': 'VIE',
+        '브뤼셀': 'BRU',
+        'Brussels': 'BRU',
+        '스톡홀름': 'ARN',
+        'Stockholm': 'ARN',
+        '오슬로': 'OSL',
+        'Oslo': 'OSL',
+        '코펜하겐': 'CPH',
+        'Copenhagen': 'CPH',
+        '헬싱키': 'HEL',
+        'Helsinki': 'HEL',
+        '바르샤바': 'WAW',
+        'Warsaw': 'WAW',
+        '프라하': 'PRG',
+        'Prague': 'PRG',
+        '부다페스트': 'BUD',
+        'Budapest': 'BUD',
+        '리스본': 'LIS',
+        'Lisbon': 'LIS',
+        '아테네': 'ATH',
+        'Athens': 'ATH',
+        '이스탄불': 'IST',
+        'Istanbul': 'IST',
+        '모스크바': 'SVO',
+        'Moscow': 'SVO',
+        '상파울루': 'GRU',
+        'Sao Paulo': 'GRU',
+        '부에노스아이레스': 'EZE',
+        'Buenos Aires': 'EZE',
+        '멕시코시티': 'MEX',
+        'Mexico City': 'MEX',
+        '델리': 'DEL',
+        'Delhi': 'DEL',
+        '자카르타': 'CGK',
+        'Jakarta': 'CGK',
+        '쿠알라룸푸르': 'KUL',
+        'Kuala Lumpur': 'KUL',
+        '마닐라': 'MNL',
+        'Manila': 'MNL',
+        '호치민': 'SGN',
+        'Ho Chi Minh City': 'SGN',
+        '오클랜드': 'AKL',
+        'Auckland': 'AKL',
+        '요하네스버그': 'JNB',
+        'Johannesburg': 'JNB',
+        '카이로': 'CAI',
+        'Cairo': 'CAI',
+        '카사블랑카': 'CMN',
+        'Casablanca': 'CMN',
+        '텔아비브': 'TLV',
+        'Tel Aviv': 'TLV',
+        '두바이': 'DXB',
+        'Dubai': 'DXB',
+        '리야드': 'RUH',
+        'Riyadh': 'RUH',
+        '도하': 'DOH',
+        'Doha': 'DOH',
+        '쿠웨이트': 'KWI',
+        'Kuwait City': 'KWI',
+        '바레인': 'BAH',
+        'Manama': 'BAH',
+        '무스카트': 'MCT',
+        'Muscat': 'MCT',
+        '암만': 'AMM',
+        'Amman': 'AMM',
+        '베이루트': 'BEY',
+        'Beirut': 'BEY',
+        '바그다드': 'BGW',
+        'Baghdad': 'BGW',
+        '테헤란': 'IKA',
+        'Tehran': 'IKA',
+        '카불': 'KBL',
+        'Kabul': 'KBL',
+        '이슬라마바드': 'ISB',
+        'Islamabad': 'ISB',
+        '다카': 'DAC',
+        'Dhaka': 'DAC',
+        '콜롬보': 'CMB',
+        'Colombo': 'CMB',
+        '카트만두': 'KTM',
+        'Kathmandu': 'KTM',
+        '파로': 'PBH',
+        'Paro': 'PBH',
+        '말레': 'MLE',
+        'Male': 'MLE',
+        '양곤': 'RGN',
+        'Yangon': 'RGN',
+        '프놈펜': 'PNH',
+        'Phnom Penh': 'PNH',
+        '비엔티안': 'VTE',
+        'Vientiane': 'VTE',
+        '반다르스리브가완': 'BWN',
+        'Bandar Seri Begawan': 'BWN',
+        '딜리': 'DIL',
+        'Dili': 'DIL',
+        '울란바토르': 'ULN',
+        'Ulaanbaatar': 'ULN',
+        '평양': 'FNJ',
+        'Pyongyang': 'FNJ',
+        '타이베이': 'TPE',
+        'Taipei': 'TPE',
+        '홍콩': 'HKG',
+        'Hong Kong': 'HKG',
+        '마카오': 'MFM',
+        'Macau': 'MFM',
+    }
+    
+    # 정확한 매칭 시도
+    if destination in default_codes:
+        return default_codes[destination]
+    
+    # 부분 매칭 시도 (대소문자 무시)
+    destination_lower = destination.lower()
+    for key, code in default_codes.items():
+        if destination_lower in key.lower() or key.lower() in destination_lower:
+            return code
+    
+    # 기본값: 인천공항 (ICN)
+    return 'ICN'
+
+def _get_db_data(sql, params):
+    """데이터베이스에서 단일 조회를 수행합니다."""
+    from app import get_db_connection # 순환 참조 방지를 위한 지역 import
+    conn = get_db_connection()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(sql, params)
+            return cursor.fetchone()
+    finally:
+        if conn:
+            conn.close()
+
+def find_flights(search_type, destination_city, departure_date, airline_query, flight_number_query):
+    """항공편 검색 로직을 총괄합니다."""
+    carrier_code = None
+    flight_number_to_match = None
+
+    # 유사도 검사를 통해 항공사 이름 보정
+    if search_type == 'airlineName' and airline_query:
+        best_match = recommend_matching_service.find_best_match(airline_query, 'airlines')
+        if best_match:
+            airline_query = best_match['name']
+        db_result = _get_db_data("SELECT iata_code FROM airlines WHERE airline_name_ko = %s OR airline_name_en = %s", (airline_query, airline_query))
+        if not db_result: raise Exception(f"'{airline_query}'의 항공사 코드를 찾을 수 없습니다.")
+        carrier_code = db_result['iata_code']
+    elif search_type == 'flightNumber':
+        # 부분 검색 허용: 영문자 2-3자리 + 선택적 숫자
+        match = re.match(r"([A-Z]{2,3})(\d*)", flight_number_query.strip().upper())
+        if not match: raise Exception("유효하지 않은 항공편명 형식입니다. (예: KE, KE85)")
+        carrier_code, flight_number_to_match = match.groups()
+        # 숫자가 없으면 None으로 설정 (부분 검색)
+        if not flight_number_to_match:
+            flight_number_to_match = None
+
+    # 유사도 검사를 통해 목적지 이름 보정
+    corrected_destination = destination_city
+    if destination_city:
+        best_match = recommend_matching_service.find_best_match(destination_city, 'destinations')
+        if best_match:
+            corrected_destination = best_match['name']
+            print(f"DEBUG: 목적지 보정: '{destination_city}' -> '{corrected_destination}'")
+        else:
+            print(f"DEBUG: 목적지 보정 실패: '{destination_city}'")
+
+    print(f"DEBUG: 목적지 코드 조회 시도: '{corrected_destination}'")
+    
+    destination_code = None
+    
+    try:
+        # 도시명으로만 조회 (국가명 조회 제거)
+        destination_code_result = _get_db_data("SELECT airport_code FROM location_details ld JOIN locations l ON l.location_id = ld.location_id WHERE l.city_ko = %s OR l.city = %s LIMIT 1", (corrected_destination, corrected_destination))
+        
+        if destination_code_result:
+            destination_code = destination_code_result['airport_code']
+            print(f"DEBUG: 데이터베이스에서 목적지 코드 찾음: {destination_code}")
+        else:
+            print(f"DEBUG: 데이터베이스에서 목적지 코드를 찾을 수 없음: '{corrected_destination}'")
+            
+    except Exception as e:
+        print(f"DEBUG: 데이터베이스 조회 중 오류 발생: {e}")
+    
+    # 데이터베이스에서 찾지 못했다면 기본값 사용
+    if not destination_code:
+        destination_code = _get_default_airport_code(corrected_destination)
+        print(f"DEBUG: 기본값 사용: {destination_code}")
+    
+    print(f"DEBUG: 최종 목적지 코드: {destination_code}")
+
+    token = get_amadeus_token()
+    url = f"{AMADEUS_BASE_URL}/v2/shopping/flight-offers"
+    headers = {'Authorization': f'Bearer {token}'}
+    params = {
+        'originLocationCode': 'ICN',
+        'destinationLocationCode': destination_code,
+        'departureDate': departure_date,
+        'adults': 1,
+        'nonStop': 'true',
+        'max': 50  # 더 많은 결과를 가져와서 필터링
+    }
+
+    try:
+        print(f"DEBUG: Amadeus API 요청 - URL: {url}")
+        print(f"DEBUG: 파라미터: {params}")
+        print(f"DEBUG: 항공사 코드: {carrier_code}")
+        
+        response = requests.get(url, headers=headers, params=params)
+        print(f"DEBUG: 응답 상태 코드: {response.status_code}")
+        
+        if response.status_code != 200:
+            print(f"DEBUG: 에러 응답 내용: {response.text}")
+            if response.status_code == 429:
+                # Rate limit 에러는 사용자에게 친화적인 메시지 반환
+                raise Exception("API 요청 한도를 초과했습니다. 잠시 후 다시 시도해주세요.")
+            raise Exception(f"Amadeus API 에러: {response.status_code} - {response.text}")
+            
+        response.raise_for_status()
+        flight_data_raw = response.json()
+        flight_data = flight_data_raw.get('data', [])
+        dictionaries = flight_data_raw.get('dictionaries', {})
+
+        parsed_flights = []
+        for flight in flight_data:
+            itinerary = flight['itineraries'][0]
+            segment = itinerary['segments'][0]
+            
+            # 항공사 코드로 필터링
+            if segment['carrierCode'] != carrier_code:
+                continue
+                
+            # 부분 검색이 아닌 경우에만 정확한 항공편명으로 필터링
+            if flight_number_to_match and segment['number'] != flight_number_to_match:
+                continue
+
+            # 수하물 정보 파싱
+            baggage_info = {
+                'free': '정보 없음',
+                'paid': '항공사 문의'  # 기본값을 '항공사 문의'로 변경
+            }
+            
+            # 무료 수하물 정보 추출
+            if flight.get('travelerPricings'):
+                try:
+                    traveler_pricing = flight['travelerPricings'][0]
+                    fare_details = traveler_pricing['fareDetailsBySegment'][0]
+                    if 'includedCheckedBags' in fare_details:
+                        bags = fare_details['includedCheckedBags']
+                        if 'quantity' in bags:
+                            baggage_info['free'] = f"{bags['quantity']}개"
+                        elif 'weight' in bags:
+                            baggage_info['free'] = f"{bags['weight']}{bags['weightUnit']}"
+                except (IndexError, KeyError) as e:
+                    print(f"무료 수하물 정보 파싱 오류: {e}")
+
+            # 유료 수하물 정보 추출
+            if flight.get('price', {}).get('additionalServices'):
+                for service in flight['price']['additionalServices']:
+                    if service.get('type') == 'CHECKED_BAGS':
+                        currency_code = service.get('currency', '')
+                        currency_map = {'EUR': '유로', 'USD': '달러', 'KRW': '원'}
+                        currency_display = currency_map.get(currency_code, currency_code)
+                        baggage_info['paid'] = f"{service['amount']} {currency_display}"
+                        break
+            
+            # 항공기 및 터미널 정보 추출
+            aircraft_code = segment.get('aircraft', {}).get('code')
+            aircraft_name = dictionaries.get('aircraft', {}).get(aircraft_code, '정보 없음')
+            departure_terminal = segment.get('departure', {}).get('terminal', '-')
+            arrival_terminal = segment.get('arrival', {}).get('terminal', '-')
+
+            parsed_flights.append({
+                'id': flight['id'],
+                'carrierCode': segment['carrierCode'],
+                'flightNumber': segment['number'],
+                'departure': segment['departure']['at'],
+                'arrival': segment['arrival']['at'],
+                'duration': itinerary['duration'],
+                'baggage': baggage_info,
+                'aircraft': aircraft_name,
+                'departureTerminal': departure_terminal,
+                'arrivalTerminal': arrival_terminal
+            })
+        
+        return parsed_flights
+
+    except requests.exceptions.RequestException as e:
+        print(f"항공편 조회 API 호출 실패: {e}")
+        if e.response is not None:
+            print(f"Amadeus 응답 상태 코드: {e.response.status_code}")
+            try:
+                error_json = e.response.json()
+                print(f"Amadeus 응답 JSON: {error_json}")
+                raise Exception(f"항공편 조회 실패: {error_json}")
+            except ValueError:
+                print(f"Amadeus 응답 텍스트: {e.response.text}")
+                raise Exception(f"항공편 조회 실패: {e.response.text}")
+        raise Exception(f"항공편 조회 실패: {e}")
+    except Exception as e:
+        print(f"항공편 조회 중 예상치 못한 오류: {e}")
+        print(f"오류 타입: {type(e).__name__}")
+        import traceback
+        print(f"스택 트레이스: {traceback.format_exc()}")
+        raise Exception(f"항공편 조회 실패: {str(e)}")
+
+def get_safety_scores(latitude, longitude):
+    """Amadeus Safe Place API를 호출하여 특정 위치의 안전 점수를 반환합니다."""
+    token = get_amadeus_token()
+    if not token:
+        raise Exception("Amadeus API 인증에 실패했습니다.")
+
+    url = f"{AMADEUS_BASE_URL}/v1/safety/safety-rated-locations"
+    headers = {'Authorization': f'Bearer {token}'}
+    params = {
+        'latitude': latitude,
+        'longitude': longitude
+    }
+
+    try:
+        response = requests.get(url, headers=headers, params=params)
+        response.raise_for_status()
+        data = response.json().get('data', [])
+        
+        if not data:
+            print("안전 정보 API에서 데이터를 반환하지 않았습니다.")
+            return {}
+
+        # 가장 관련성 높은 첫 번째 지역의 점수를 사용
+        safety_data = data[0]
+        scores = {
+            'lgbtq': safety_data['safetyScores']['lgbtq'],
+            'medical': safety_data['safetyScores']['medical'],
+            'overall': safety_data['safetyScores']['overall'],
+            'physicalHarm': safety_data['safetyScores']['physicalHarm'],
+            'politicalFreedom': safety_data['safetyScores']['politicalFreedom'],
+            'theft': safety_data['safetyScores']['theft'],
+            'women': safety_data['safetyScores']['women']
+        }
+        print(f"안전 정보 조회 완료: {scores}")
+        return scores
+
+    except requests.exceptions.RequestException as e:
+        print(f"안전 정보 API 호출 실패: {e}")
+        # 실패 시 빈 객체를 반환하여 추천 로직의 흐름이 끊기지 않도록 함
+        return {}
+

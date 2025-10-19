@@ -1,0 +1,1099 @@
+location_id,continent,continent_ko,country,country_ko,city,city_ko,location_type,geonameid
+1,Europe,유럽,Albania,알바니아,Tirana,티라나,country,3183875
+2,Europe,유럽,Andorra,안도라,Andorra la Vella,안도라라베야,country,3041563
+3,North America,북아메리카,Anguilla,앵귈라,The Valley,더밸리,country,3573374
+4,North America,북아메리카,Antigua and Barbuda,안티구아 바부다,Saint John's,세인트존스,country,3576022
+5,North America,북아메리카,Antigua and Barbuda,안티구아 바부다,Saint John's,세인트존스,city,3576022
+6,South America,남아메리카,Argentina,아르헨티나,"Buenos Aires, Argentina","부에노스아이레스, 아르헨티나",country,3435910
+7,South America,남아메리카,Argentina,아르헨티나,"Buenos Aires, Argentina","부에노스아이레스, 아르헨티나",city,3435910
+8,South America,남아메리카,Argentina,아르헨티나,Cafayate,카파야테,city,3863503
+9,South America,남아메리카,Argentina,아르헨티나,Cordoba,코르도바,city,3860259
+10,South America,남아메리카,Argentina,아르헨티나,El Calafate,엘칼라파테,city,3858677
+11,South America,남아메리카,Argentina,아르헨티나,El Chalten,엘찰텐,city,6690180
+12,South America,남아메리카,Argentina,아르헨티나,Humahuaca,우마우아카,city,3853967
+13,South America,남아메리카,Argentina,아르헨티나,La Plata,라플라타,city,3432043
+14,South America,남아메리카,Argentina,아르헨티나,Mar del Plata,마르델플라타,city,3430863
+15,South America,남아메리카,Argentina,아르헨티나,Mendoza,멘도사,city,3844421
+16,South America,남아메리카,Argentina,아르헨티나,Puerto Iguazu,푸에르토이과수,city,3429777
+17,South America,남아메리카,Argentina,아르헨티나,Puerto Madryn,푸에르토마드린,city,3840092
+18,South America,남아메리카,Argentina,아르헨티나,Rosario,로사리오,city,3838583
+19,South America,남아메리카,Argentina,아르헨티나,Salta,살타,city,3838233
+20,South America,남아메리카,Argentina,아르헨티나,San Carlos de Bariloche,산카를로스데바릴로체,city,3837856
+21,South America,남아메리카,Argentina,아르헨티나,San Miguel de Tucuman,산미겔데투쿠만,city,3836873
+22,South America,남아메리카,Argentina,아르헨티나,Tilcara,틸카라,city,3834403
+23,South America,남아메리카,Argentina,아르헨티나,Ushuaia,우수아이아,city,3833367
+24,Asia,아시아,Armenia,아르메니아,Yerevan,예레반,country,616052
+25,North America,북아메리카,Aruba,아루바,Oranjestad,오라녜스타트,country,3577154
+26,North America,북아메리카,Aruba,아루바,Eagle Beach,이글비치,city,3577214
+27,Oceania,오세아니아,Australia,호주,Sydney,시드니,country,2147714
+28,Oceania,오세아니아,Australia,호주,Adelaide,애들레이드,city,2078025
+29,Oceania,오세아니아,Australia,호주,Brisbane,브리즈번,city,2174003
+30,Oceania,오세아니아,Australia,호주,Canberra,캔버라,city,2172517
+31,Oceania,오세아니아,Australia,호주,Darwin,다윈,city,2073124
+32,Oceania,오세아니아,Australia,호주,Launceston,론서스턴,city,2160517
+33,Oceania,오세아니아,Australia,호주,Melbourne,멜버른,city,2158177
+34,Oceania,오세아니아,Australia,호주,Perth,퍼스,city,2063523
+35,Oceania,오세아니아,Australia,호주,Sydney,시드니,city,2147714
+36,Europe,유럽,Austria,오스트리아,Vienna,비엔나,country,2761369
+37,Europe,유럽,Austria,오스트리아,Bad Gastein,바트가슈타인,city,2782058
+38,Europe,유럽,Austria,오스트리아,Bregenz,브레겐츠,city,2781503
+39,Europe,유럽,Austria,오스트리아,Graz,그라츠,city,2778067
+40,Europe,유럽,Austria,오스트리아,Innsbruck,인스브루크,city,2775220
+41,Europe,유럽,Austria,오스트리아,Kitzbuhel,키츠뷔엘,city,2774347
+42,Europe,유럽,Austria,오스트리아,Linz,린츠,city,2772400
+43,Europe,유럽,Austria,오스트리아,Salzburg,잘츠부르크,city,2766824
+44,Europe,유럽,Austria,오스트리아,Vienna,비엔나,city,2761369
+45,Europe,유럽,Austria,오스트리아,Villach,필라흐,city,2762372
+46,Asia,아시아,Azerbaijan,아제르바이잔,Baku,바쿠,country,587084
+47,North America,북아메리카,Bahamas,바하마,Nassau,나소,country,3571824
+48,North America,북아메리카,Bahamas,바하마,Freeport,프리포트,city,3572375
+49,North America,북아메리카,Bahamas,바하마,Nassau,나소,city,3571824
+50,Asia,아시아,Bahrain,바레인,Manama,마나마,country,290340
+51,Asia,아시아,Bangladesh,방글라데시,Dhaka,다카,country,1185241
+52,North America,북아메리카,Barbados,바베이도스,Bridgetown,브리지타운,country,3374036
+53,Europe,유럽,Belarus,벨라루스,Minsk,민스크,country,625144
+54,Europe,유럽,Belarus,벨라루스,Minsk,민스크,city,625144
+55,Europe,유럽,Belgium,벨기에,Brussels,브뤼셀,country,2800866
+56,Europe,유럽,Belgium,벨기에,Antwerp,앤트워프,city,2803138
+57,Europe,유럽,Belgium,벨기에,Brussels,브뤼셀,city,2800866
+58,North America,북아메리카,Belize,벨리즈,Belmopan,벨모판,country,3582672
+59,North America,북아메리카,Belize,벨리즈,Belize City,벨리즈시티,city,3582677
+60,North America,북아메리카,Belize,벨리즈,San Ignacio,산이그나시오,city,3581194
+61,North America,북아메리카,Belize,벨리즈,San Pedro,산페드로,city,3581164
+62,North America,북아메리카,Bermuda,버뮤다,Hamilton,해밀턴,country,3573197
+63,North America,북아메리카,Bermuda,버뮤다,Warwick Parish,워릭,city,3572972
+64,Asia,아시아,Bhutan,부탄,Thimphu,팀푸,country,1252416
+65,South America,남아메리카,Bolivia,볼리비아,La Paz,라파스,country,3911925
+66,South America,남아메리카,Bolivia,볼리비아,Cochabamba,코차밤바,city,3919968
+67,South America,남아메리카,Bolivia,볼리비아,Copacabana,코파카바나,city,3919186
+68,South America,남아메리카,Bolivia,볼리비아,La Paz,라파스,city,3911925
+69,South America,남아메리카,Bolivia,볼리비아,Santa Cruz de la Sierra,산타크루스데라시에라,city,3904906
+70,South America,남아메리카,Bolivia,볼리비아,Sucre,수크레,city,3903987
+71,Europe,유럽,Bosnia and Herzegowina,보스니아 헤르체고비나,Sarajevo,사라예보,country,3191281
+72,Europe,유럽,Bosnia and Herzegowina,보스니아 헤르체고비나,Mostar,모스타르,city,3194828
+73,Europe,유럽,Bosnia and Herzegowina,보스니아 헤르체고비나,Sarajevo,사라예보,city,3191281
+74,Africa,아프리카,Botswana,보츠와나,Gaborone,가보로네,country,933773
+75,South America,남아메리카,Brazil,브라질,Rio de Janeiro,리우데자네이루,country,3451190
+76,South America,남아메리카,Brazil,브라질,Brasilia,브라질리아,city,3469058
+77,South America,남아메리카,Brazil,브라질,Buzios,부지오스,city,3471487
+78,South America,남아메리카,Brazil,브라질,Curitiba,쿠리치바,city,3464975
+79,South America,남아메리카,Brazil,브라질,Florianopolis,플로리아노폴리스,city,3463237
+80,South America,남아메리카,Brazil,브라질,Fortaleza,포르탈레자,city,3399415
+81,South America,남아메리카,Brazil,브라질,Foz do Iguacu,포스두이과수,city,3463030
+82,South America,남아메리카,Brazil,브라질,Ilha Grande,일랴그란지,city,3462217
+83,South America,남아메리카,Brazil,브라질,Manaus,마나우스,city,3663517
+84,South America,남아메리카,Brazil,브라질,Recife,레시페,city,3390760
+85,South America,남아메리카,Brazil,브라질,Rio de Janeiro,리우데자네이루,city,3451190
+86,South America,남아메리카,Brazil,브라질,Salvador,살바도르,city,3450554
+87,South America,남아메리카,Brazil,브라질,Sao Paulo,상파울루,city,3448439
+88,North America,북아메리카,British Virgin Islands,영국령 버진아일랜드,Road Town,로드타운,country,3577430
+89,Europe,유럽,Bulgaria,불가리아,Sofia,소피아,country,727011
+90,Europe,유럽,Bulgaria,불가리아,Plovdiv,플로브디프,city,728193
+91,Europe,유럽,Bulgaria,불가리아,Sofia,소피아,city,727011
+92,Europe,유럽,Bulgaria,불가리아,Varna,바르나,city,726050
+93,Africa,아프리카,Burkina Faso,부르키나파소,Ouagadougou,와가두구,country,2357048
+94,Asia,아시아,Cambodia,캄보디아,Phnom Penh,프놈펜,country,1821306
+95,Asia,아시아,Cambodia,캄보디아,Kampong Cham,캄퐁참,city,1831173
+96,Asia,아시아,Cambodia,캄보디아,Phnom Penh,프놈펜,city,1821306
+97,Asia,아시아,Cambodia,캄보디아,Siem Reap,시엠레아프,city,1822214
+98,Asia,아시아,Cambodia,캄보디아,Sihanoukville,시아누크빌,city,1831142
+99,Africa,아프리카,Cameroon,카메룬,Douala,두알라,country,2232593
+100,North America,북아메리카,Canada,캐나다,Toronto,토론토,country,6167865
+101,North America,북아메리카,Canada,캐나다,Banff,밴프,city,5892532
+102,North America,북아메리카,Canada,캐나다,Calgary,캘거리,city,5913490
+103,North America,북아메리카,Canada,캐나다,Charlottetown,샬럿타운,city,5920288
+104,North America,북아메리카,Canada,캐나다,Edmonton,에드먼턴,city,5946768
+105,North America,북아메리카,Canada,캐나다,Halifax,핼리팩스,city,6324729
+106,North America,북아메리카,Canada,캐나다,Hope,호프,city,5976783
+107,North America,북아메리카,Canada,캐나다,Jasper National Park,재스퍼 국립공원,city,6354954
+108,North America,북아메리카,Canada,캐나다,Kamloops,캠룹스,city,5989045
+109,North America,북아메리카,Canada,캐나다,Moncton,멍크턴,city,6076211
+110,North America,북아메리카,Canada,캐나다,Montreal,몬트리올,city,6077243
+111,North America,북아메리카,Canada,캐나다,Niagara Falls,나이아가라 폭포,city,6087892
+112,North America,북아메리카,Canada,캐나다,Ottawa,오타와,city,6094817
+113,North America,북아메리카,Canada,캐나다,Quebec City,퀘벡시티,city,6325494
+114,North America,북아메리카,Canada,캐나다,Saint John,세인트존,city,6138517
+115,North America,북아메리카,Canada,캐나다,Saskatoon,새스커툰,city,6141256
+116,North America,북아메리카,Canada,캐나다,Toronto,토론토,city,6167865
+117,North America,북아메리카,Canada,캐나다,Vancouver,밴쿠버,city,6173331
+118,North America,북아메리카,Canada,캐나다,Vernon,버논,city,6173864
+119,North America,북아메리카,Canada,캐나다,Victoria,빅토리아,city,6174041
+120,North America,북아메리카,Canada,캐나다,Whistler,휘슬러,city,6180144
+121,North America,북아메리카,Canada,캐나다,Winnipeg,위니펙,city,6183235
+122,Africa,아프리카,Cape Verde,카보베르데,Praia,프라이아,country,3374333
+123,North America,북아메리카,Caribbean Netherlands,카리브 네덜란드,Bonaire,보네르,city,7609816
+124,North America,북아메리카,Caribbean Netherlands,카리브 네덜란드,Oranjestad (Sint Eustatius),오라녜스타트 (신트외스타티위스),city,3513426
+125,North America,북아메리카,Cayman Islands,케이맨 제도,Grand Cayman,그랜드케이맨,country,3580661
+126,North America,북아메리카,Cayman Islands,케이맨 제도,Grand Cayman,그랜드케이맨,city,3580661
+127,South America,남아메리카,Chile,칠레,Santiago,산티아고,country,3871336
+128,South America,남아메리카,Chile,칠레,Arica,아리카,city,3899361
+129,South America,남아메리카,Chile,칠레,Castro,카스트로,city,3896218
+130,South America,남아메리카,Chile,칠레,Easter Island,이스터섬,city,6930873
+131,South America,남아메리카,Chile,칠레,Iquique,이키케,city,3887127
+132,South America,남아메리카,Chile,칠레,La Serena,라세레나,city,3884373
+133,South America,남아메리카,Chile,칠레,Pucon,푸콘,city,3875070
+134,South America,남아메리카,Chile,칠레,Puerto Montt,푸에르토몬트,city,3874960
+135,South America,남아메리카,Chile,칠레,Puerto Natales,푸에르토나탈레스,city,3874958
+136,South America,남아메리카,Chile,칠레,Puerto Varas,푸에르토바라스,city,3874930
+137,South America,남아메리카,Chile,칠레,Punta Arenas,푼타아레나스,city,3874787
+138,South America,남아메리카,Chile,칠레,San Pedro de Atacama,산페드로데아타카마,city,3871781
+139,South America,남아메리카,Chile,칠레,Santiago,산티아고,city,3871336
+140,South America,남아메리카,Chile,칠레,Temuco,테무코,city,3870011
+141,South America,남아메리카,Chile,칠레,Torres del Paine National Park,토레스 델 파이네 국립공원,city,7732121
+142,South America,남아메리카,Chile,칠레,Valdivia,발디비아,city,3868707
+143,South America,남아메리카,Chile,칠레,Valparaiso,발파라이소,city,3868626
+144,Asia,아시아,China,중국,Beijing,베이징,country,1816670
+145,Asia,아시아,China,중국,Beijing,베이징,city,1816670
+146,Asia,아시아,China,중국,Chongqing,충칭,city,1814906
+147,Asia,아시아,China,중국,Fuzhou,푸저우,city,1810821
+148,Asia,아시아,China,중국,Guangzhou,광저우,city,1809858
+149,Asia,아시아,China,중국,Harbin,하얼빈,city,2037013
+150,Asia,아시아,China,중국,Hefei,허페이,city,1808722
+151,Asia,아시아,China,중국,Lhasa,라싸,city,1280737
+152,Asia,아시아,China,중국,Lijiang,리장,city,1813253
+153,Asia,아시아,China,중국,Nanchang,난창,city,1800163
+154,Asia,아시아,China,중국,Nanchong,난충,city,1800146
+155,Asia,아시아,China,중국,Nanjing,난징,city,1799962
+156,Asia,아시아,China,중국,Nanning,난닝,city,1799869
+157,Asia,아시아,China,중국,Puyang,푸양,city,1798425
+158,Asia,아시아,China,중국,Shanghai,상하이,city,1796236
+159,Asia,아시아,China,중국,Shenyang,선양,city,2034937
+160,Asia,아시아,China,중국,Shenzhen,선전,city,1795565
+161,Asia,아시아,China,중국,Shijiazhuang,스자좡,city,1795270
+162,Asia,아시아,China,중국,Tai'an,타이안,city,1793724
+163,Asia,아시아,China,중국,Taiyuan,타이위안,city,1793511
+164,Asia,아시아,China,중국,Tianjin,톈진,city,1792947
+165,Asia,아시아,China,중국,Xi'an,시안,city,1790630
+166,Asia,아시아,China,중국,Yichang,이창,city,1786764
+167,Asia,아시아,China,중국,Yueyang,웨양,city,1927639
+168,Asia,아시아,China,중국,Zhangye,장예,city,1785036
+169,Asia,아시아,China,중국,Zhumadian,주마뎬,city,1783873
+170,South America,남아메리카,Colombia,콜롬비아,Bogota,보고타,country,3688689
+171,South America,남아메리카,Colombia,콜롬비아,Bogota,보고타,city,3688689
+172,South America,남아메리카,Colombia,콜롬비아,Cali,칼리,city,3687925
+173,South America,남아메리카,Colombia,콜롬비아,Cartagena,카르타헤나,city,3687238
+174,South America,남아메리카,Colombia,콜롬비아,Medellin,메데인,city,3674962
+175,South America,남아메리카,Colombia,콜롬비아,Pereira,페레이라,city,3672486
+176,South America,남아메리카,Colombia,콜롬비아,Rosario Islands,로사리오 제도,city,3670598
+177,South America,남아메리카,Colombia,콜롬비아,Salento,살렌토,city,3670352
+178,South America,남아메리카,Colombia,콜롬비아,Santa Marta,산타마르타,city,3668605
+179,South America,남아메리카,Colombia,콜롬비아,Tena,테나,city,3667310
+180,North America,북아메리카,Costa Rica,코스타리카,Tamarindo,타마린도,country,6619864
+181,North America,북아메리카,Costa Rica,코스타리카,Jaco,자코,city,3623369
+182,North America,북아메리카,Costa Rica,코스타리카,La Fortuna,라포르투나,city,3623716
+183,North America,북아메리카,Costa Rica,코스타리카,Liberia,리베리아,city,3623076
+184,North America,북아메리카,Costa Rica,코스타리카,Puerto Jimenez (Corcovado National Park),푸에르토히메네스 (코르코바도 국립공원),city,3622248
+185,North America,북아메리카,Costa Rica,코스타리카,Puerto Viejo,푸에르토비에호,city,7870493
+186,North America,북아메리카,Costa Rica,코스타리카,Quepos,케포스,city,3622193
+187,North America,북아메리카,Costa Rica,코스타리카,San Jose,산호세,city,3621849
+188,North America,북아메리카,Costa Rica,코스타리카,Santa Elena,산타엘레나,city,3622811
+189,North America,북아메리카,Costa Rica,코스타리카,Tamarindo,타마린도,city,6619864
+190,Europe,유럽,Croatia,크로아티아,Dubrovnik,두브로브니크,country,3201047
+191,Europe,유럽,Croatia,크로아티아,Dubrovnik,두브로브니크,city,3201047
+192,Europe,유럽,Croatia,크로아티아,Hvar,흐바르,city,3199180
+193,Europe,유럽,Croatia,크로아티아,Korcula,코르출라,city,3197710
+194,Europe,유럽,Croatia,크로아티아,Novalja,노발자,city,3194422
+195,Europe,유럽,Croatia,크로아티아,Plitvice Lakes National Park,플리트비체 국립공원,city,6698043
+196,Europe,유럽,Croatia,크로아티아,Rijeka,리예카,city,3191648
+197,Europe,유럽,Croatia,크로아티아,Sibenik,시베니크,city,3190941
+198,Europe,유럽,Croatia,크로아티아,Split,스플리트,city,3190261
+199,Europe,유럽,Croatia,크로아티아,Trogir,트로기르,city,3188763
+200,Europe,유럽,Croatia,크로아티아,Zadar,자다르,city,3186952
+네, 세 번째 텍스트도 확인했습니다. 수정된 내용을 아래에 보내드립니다. 이번 텍스트에서는 특히 핀란드와 프랑스, 독일 지역의 지명 오류가 많아 수정했습니다.
+
+201,Europe,유럽,Croatia,크로아티아,Zagreb,자그레브,city,3186886
+202,North America,북아메리카,Cuba,쿠바,Havana,아바나,country,3553478
+203,North America,북아메리카,Cuba,쿠바,Havana,아바나,city,3553478
+204,North America,북아메리카,Curacao,퀴라소,Willemstad,빌렘스타트,country,3513090
+205,Asia,아시아,Cyprus,키프로스,Nicosia,니코시아,country,146268
+206,Asia,아시아,Cyprus,키프로스,Paphos,파포스,city,146214
+207,Europe,유럽,Czech Republic,체코,Prague,프라하,country,3067696
+208,Europe,유럽,Czech Republic,체코,Brno,브르노,city,3078610
+209,Europe,유럽,Czech Republic,체코,Cesky Krumlov,체스키크룸로프,city,3077889
+210,Europe,유럽,Czech Republic,체코,Karlovy Vary,카를로비바리,city,3073803
+211,Europe,유럽,Czech Republic,체코,Kutna Hora,쿠트나호라,city,3072463
+212,Europe,유럽,Czech Republic,체코,Olomouc,올로모우츠,city,3069011
+213,Europe,유럽,Czech Republic,체코,Plzen,플젠,city,3068160
+214,Europe,유럽,Czech Republic,체코,Prague,프라하,city,3067696
+215,Europe,유럽,Czech Republic,체코,Telc,텔치,city,3064316
+216,Europe,유럽,Denmark,덴마크,Copenhagen,코펜하겐,country,2618425
+217,Europe,유럽,Denmark,덴마크,Aalborg,올보르,city,2624886
+218,Europe,유럽,Denmark,덴마크,Copenhagen,코펜하겐,city,2618425
+219,Europe,유럽,Denmark,덴마크,Odense,오덴세,city,2615876
+220,North America,북아메리카,Dominica,도미니카,Roseau,로조,country,3575635
+221,North America,북아메리카,Dominican Republic,도미니카 공화국,Santo Domingo,산토도밍고,country,3492908
+222,North America,북아메리카,Dominican Republic,도미니카 공화국,Amber Cove (Puerto Plata),앰버코브 (푸에르토플라타),city,3493175
+223,North America,북아메리카,Dominican Republic,도미니카 공화국,Cabarete,카바레테,city,3510969
+224,North America,북아메리카,Dominican Republic,도미니카 공화국,Punta Cana,푼타카나,city,3494242
+225,North America,북아메리카,Dominican Republic,도미니카 공화국,Santo Domingo,산토도밍고,city,3492908
+226,North America,북아메리카,Dominican Republic,도미니카 공화국,Sosua,소수아,city,3492627
+227,South America,남아메리카,Ecuador,에콰도르,Quito,키토,country,3652462
+228,South America,남아메리카,Ecuador,에콰도르,Banos,바뇨스,city,3660346
+229,South America,남아메리카,Ecuador,에콰도르,Cuenca,쿠엥카,city,3658666
+230,South America,남아메리카,Ecuador,에콰도르,Guayaquil,과야킬,city,3657509
+231,South America,남아메리카,Ecuador,에콰도르,Montanita,몬타니타,city,3654059
+232,South America,남아메리카,Ecuador,에콰도르,Puerto Ayora,푸에르토아요라,city,3652764
+233,South America,남아메리카,Ecuador,에콰도르,Quito,키토,city,3652462
+234,Africa,아프리카,Egypt,이집트,Cairo,카이로,country,360630
+235,Africa,아프리카,Egypt,이집트,Alexandria,알렉산드리아,city,361058
+236,Africa,아프리카,Egypt,이집트,Aswan,아스완,city,359792
+237,Africa,아프리카,Egypt,이집트,Cairo,카이로,city,360630
+238,Africa,아프리카,Egypt,이집트,Dahab,다합,city,358245
+239,Africa,아프리카,Egypt,이집트,Luxor,룩소르,city,360502
+240,Africa,아프리카,Egypt,이집트,Sharm el-Sheikh,샤름엘셰이크,city,349340
+241,Europe,유럽,Estonia,에스토니아,Tallinn,탈린,country,588409
+242,Europe,유럽,Estonia,에스토니아,Saaremaa,사레마,city,590939
+243,Europe,유럽,Estonia,에스토니아,Tallinn,탈린,city,588409
+244,Europe,유럽,Estonia,에스토니아,Tartu,타르투,city,588335
+245,Africa,아프리카,Ethiopia,에티오피아,Addis Ababa,아디스아바바,country,344979
+246,Africa,아프리카,Ethiopia,에티오피아,Addis Ababa,아디스아바바,city,344979
+247,Oceania,오세아니아,Fiji,피지,Suva,수바,country,2198148
+248,Oceania,오세아니아,Fiji,피지,Nadi (Port Denarau),나디 (포트데나라우),city,2202064
+249,Europe,유럽,Finland,핀란드,Helsinki,헬싱키,country,658225
+250,Europe,유럽,Finland,핀란드,Helsinki,헬싱키,city,658225
+251,Europe,유럽,Finland,핀란드,Kemi,케미,city,653281
+252,Europe,유럽,Finland,핀란드,Levi,레비,city,7117281
+253,Europe,유럽,Finland,핀란드,Porvoo,포르보,city,660561
+254,Europe,유럽,Finland,핀란드,Rovaniemi,로바니에미,city,638936
+255,Europe,유럽,Finland,핀란드,Savonlinna,사본린나,city,637292
+256,Europe,유럽,Finland,핀란드,Tampere,탐페레,city,634963
+257,Europe,유럽,Finland,핀란드,Turku,투르쿠,city,633679
+258,Europe,유럽,France,프랑스,Paris,파리,country,2988507
+259,Europe,유럽,France,프랑스,Ajaccio,아작시오,city,3038334
+260,Europe,유럽,France,프랑스,Bordeaux,보르도,city,3031582
+261,Europe,유럽,France,프랑스,Caen,캉,city,3029241
+262,Europe,유럽,France,프랑스,Calais,칼레,city,3029162
+263,Europe,유럽,France,프랑스,Dijon,디종,city,3021372
+264,Europe,유럽,France,프랑스,Giverny,지베르니,city,3015907
+265,Europe,유럽,France,프랑스,Honfleur,옹플뢰르,city,3013173
+266,Europe,유럽,France,프랑스,La Rochelle,라로셸,city,3006787
+267,Europe,유럽,France,프랑스,Lille,릴,city,2998324
+268,Europe,유럽,France,프랑스,Lyon,리옹,city,2996944
+269,Europe,유럽,France,프랑스,Marseille,마르세유,city,2995469
+270,Europe,유럽,France,프랑스,Mont-Saint-Michel,몽생미셸,city,6615358
+271,Europe,유럽,France,프랑스,Montpellier,몽펠리에,city,2992166
+272,Europe,유럽,France,프랑스,Nantes,낭트,city,2990969
+273,Europe,유럽,France,프랑스,Paris,파리,city,2988507
+274,Europe,유럽,France,프랑스,Reims,랭스,city,2984114
+275,Europe,유럽,France,프랑스,Rennes,렌,city,2983990
+276,Europe,유럽,France,프랑스,Rouen,루앙,city,2982652
+277,Europe,유럽,France,프랑스,Strasbourg,스트라스부르,city,2973783
+278,Europe,유럽,France,프랑스,Toulouse,툴루즈,city,2972315
+279,Europe,유럽,France,프랑스,Tours,투르,city,2972191
+280,Europe,유럽,France,프랑스,Versailles,베르사유,city,2969679
+281,Asia,아시아,Georgia,조지아,Tbilisi,트빌리시,country,611717
+282,Asia,아시아,Georgia,조지아,Tbilisi,트빌리시,city,611717
+283,Europe,유럽,Germany,독일,Berlin,베를린,country,2950159
+284,Europe,유럽,Germany,독일,Baden-Baden,바덴바덴,city,2953504
+285,Europe,유럽,Germany,독일,Berlin,베를린,city,2950159
+286,Europe,유럽,Germany,독일,Bonn,본,city,2946447
+287,Europe,유럽,Germany,독일,Bremen,브레멘,city,2944388
+288,Europe,유럽,Germany,독일,Cologne,쾰른,city,2886242
+289,Europe,유럽,Germany,독일,Dresden,드레스덴,city,2935022
+290,Europe,유럽,Germany,독일,Dusseldorf,뒤셀도르프,city,2934246
+291,Europe,유럽,Germany,독일,Frankfurt,프랑크푸르트,city,2925533
+292,Europe,유럽,Germany,독일,Hamburg,함부르크,city,2911298
+293,Europe,유럽,Germany,독일,Hannover,하노버,city,2910831
+294,Europe,유럽,Germany,독일,Heidelberg,하이델베르크,city,2907911
+295,Europe,유럽,Germany,독일,Kiel,킬,city,2891122
+296,Europe,유럽,Germany,독일,Koblenz,코블렌츠,city,2886946
+297,Europe,유럽,Germany,독일,Leipzig,라이프치히,city,2879139
+298,Europe,유럽,Germany,독일,Mainz,마인츠,city,2874225
+299,Europe,유럽,Germany,독일,Munich,뮌헨,city,2867714
+300,Europe,유럽,Germany,독일,Potsdam,포츠담,city,2852458
+301,Europe,유럽,Germany,독일,Stuttgart,슈투트가르트,city,2825297
+302,Europe,유럽,Germany,독일,Wernigerode,베르니게로데,city,2810808
+303,Africa,아프리카,Ghana,가나,Accra,아크라,country,2306104
+304,Africa,아프리카,Ghana,가나,Accra,아크라,city,2306104
+305,Europe,유럽,Greece,그리스,Athens,아테네,country,264371
+306,Europe,유럽,Greece,그리스,Aegina,에기나,city,265502
+307,Europe,유럽,Greece,그리스,Arachova,아라코바,city,264714
+308,Europe,유럽,Greece,그리스,Athens,아테네,city,264371
+309,Europe,유럽,Greece,그리스,Cape Sounion,수니온곶,city,260477
+310,Europe,유럽,Greece,그리스,Corfu,코르푸,city,2463679
+311,Europe,유럽,Greece,그리스,Corinth,고린도,city,259289
+312,Europe,유럽,Greece,그리스,Delphi,델포이,city,263219
+313,Europe,유럽,Greece,그리스,Heraklion,헤라클리온,city,261745
+314,Europe,유럽,Greece,그리스,Hydra,히드라,city,261822
+315,Europe,유럽,Greece,그리스,Ios,이오스,city,261772
+316,Europe,유럽,Greece,그리스,Kalampaka (Meteora),칼람바카 (메테오라),city,261601
+317,Europe,유럽,Greece,그리스,Kefalonia,케팔로니아,city,260311
+318,Europe,유럽,Greece,그리스,Kos,코스,city,259245
+319,Europe,유럽,Greece,그리스,Lemnos,렘노스,city,256930
+320,Europe,유럽,Greece,그리스,Lesbos,레스보스,city,258466
+321,Europe,유럽,Greece,그리스,Milos,밀로스,city,256952
+322,Europe,유럽,Greece,그리스,Mykonos,미코노스,city,257056
+323,Europe,유럽,Greece,그리스,Nafplio,나플리오,city,256637
+324,Europe,유럽,Greece,그리스,Naxos,낙소스,city,256632
+325,Europe,유럽,Greece,그리스,Paros,파로스,city,255721
+326,Europe,유럽,Greece,그리스,Rhodes,로도스,city,400666
+327,Europe,유럽,Greece,그리스,Samos,사모스,city,254115
+328,Europe,유럽,Greece,그리스,Santorini,산토리니,city,252919
+329,Europe,유럽,Greece,그리스,Skiathos,스키아토스,city,253643
+330,Europe,유럽,Greece,그리스,Skyros,스키로스,city,253614
+331,Europe,유럽,Greece,그리스,Syros,시로스,city,253775
+332,Europe,유럽,Greece,그리스,Thessaloniki,테살로니키,city,734077
+333,Europe,유럽,Greece,그리스,Thiva (Thebes),티바 (테베),city,252910
+334,Europe,유럽,Greece,그리스,Volos,볼로스,city,251833
+335,Europe,유럽,Greece,그리스,Zakynthos,자킨토스,city,251280
+336,North America,북아메리카,Greenland,그린란드,Nuuk,누크,country,3421319
+337,North America,북아메리카,Grenada,그레나다,Saint George's,세인트조지스,country,3579925
+338,North America,북아메리카,Guadeloupe,과들루프,Basse-Terre,바스테르,country,3579732
+339,North America,북아메리카,Guadeloupe,과들루프,Basse-Terre,바스테르,city,3579732
+340,North America,북아메리카,Guadeloupe,과들루프,Grand-Bourg,그랑부르,city,3579250
+341,North America,북아메리카,Guadeloupe,과들루프,Grande-Terre,그랑드테르,city,3579202
+342,North America,북아메리카,Guadeloupe,과들루프,Terre-de-Haut,테르드오,city,3578347
+343,North America,북아메리카,Guatemala,과테말라,Guatemala City,과테말라시티,country,3598132
+344,North America,북아메리카,Guatemala,과테말라,Antigua Guatemala,안티과과테말라,city,3599699
+345,North America,북아메리카,Guatemala,과테말라,Flores,플로레스,city,3595725
+346,North America,북아메리카,Guatemala,과테말라,Guatemala City,과테말라시티,city,3598132
+347,North America,북아메리카,Guatemala,과테말라,San Pedro La Laguna,산페드로라라구나,city,3589637
+348,North America,북아메리카,Haiti,아이티,Port-au-Prince,포르토프랭스,country,3718426
+349,North America,북아메리카,Haiti,아이티,Port-au-Prince,포르토프랭스,city,3718426
+350,North America,북아메리카,Honduras,온두라스,Tegucigalpa,테구시갈파,country,3600949
+351,North America,북아메리카,Honduras,온두라스,Copan,코판,city,3613230
+352,North America,북아메리카,Honduras,온두라스,La Ceiba,라세이바,city,3608248
+353,North America,북아메리카,Honduras,온두라스,Roatan,로아탄,city,3602736
+354,Asia,아시아,Hong Kong,홍콩,Hong Kong,홍콩,country,1819729
+355,Europe,유럽,Hungary,헝가리,Budapest,부다페스트,country,3054643
+356,Europe,유럽,Hungary,헝가리,Balaton Lake,벌러톤호,city,3055568
+357,Europe,유럽,Hungary,헝가리,Budapest,부다페스트,city,3054643
+358,Europe,유럽,Hungary,헝가리,Debrecen,데브레첸,city,721472
+359,Europe,유럽,Hungary,헝가리,Holloko,홀로쾨,city,3051408
+360,Europe,유럽,Hungary,헝가리,Pecs,페치,city,3046526
+361,Europe,유럽,Hungary,헝가리,Siofok,시오포크,city,3045332
+362,Europe,유럽,Hungary,헝가리,Sopron,쇼프론,city,3045190
+363,Europe,유럽,Hungary,헝가리,Tihany,티하니,city,3043927
+364,Europe,유럽,Iceland,아이슬란드,Reykjavik,레이캬비크,country,3413829
+365,Europe,유럽,Iceland,아이슬란드,Akureyri,아퀴레이리,city,2633274
+366,Europe,유럽,Iceland,아이슬란드,Hofn,회픈,city,2630299
+367,Europe,유럽,Iceland,아이슬란드,Reykjavik,레이캬비크,city,3413829
+368,Asia,아시아,India,인도,Delhi,델리,country,1273294
+369,Asia,아시아,India,인도,Ahmadabad,아마다바드,city,1279233
+370,Asia,아시아,India,인도,Bangalore,방갈로르,city,1277333
+371,Asia,아시아,India,인도,Bhubaneshwar,부바네스와르,city,1275817
+372,Asia,아시아,India,인도,Bodh Gaya,보드가야,city,1275389
+373,Asia,아시아,India,인도,Chandigarh,찬디가르,city,1274746
+374,Asia,아시아,India,인도,Chennai,첸나이,city,1264527
+375,Asia,아시아,India,인도,Darjiling,다르질링,city,1273467
+376,Asia,아시아,India,인도,Delhi,델리,city,1273294
+377,Asia,아시아,India,인도,Haridwar,하리드와르,city,1270351
+378,Asia,아시아,India,인도,Hyderabad,하이데라바드,city,1269843
+379,Asia,아시아,India,인도,Indore,인도르,city,1269743
+380,Asia,아시아,India,인도,Jaipur,자이푸르,city,1269515
+381,Asia,아시아,India,인도,Kanpur,칸푸르,city,1267995
+382,Asia,아시아,India,인도,Kolkata (Calcutta),콜카타 (캘커타),city,1275004
+383,Asia,아시아,India,인도,Ludhiana,루디아나,city,1264728
+384,Asia,아시아,India,인도,Marmagao,마르마가오,city,1263494
+385,Asia,아시아,India,인도,Mumbai,뭄바이,city,1275339
+386,Asia,아시아,India,인도,Pondicherry,폰디체리,city,1259425
+387,Asia,아시아,India,인도,Shimla,심라,city,1256237
+388,Asia,아시아,India,인도,Srinagar,스리나가르,city,1255634
+389,Asia,아시아,India,인도,Thiruvananthapuram,티루바난타푸람,city,1254163
+390,Asia,아시아,Indonesia,인도네시아,Bali,발리,country,1645528
+391,Asia,아시아,Indonesia,인도네시아,Bali,발리,city,1645528
+392,Asia,아시아,Indonesia,인도네시아,Bandung,반둥,city,1650357
+393,Asia,아시아,Indonesia,인도네시아,Gili Trawangan,길리트라왕안,city,7838713
+394,Asia,아시아,Indonesia,인도네시아,Jakarta,자카르타,city,1642911
+395,Asia,아시아,Indonesia,인도네시아,Lombok,롬복,city,1637371
+396,Asia,아시아,Indonesia,인도네시아,Malang,말랑,city,1636722
+397,Asia,아시아,Indonesia,인도네시아,Mount Bromo,브로모산,city,1648047
+398,Asia,아시아,Indonesia,인도네시아,Surabaya,수라바야,city,1625822
+399,Asia,아시아,Indonesia,인도네시아,Ubud,우붓,city,1622846
+400,Asia,아시아,Indonesia,인도네시아,Yogyakarta,욕야카르타,city,1621177
+네, 마지막 텍스트도 확인했습니다. 아래에 수정된 내용을 보내드립니다. 이번 텍스트에서는 특히 아일랜드, 이탈리아, 자메이카, 일본 지역의 지명 오류가 많아 수정했습니다.
+
+401,Asia,아시아,Iran,이란,Tehran,테헤란,country,112931
+402,Asia,아시아,Iran,이란,Tehran,테헤란,city,112931
+403,Europe,유럽,Ireland,아일랜드,Dublin,더블린,country,2964574
+404,Europe,유럽,Ireland,아일랜드,Connemara,코네마라,city,2965232
+405,Europe,유럽,Ireland,아일랜드,Cork,코크,city,2965140
+406,Europe,유럽,Ireland,아일랜드,Dingle,딩글,city,2964782
+407,Europe,유럽,Ireland,아일랜드,Dublin,더블린,city,2964574
+408,Europe,유럽,Ireland,아일랜드,Galway,골웨이,city,2964180
+409,Europe,유럽,Ireland,아일랜드,Howth,호스,city,2963722
+410,Europe,유럽,Ireland,아일랜드,Kilkenny,킬케니,city,2963398
+411,Europe,유럽,Ireland,아일랜드,Killarney,킬라니,city,2963370
+412,Europe,유럽,Ireland,아일랜드,Kinsale,킨세일,city,2963155
+413,Europe,유럽,Ireland,아일랜드,Letterkenny,레터케니,city,2962961
+414,Europe,유럽,Ireland,아일랜드,Limerick,리머릭,city,2962943
+415,Asia,아시아,Israel,이스라엘,Eilat,에일라트,city,295277
+416,Asia,아시아,Israel,이스라엘,Haifa,하이파,city,294801
+417,Asia,아시아,Israel,이스라엘,Jerusalem,예루살렘,city,281184
+418,Asia,아시아,Israel,이스라엘,Tel Aviv,텔아비브,city,293394
+419,Asia,아시아,Israel,이스라엘,Tiberias,티베리아스,city,293322
+420,Europe,유럽,Italy,이탈리아,Rome,로마,country,3169070
+421,Europe,유럽,Italy,이탈리아,Amalfi,아말피,city,3183130
+422,Europe,유럽,Italy,이탈리아,Bari,바리,city,3182351
+423,Europe,유럽,Italy,이탈리아,Bellagio,벨라조,city,3182230
+424,Europe,유럽,Italy,이탈리아,Bergamo,베르가모,city,3182164
+425,Europe,유럽,Italy,이탈리아,Bologna,볼로냐,city,3181928
+426,Europe,유럽,Italy,이탈리아,Brescia,브레시아,city,3181554
+427,Europe,유럽,Italy,이탈리아,Bressanone,브레사노네,city,3181550
+428,Europe,유럽,Italy,이탈리아,Cagliari,칼리아리,city,2525473
+429,Europe,유럽,Italy,이탈리아,Caltagirone,칼타지로네,city,2525450
+430,Europe,유럽,Italy,이탈리아,Catania,카타니아,city,2525068
+431,Europe,유럽,Italy,이탈리아,Cefalu,체팔루,city,2525041
+432,Europe,유럽,Italy,이탈리아,Cinque Terre,친퀘테레,city,3172769
+433,Europe,유럽,Italy,이탈리아,Como,코모,city,3178229
+434,Europe,유럽,Italy,이탈리아,Finale Ligure,피날레리구레,city,3176982
+435,Europe,유럽,Italy,이탈리아,Florence,피렌체,city,3176959
+436,Europe,유럽,Italy,이탈리아,Genoa,제노바,city,3176219
+437,Europe,유럽,Italy,이탈리아,Imperia,임페리아,city,3175532
+438,Europe,유럽,Italy,이탈리아,La Spezia,라스페치아,city,3175081
+439,Europe,유럽,Italy,이탈리아,Lake Garda,가르다호,city,3176317
+440,Europe,유럽,Italy,이탈리아,Livorno,리보르노,city,3174659
+441,Europe,유럽,Italy,이탈리아,Lucca,루카,city,3174530
+442,Europe,유럽,Italy,이탈리아,Messina,메시나,city,2524170
+443,Europe,유럽,Italy,이탈리아,Milan,밀라노,city,3173435
+444,Europe,유럽,Italy,이탈리아,Naples,나폴리,city,3172394
+445,Europe,유럽,Italy,이탈리아,Palermo,팔레르모,city,2523920
+446,Europe,유럽,Italy,이탈리아,Piazza Armerina,피아차아르메리나,city,2523796
+447,Europe,유럽,Italy,이탈리아,Pisa,피사,city,3170647
+448,Europe,유럽,Italy,이탈리아,Pompeii,폼페이,city,3170333
+449,Europe,유럽,Italy,이탈리아,Portofino,포르토피노,city,3170092
+450,Europe,유럽,Italy,이탈리아,Positano,포지타노,city,3170051
+451,Europe,유럽,Italy,이탈리아,Rome,로마,city,3169070
+452,Europe,유럽,Italy,이탈리아,San Gimignano,산지미냐노,city,3168320
+453,Europe,유럽,Italy,이탈리아,San Remo,산레모,city,3167777
+454,Europe,유럽,Italy,이탈리아,Sestri Levante,세스트리레반테,city,3166595
+455,Europe,유럽,Italy,이탈리아,Siena,시에나,city,3166548
+456,Europe,유럽,Italy,이탈리아,Sorrento,소렌토,city,3166350
+457,Europe,유럽,Italy,이탈리아,Trento,트렌토,city,3165243
+458,Europe,유럽,Italy,이탈리아,Trieste,트리에스테,city,3165185
+459,Europe,유럽,Italy,이탈리아,Turin (Torino),토리노,city,3165524
+460,Europe,유럽,Italy,이탈리아,Urbino,우르비노,city,3165035
+461,Europe,유럽,Italy,이탈리아,Varenna,바렌나,city,3164701
+462,Europe,유럽,Italy,이탈리아,Venice,베네치아,city,3164603
+463,Europe,유럽,Italy,이탈리아,Ventimiglia,벤티밀리아,city,3164582
+464,Europe,유럽,Italy,이탈리아,Verona,베로나,city,3164527
+465,Europe,유럽,Italy,이탈리아,Volterra,볼테라,city,3163962
+466,North America,북아메리카,Jamaica,자메이카,Kingston,킹스턴,country,3489854
+467,North America,북아메리카,Jamaica,자메이카,Kingston,킹스턴,city,3489854
+468,North America,북아메리카,Jamaica,자메이카,Mandeville,맨더빌,city,3489577
+469,North America,북아메리카,Jamaica,자메이카,Montego Bay,몬테고베이,city,3489460
+470,North America,북아메리카,Jamaica,자메이카,Negril,네그릴,city,3489331
+471,North America,북아메리카,Jamaica,자메이카,Ocho Rios,오초리오스,city,3489239
+472,Asia,아시아,Japan,일본,Tokyo,도쿄,country,1850147
+473,Asia,아시아,Japan,일본,Atami,아타미,city,1864945
+474,Asia,아시아,Japan,일본,Chichibu-Tama-Kai,지치부타마카이,city,1864635
+475,Asia,아시아,Japan,일본,Dewa Sanzan,데와산잔,city,2112973
+476,Asia,아시아,Japan,일본,Fuji-Hakone-Izu National Park,후지하코네이즈 국립공원,city,1864127
+477,Asia,아시아,Japan,일본,Hiroshima,히로시마,city,1862415
+478,Asia,아시아,Japan,일본,Ise,이세,city,1861450
+479,Asia,아시아,Japan,일본,Kamakura,가마쿠라,city,1860672
+480,Asia,아시아,Japan,일본,Kanazawa,가나자와,city,1860243
+481,Asia,아시아,Japan,일본,Kobe,고베,city,1859171
+482,Asia,아시아,Japan,일본,Koyasan,고야산,city,1858606
+483,Asia,아시아,Japan,일본,Kyoto,교토,city,1857910
+484,Asia,아시아,Japan,일본,Mashiko,마시코,city,2111999
+485,Asia,아시아,Japan,일본,Matsue,마쓰에,city,1857550
+486,Asia,아시아,Japan,일본,Nagano,나가노,city,1856215
+487,Asia,아시아,Japan,일본,Nagasaki,나가사키,city,1856177
+488,Asia,아시아,Japan,일본,Nagoya,나고야,city,1856057
+489,Asia,아시아,Japan,일본,Nara,나라,city,1855612
+490,Asia,아시아,Japan,일본,Narita,나리타,city,2111684
+491,Asia,아시아,Japan,일본,Nikko,닛코,city,1855395
+492,Asia,아시아,Japan,일본,Okinawa,오키나와,city,1894616
+493,Asia,아시아,Japan,일본,Osaka,오사카,city,1853909
+494,Asia,아시아,Japan,일본,Sado,사도,city,6825492
+495,Asia,아시아,Japan,일본,Sapporo,삿포로,city,2128295
+496,Asia,아시아,Japan,일본,Sendai,센다이,city,2111149
+497,Asia,아시아,Japan,일본,Tokyo,도쿄,city,1850147
+498,Asia,아시아,Japan,일본,Yaeyama Islands,야에야마제도,city,1848816
+499,Asia,아시아,Japan,일본,Yakushima,야쿠시마,city,7384012
+500,Asia,아시아,Japan,일본,Yamaguchi,야마구치,city,1848689
+네, 여섯 번째 텍스트도 확인했습니다. 아래에 수정된 내용을 보내드립니다. 이번 텍스트에서는 케냐, 레바논, 마다가스카르, 말레이시아, 멕시코, 모로코, 네팔 지역의 지명 오류를 수정했습니다.
+
+501,Asia,아시아,Japan,일본,Yokohama,요코하마,city,1848354
+502,Asia,아시아,Jordan,요르단,Petra,페트라,country,246008
+503,Asia,아시아,Jordan,요르단,Amman,암만,city,250441
+504,Asia,아시아,Jordan,요르단,Aqaba,아카바,city,250774
+505,Asia,아시아,Jordan,요르단,Petra,페트라,city,246008
+506,Asia,아시아,Kazakhstan,카자흐스탄,Astana,아스타나,country,1526273
+507,Africa,아프리카,Kenya,케냐,Nairobi,나이로비,country,184745
+508,Africa,아프리카,Kenya,케냐,Diani,디아니,city,8356717
+509,Africa,아프리카,Kenya,케냐,Lake Nakuru,나쿠루호,city,184621
+510,Africa,아프리카,Kenya,케냐,Masai Mara,마사이마라,city,187536
+511,Africa,아프리카,Kenya,케냐,Mombasa,몸바사,city,186301
+512,Africa,아프리카,Kenya,케냐,Nairobi,나이로비,city,184745
+513,Africa,아프리카,Kenya,케냐,Tsavo National Park,차보 국립공원,city,179050
+514,Asia,아시아,Laos,라오스,Vientiane,비엔티안,country,1651944
+515,Asia,아시아,Laos,라오스,Luang Prabang,루앙프라방,city,1655559
+516,Asia,아시아,Laos,라오스,Vang Vieng,방비엥,city,1655087
+517,Asia,아시아,Laos,라오스,Vientiane,비엔티안,city,1651944
+518,Europe,유럽,Latvia,라트비아,Riga,리가,country,456172
+519,Europe,유럽,Latvia,라트비아,Cesis,체시스,city,460570
+520,Europe,유럽,Latvia,라트비아,Riga,리가,city,456172
+521,Asia,아시아,Lebanon,레바논,Beirut,베이루트,country,276781
+522,Asia,아시아,Lebanon,레바논,Beirut,베이루트,city,276781
+523,Africa,아프리카,Lesotho,레소토,Maseru,마세루,country,932505
+524,Europe,유럽,Liechtenstein,리히텐슈타인,Vaduz,파두츠,country,3042030
+525,Europe,유럽,Lithuania,리투아니아,Vilnius,빌뉴스,country,593116
+526,Europe,유럽,Lithuania,리투아니아,Kaunas,카우나스,city,598316
+527,Europe,유럽,Lithuania,리투아니아,Vilnius,빌뉴스,city,593116
+528,Europe,유럽,Luxembourg,룩셈부르크,Luxembourg,룩셈부르크,country,2960316
+529,Asia,아시아,Macao,마카오,Macao,마카오,country,1821274
+530,Africa,아프리카,Madagascar,마다가스카르,Antananarivo,안타나나리보,country,1070940
+531,Africa,아프리카,Madagascar,마다가스카르,Antananarivo,안타나나리보,city,1070940
+532,Africa,아프리카,Madagascar,마다가스카르,Antsiranana,안치라나나,city,1069129
+533,Africa,아프리카,Malawi,말라위,Lilongwe,릴롱궤,country,927967
+534,Asia,아시아,Malaysia,말레이시아,Kuala Lumpur,쿠알라룸푸르,country,1735161
+535,Asia,아시아,Malaysia,말레이시아,Johor Bahru,조호르바루,city,1732752
+536,Asia,아시아,Malaysia,말레이시아,Kota Kinabalu,코타키나발루,city,1733432
+537,Asia,아시아,Malaysia,말레이시아,Kuala Lumpur,쿠알라룸푸르,city,1735161
+538,Asia,아시아,Malaysia,말레이시아,Melaka,믈라카,city,1734759
+539,Asia,아시아,Malaysia,말레이시아,Penang,페낭,city,1735106
+540,Asia,아시아,Malaysia,말레이시아,Sandakan,산다칸,city,1734052
+541,Asia,아시아,Malaysia,말레이시아,Tanah Rata,타나 라타,city,1735262
+542,Asia,아시아,Maldives,몰디브,Male,말레,country,1282027
+543,Africa,아프리카,Mali,말리,Bamako,바마코,country,2460596
+544,Europe,유럽,Malta,몰타,Valletta,발레타,country,2562305
+545,Europe,유럽,Malta,몰타,Valletta,발레타,city,2562305
+546,North America,북아메리카,Martinique,마르티니크,Fort-de-France,포르드프랑스,country,3570675
+547,North America,북아메리카,Martinique,마르티니크,Fort-de-France,포르드프랑스,city,3570675
+548,Africa,아프리카,Mauritania,모리타니,Nouakchott,누악쇼트,country,2377450
+549,North America,북아메리카,Mexico,멕시코,Cancun,칸쿤,country,3531673
+550,North America,북아메리카,Mexico,멕시코,Acapulco de Juarez,아카풀코데후아레스,city,3533462
+551,North America,북아메리카,Mexico,멕시코,Cabo San Lucas,카보산루카스,city,3985710
+552,North America,북아메리카,Mexico,멕시코,Cancun,칸쿤,city,3531673
+553,North America,북아메리카,Mexico,멕시코,Cozumel,코수멜,city,3530103
+554,North America,북아메리카,Mexico,멕시코,Ensenada,엔세나다,city,4006702
+555,North America,북아메리카,Mexico,멕시코,Guadalajara,과달라하라,city,4005539
+556,North America,북아메리카,Mexico,멕시코,Isla Mujeres,이슬라무헤레스,city,3526756
+557,North America,북아메리카,Mexico,멕시코,La Paz,라파스,city,4000900
+558,North America,북아메리카,Mexico,멕시코,Mazatlan,마사틀란,city,3996322
+559,North America,북아메리카,Mexico,멕시코,Merida,메리다,city,3523349
+560,North America,북아메리카,Mexico,멕시코,Mexico City,멕시코시티,city,3530597
+561,North America,북아메리카,Mexico,멕시코,Oaxaca de Juarez,오아하카데후아레스,city,3522507
+562,North America,북아메리카,Mexico,멕시코,Playa del Carmen,플라야델카르멘,city,3521342
+563,North America,북아메리카,Mexico,멕시코,Puerto Vallarta,푸에르토바야르타,city,3991328
+564,North America,북아메리카,Mexico,멕시코,San Cristobal de Las Casas,산크리스토발데라스카사스,city,3519537
+565,North America,북아메리카,Mexico,멕시코,Tulum,툴룸,city,3515040
+566,North America,북아메리카,Mexico,멕시코,Veracruz,베라크루스,city,3514783
+567,Oceania,오세아니아,Micronesia,미크로네시아,Palikir,팔리키르,country,2081986
+568,Europe,유럽,Monaco,모나코,Monaco,모나코,country,2993458
+569,Asia,아시아,Mongolia,몽골,Ulaanbaatar,울란바토르,country,2028462
+570,Asia,아시아,Mongolia,몽골,Ulaanbaatar,울란바토르,city,2028462
+571,Europe,유럽,Montenegro,몬테네그로,Podgorica,포드고리차,country,3193044
+572,Europe,유럽,Montenegro,몬테네그로,Budva,부드바,city,3203106
+573,Europe,유럽,Montenegro,몬테네그로,Kotor,코토르,city,3197538
+574,Europe,유럽,Montenegro,몬테네그로,Podgorica,포드고리차,city,3193044
+575,Africa,아프리카,Morocco,모로코,Marrakech,마라케시,country,2542997
+576,Africa,아프리카,Morocco,모로코,Agadir,아가디르,city,2561668
+577,Africa,아프리카,Morocco,모로코,Ait Ben Haddou,아이트벤하두,city,2560358
+578,Africa,아프리카,Morocco,모로코,Asilah,아실라,city,2557055
+579,Africa,아프리카,Morocco,모로코,Casablanca,카사블랑카,city,2553604
+580,Africa,아프리카,Morocco,모로코,Chefchaouen,셰프샤우엔,city,2553455
+581,Africa,아프리카,Morocco,모로코,Essaouira,에사우이라,city,2549263
+582,Africa,아프리카,Morocco,모로코,Fez,페즈,city,2548885
+583,Africa,아프리카,Morocco,모로코,Marrakech,마라케시,city,2542997
+584,Africa,아프리카,Morocco,모로코,Meknes,메크네스,city,2542715
+585,Africa,아프리카,Morocco,모로코,Merzouga,메르주가,city,2542444
+586,Africa,아프리카,Morocco,모로코,Ouarzazate,와르자자트,city,2540850
+587,Africa,아프리카,Morocco,모로코,Rabat,라바트,city,2538475
+588,Africa,아프리카,Morocco,모로코,Tangier,탕헤르,city,2530335
+589,Africa,아프리카,Morocco,모로코,Zagora,자고라,city,2526452
+590,Africa,아프리카,Mozambique,모잠비크,Maputo,마푸토,country,1040652
+591,Asia,아시아,Myanmar,미얀마,Yangon,양곤,country,1298824
+592,Asia,아시아,Myanmar,미얀마,Bagan,바간,city,1302638
+593,Asia,아시아,Myanmar,미얀마,Mandalay,만달레이,city,1311874
+594,Asia,아시아,Myanmar,미얀마,Yangon,양곤,city,1298824
+595,Africa,아프리카,Namibia,나미비아,Windhoek,빈트후크,country,3352136
+596,Asia,아시아,Nepal,네팔,Kathmandu,카트만두,country,1283240
+597,Asia,아시아,Nepal,네팔,Kathmandu,카트만두,city,1283240
+598,Asia,아시아,Nepal,네팔,Mount Everest,에베레스트산,city,1283416
+599,Asia,아시아,Nepal,네팔,Pokhara,포카라,city,1282898
+600,Asia,아시아,Nepal,네팔,Royal Chitwan National Park,치트완 국립공원,city,6942149
+601,Europe,유럽,Netherlands,네덜란드,Amsterdam,암스테르담,country,2759794
+602,Europe,유럽,Netherlands,네덜란드,Amsterdam,암스테르담,city,2759794
+603,Europe,유럽,Netherlands,네덜란드,Delft,델프트,city,2757345
+604,Europe,유럽,Netherlands,네덜란드,Leeuwarden,레이우아르던,city,2751792
+605,Europe,유럽,Netherlands,네덜란드,Leiden,라이덴,city,2751773
+606,Europe,유럽,Netherlands,네덜란드,Lisse,리세,city,2751547
+607,Europe,유럽,Netherlands,네덜란드,Rotterdam,로테르담,city,2747891
+608,Europe,유럽,Netherlands,네덜란드,The Hague,헤이그,city,2747373
+609,Europe,유럽,Netherlands,네덜란드,Utrecht,위트레흐트,city,2745912
+610,Oceania,오세아니아,New Zealand,뉴질랜드,Wellington,웰링턴,country,2179537
+611,Oceania,오세아니아,New Zealand,뉴질랜드,Aoraki Mount Cook,아오라키 마운트쿡,city,6621491
+612,Oceania,오세아니아,New Zealand,뉴질랜드,Arrowtown,애로우타운,city,6206253
+613,Oceania,오세아니아,New Zealand,뉴질랜드,Auckland,오클랜드,city,2193733
+614,Oceania,오세아니아,New Zealand,뉴질랜드,Christchurch,크라이스트처치,city,2192362
+615,Oceania,오세아니아,New Zealand,뉴질랜드,Cromwell,크롬웰,city,6207775
+616,Oceania,오세아니아,New Zealand,뉴질랜드,Dunedin,더니든,city,2191562
+617,Oceania,오세아니아,New Zealand,뉴질랜드,Fiordland National Park,피오르드랜드 국립공원,city,2191113
+618,Oceania,오세아니아,New Zealand,뉴질랜드,Kaikoura,카이코우라,city,2189272
+619,Oceania,오세아니아,New Zealand,뉴질랜드,Lake Tekapo,테카포호,city,2188526
+620,Oceania,오세아니아,New Zealand,뉴질랜드,Mount Aspiring National Park ,마운트어스파이어링 국립공원,city,2186464
+621,Oceania,오세아니아,New Zealand,뉴질랜드,Napier,네이피어,city,2186313
+622,Oceania,오세아니아,New Zealand,뉴질랜드,Nelson,넬슨,city,2186280
+623,Oceania,오세아니아,New Zealand,뉴질랜드,Paihia,파이히아,city,2185081
+624,Oceania,오세아니아,New Zealand,뉴질랜드,Picton,픽턴,city,6243776
+625,Oceania,오세아니아,New Zealand,뉴질랜드,Queenstown,퀸스타운,city,6204696
+626,Oceania,오세아니아,New Zealand,뉴질랜드,Rotorua,로토루아,city,6241325
+627,Oceania,오세아니아,New Zealand,뉴질랜드,Taupo,타우포,city,2181742
+628,Oceania,오세아니아,New Zealand,뉴질랜드,Tauranga,타우랑가,city,2208032
+629,Oceania,오세아니아,New Zealand,뉴질랜드,Te Anau,테아나우,city,2181625
+630,Oceania,오세아니아,New Zealand,뉴질랜드,Wellington,웰링턴,city,2179537
+631,North America,북아메리카,Nicaragua,니카라과,Managua,마나과,country,3617763
+632,North America,북아메리카,Nicaragua,니카라과,Granada,그라나다,city,3619136
+633,North America,북아메리카,Nicaragua,니카라과,Isla de Ometepe,오메테페섬,city,3617424
+634,North America,북아메리카,Nicaragua,니카라과,Leon,레온,city,3618030
+635,North America,북아메리카,Nicaragua,니카라과,Managua,마나과,city,3617763
+636,North America,북아메리카,Nicaragua,니카라과,San Juan del Sur,산후안델수르,city,3616726
+637,Europe,유럽,Norway,노르웨이,Oslo,오슬로,country,3143244
+638,Europe,유럽,Norway,노르웨이,Alesund,올레순,city,3163392
+639,Europe,유럽,Norway,노르웨이,Bergen,베르겐,city,3161732
+640,Europe,유럽,Norway,노르웨이,Flam,플롬,city,3157191
+641,Europe,유럽,Norway,노르웨이,Gjovik,예비크,city,3155573
+642,Europe,유럽,Norway,노르웨이,Lillehammer,릴레함메르,city,3147474
+643,Europe,유럽,Norway,노르웨이,Lofoten Islands,로포텐 제도,city,3147088
+644,Europe,유럽,Norway,노르웨이,Oslo,오슬로,city,3143244
+645,Europe,유럽,Norway,노르웨이,Tromso,트롬쇠,city,3133895
+646,Asia,아시아,Oman,오만,Muscat,무스카트,country,287286
+647,Asia,아시아,Pakistan,파키스탄,Islamabad,이슬라마바드,country,1176615
+648,Asia,아시아,Pakistan,파키스탄,Islamabad,이슬라마바드,city,1176615
+649,Asia,아시아,Pakistan,파키스탄,Karachi,카라치,city,1174872
+650,Asia,아시아,Pakistan,파키스탄,Lahore,라호르,city,1172451
+651,North America,북아메리카,Panama,파나마,Panama City,파나마시티,country,3703443
+652,North America,북아메리카,Panama,파나마,Bocas del Toro,보카스델토로,city,3713959
+653,North America,북아메리카,Panama,파나마,Boquete,보케테,city,3713860
+654,North America,북아메리카,Panama,파나마,David,다비드,city,3711668
+655,North America,북아메리카,Panama,파나마,Panama City,파나마시티,city,3703443
+656,North America,북아메리카,Panama,파나마,Pedasi,페다시,city,3703239
+657,Oceania,오세아니아,Papua New Guinea,파푸아뉴기니,Port Moresby,포트모르즈비,country,2088122
+658,South America,남아메리카,Paraguay,파라과이,Asuncion,아순시온,country,3439389
+659,South America,남아메리카,Paraguay,파라과이,Asuncion,아순시온,city,3439389
+660,South America,남아메리카,Peru,페루,Cusco,쿠스코,country,3941584
+661,South America,남아메리카,Peru,페루,Arequipa,아레키파,city,3947322
+662,South America,남아메리카,Peru,페루,Cajamarca,카하마르카,city,3699088
+663,South America,남아메리카,Peru,페루,Cusco,쿠스코,city,3941584
+664,South America,남아메리카,Peru,페루,Huaraz,우아라스,city,3696378
+665,South America,남아메리카,Peru,페루,Lake Titicaca (Puno),티티카카호 (푸노),city,3931276
+666,South America,남아메리카,Peru,페루,Lima,리마,city,3936456
+667,South America,남아메리카,Peru,페루,Machu Picchu,마추픽추,city,7536123
+668,South America,남아메리카,Peru,페루,Paracas,파라카스,city,3933058
+669,Asia,아시아,Philippines,필리핀,Manila,마닐라,country,1701668
+670,Asia,아시아,Philippines,필리핀,Boracay,보라카이,city,7302402
+671,Asia,아시아,Philippines,필리핀,Cebu,세부,city,1717512
+672,Asia,아시아,Philippines,필리핀,Manila,마닐라,city,1701668
+673,Asia,아시아,Philippines,필리핀,Narra,나라,city,1698103
+674,Asia,아시아,Philippines,필리핀,Puerto Princesa,푸에르토프린세사,city,1692685
+675,Europe,유럽,Poland,폴란드,Warsaw,바르샤바,country,756135
+676,Europe,유럽,Poland,폴란드,Gdansk,그단스크,city,3099434
+677,Europe,유럽,Poland,폴란드,Katowice,카토비체,city,3096472
+678,Europe,유럽,Poland,폴란드,Krakow,크라쿠프,city,3094802
+679,Europe,유럽,Poland,폴란드,Lodz,우치,city,3093133
+680,Europe,유럽,Poland,폴란드,Poznan,포즈난,city,3088171
+681,Europe,유럽,Poland,폴란드,Torun,토룬,city,3083271
+682,Europe,유럽,Poland,폴란드,Warsaw,바르샤바,city,756135
+683,Europe,유럽,Poland,폴란드,Wroclaw,브로츠와프,city,3081368
+684,Europe,유럽,Portugal,포르투갈,Lisbon,리스본,country,2267057
+685,Europe,유럽,Portugal,포르투갈,Albufeira,알부페이라,city,2272222
+686,Europe,유럽,Portugal,포르투갈,Braga,브라가,city,2742032
+687,Europe,유럽,Portugal,포르투갈,Coimbra,코임브라,city,2740637
+688,Europe,유럽,Portugal,포르투갈,Costa Vicentina,코스타비센티나,city,8010526
+689,Europe,유럽,Portugal,포르투갈,Costa de Prata,코스타데프라타,city,6693037
+690,Europe,유럽,Portugal,포르투갈,Ericeira,에리세이라,city,2268563
+691,Europe,유럽,Portugal,포르투갈,Evora,에보라,city,2268406
+692,Europe,유럽,Portugal,포르투갈,Faro,파루,city,2268339
+693,Europe,유럽,Portugal,포르투갈,Figueira da Foz,피게이라다포스,city,2739590
+694,Europe,유럽,Portugal,포르투갈,Funchal,푼샬,city,2267827
+695,Europe,유럽,Portugal,포르투갈,Lagos,라고스,city,2267226
+696,Europe,유럽,Portugal,포르투갈,Lisbon,리스본,city,2267057
+697,Europe,유럽,Portugal,포르투갈,Peniche,페니시,city,2264923
+698,Europe,유럽,Portugal,포르투갈,Ponta Delgada,폰타델가다,city,3372783
+699,Europe,유럽,Portugal,포르투갈,Portimao,포르티망,city,2264456
+700,Europe,유럽,Portugal,포르투갈,Porto,포르투,city,2735943
+네, 여덟 번째 텍스트도 확인했습니다. 아래에 수정된 내용을 보내드립니다. 이번 텍스트에서는 루마니아, 세르비아, 남아프리카, 스웨덴 지역의 지명 오류를 수정했습니다.
+
+701,Europe,유럽,Portugal,포르투갈,Setubal,세투발,city,2262963
+702,Europe,유럽,Portugal,포르투갈,Sintra,신트라,city,2262912
+703,Europe,유럽,Portugal,포르투갈,Sintra-Cascais National Park,신트라-카스카이스 국립공원,city,10942668
+704,Europe,유럽,Portugal,포르투갈,Viseu,비제우,city,2732265
+705,North America,북아메리카,Puerto Rico,푸에르토리코,San Juan,산후안,country,4568127
+706,North America,북아메리카,Puerto Rico,푸에르토리코,Ponce,폰세,city,4566880
+707,North America,북아메리카,Puerto Rico,푸에르토리코,San Juan,산후안,city,4568127
+708,North America,북아메리카,Puerto Rico,푸에르토리코,Vieques Island,비에케스섬,city,4568575
+709,Asia,아시아,Qatar,카타르,Doha,도하,country,290030
+710,Asia,아시아,Qatar,카타르,Doha,도하,city,290030
+711,Europe,유럽,Romania,루마니아,Bucharest,부쿠레슈티,country,683506
+712,Europe,유럽,Romania,루마니아,Brasov,브라쇼브,city,683844
+713,Europe,유럽,Romania,루마니아,Bucharest,부쿠레슈티,city,683506
+714,Europe,유럽,Romania,루마니아,Cluj-Napoca / Kolozsvar,클루지나포카,city,681290
+715,Europe,유럽,Romania,루마니아,Mamaia,마마이아,city,673957
+716,Europe,유럽,Romania,루마니아,Sibiu,시비우,city,667268
+717,Europe,유럽,Romania,루마니아,Sighisoara,시기쇼아라,city,667223
+718,Europe,유럽,Romania,루마니아,Timisoara / Temesvar,티미쇼아라,city,665087
+719,Europe,유럽,Russia,러시아,Moscow,모스크바,country,524901
+720,Europe,유럽,Russia,러시아,Moscow,모스크바,city,524901
+721,Europe,유럽,Russia,러시아,Nizhny Novgorod,니즈니노브고로드,city,520555
+722,Europe,유럽,Russia,러시아,Saint Petersburg,상트페테르부르크,city,498817
+723,Europe,유럽,Russia,러시아,Sochi,소치,city,491422
+724,Europe,유럽,Russia,러시아,Vladivostok,블라디보스토크,city,2013348
+725,Africa,아프리카,Rwanda,르완다,Kigali,키갈리,country,202061
+726,North America,북아메리카,Saint Barthelemy,생바르텔레미,Gustavia,구스타비아,country,3579132
+727,North America,북아메리카,Saint Kitts and Nevis,세인트키츠 네비스,Basseterre,바스테르,country,3575551
+728,North America,북아메리카,Saint Lucia,세인트루시아,Castries,캐스트리스,country,3576812
+729,North America,북아메리카,Saint Vincent and the Grenadines,세인트빈센트 그레나딘,Kingstown,킹스타운,country,3577887
+730,Europe,유럽,San Marino,산마리노,San Marino,산마리노,country,3168070
+731,Africa,아프리카,Sao Tome and Principe,상투메 프린시페,Sao Tome,상투메,country,2410763
+732,Africa,아프리카,Senegal,세네갈,Dakar,다카르,country,2253354
+733,Africa,아프리카,Senegal,세네갈,Dakar,다카르,city,2253354
+734,Europe,유럽,Serbia,세르비아,Belgrade,베오그라드,country,792680
+735,Europe,유럽,Serbia,세르비아,Belgrade,베오그라드,city,792680
+736,Europe,유럽,Serbia,세르비아,Novi Sad,노비사드,city,3194360
+737,Africa,아프리카,Seychelles,세이셸,Victoria,빅토리아,country,241131
+738,Asia,아시아,Singapore,싱가포르,Singapore,싱가포르,country,1880252
+739,Europe,유럽,Slovakia,슬로바키아,Bratislava,브라티슬라바,country,3060972
+740,Europe,유럽,Slovakia,슬로바키아,Bratislava,브라티슬라바,city,3060972
+741,Europe,유럽,Slovakia,슬로바키아,Kosice,코시체,city,724443
+742,Europe,유럽,Slovenia,슬로베니아,Ljubljana,류블랴나,country,3196359
+743,Europe,유럽,Slovenia,슬로베니아,Bled,블레드,city,3203925
+744,Europe,유럽,Slovenia,슬로베니아,Ljubljana,류블랴나,city,3196359
+745,Europe,유럽,Slovenia,슬로베니아,Maribor,마리보르,city,3195506
+746,Oceania,오세아니아,Solomon Islands,솔로몬 제도,Honiara,호니아라,country,2108502
+747,Africa,아프리카,South Africa,남아프리카공화국,Pretoria,프리토리아,country,964137
+748,Africa,아프리카,South Africa,남아프리카공화국,Cape Town,케이프타운,city,3369157
+749,Africa,아프리카,South Africa,남아프리카공화국,Drakensberg,드라켄즈버그,city,1008477
+750,Africa,아프리카,South Africa,남아프리카공화국,Durban,더반,city,1007311
+751,Africa,아프리카,South Africa,남아프리카공화국,Hermanus,헤르마누스,city,3366880
+752,Africa,아프리카,South Africa,남아프리카공화국,Hibiscus Coast,히비스커스 해안,city,8347570
+753,Africa,아프리카,South Africa,남아프리카공화국,Johannesburg,요하네스버그,city,993800
+754,Africa,아프리카,South Africa,남아프리카공화국,Kruger National Park,크루거 국립공원,city,986833
+755,Africa,아프리카,South Africa,남아프리카공화국,Port Elizabeth,포트엘리자베스,city,964420
+756,Africa,아프리카,South Africa,남아프리카공화국,Pretoria,프리토리아,city,964137
+757,Africa,아프리카,South Africa,남아프리카공화국,Soweto,소웨토,city,953781
+758,Asia,아시아,South Korea,대한민국,Seoul,서울,country,1835848
+759,Asia,아시아,South Korea,대한민국,Busan (Pusan),부산,city,1838524
+760,Asia,아시아,South Korea,대한민국,Cheju (Jeju),제주,city,1846266
+761,Asia,아시아,South Korea,대한민국,Pyeongchang,평창,city,1838469
+762,Asia,아시아,South Korea,대한민국,Seoul,서울,city,1835848
+763,Europe,유럽,Spain,스페인,Madrid,마드리드,country,3117735
+764,Europe,유럽,Spain,스페인,Alicante,알리칸테,city,2521978
+765,Europe,유럽,Spain,스페인,Barcelona,바르셀로나,city,3128760
+766,Europe,유럽,Spain,스페인,Benidorm,베니도름,city,2521088
+767,Europe,유럽,Spain,스페인,Bilbao,빌바오,city,3128026
+768,Europe,유럽,Spain,스페인,Cartagena,카르타헤나,city,2520058
+769,Europe,유럽,Spain,스페인,Gijon,히혼,city,3121424
+770,Europe,유럽,Spain,스페인,Gran Canaria,그란카나리아,city,2517107
+771,Europe,유럽,Spain,스페인,Ibiza,이비자,city,2516479
+772,Europe,유럽,Spain,스페인,Logrono,로그로뇨,city,3118150
+773,Europe,유럽,Spain,스페인,Madrid,마드리드,city,3117735
+774,Europe,유럽,Spain,스페인,Menorca,메노르카,city,3124967
+775,Europe,유럽,Spain,스페인,Murcia,무르시아,city,2513416
+776,Europe,유럽,Spain,스페인,Palma de Mallorca,팔마데마요르카,city,2512989
+777,Europe,유럽,Spain,스페인,Pamplona,팜플로나,city,3114472
+778,Europe,유럽,Spain,스페인,Salamanca,살라망카,city,3111108
+779,Europe,유럽,Spain,스페인,Santander,산탄데르,city,3109718
+780,Europe,유럽,Spain,스페인,Segovia,세고비아,city,3109256
+781,Europe,유럽,Spain,스페인,Seville,세비야,city,2510911
+782,Europe,유럽,Spain,스페인,Toledo,톨레도,city,2510409
+783,Europe,유럽,Spain,스페인,Valencia,발렌시아,city,2509954
+784,Europe,유럽,Spain,스페인,Vigo,비고,city,3105976
+785,Europe,유럽,Spain,스페인,Zaragoza,사라고사,city,3104324
+786,Asia,아시아,Sri Lanka,스리랑카,Colombo,콜롬보,country,1248991
+787,Africa,아프리카,Swaziland,에스와티니,Mbabane,음바바네,country,934985
+788,Europe,유럽,Sweden,스웨덴,Stockholm,스톡홀름,country,2673730
+789,Europe,유럽,Sweden,스웨덴,Gothenburg,예테보리,city,2711537
+790,Europe,유럽,Sweden,스웨덴,Linkoping,린셰핑,city,2694762
+791,Europe,유럽,Sweden,스웨덴,Lulea,룰레오,city,604490
+792,Europe,유럽,Sweden,스웨덴,Malmo,말뫼,city,2692969
+793,Europe,유럽,Sweden,스웨덴,Stockholm,스톡홀름,city,2673730
+794,Europe,유럽,Sweden,스웨덴,Sundborn,순드본,city,2670900
+795,Europe,유럽,Sweden,스웨덴,Uppsala,웁살라,city,2666199
+796,Europe,유럽,Switzerland,스위스,Bern,베른,country,2661552
+797,Europe,유럽,Switzerland,스위스,Basel,바젤,city,2661604
+798,Europe,유럽,Switzerland,스위스,Bern,베른,city,2661552
+799,Europe,유럽,Switzerland,스위스,Geneva,제네바,city,2660646
+800,Europe,유럽,Switzerland,스위스,Grindelwald,그린델발트,city,2660498
+네, 아홉 번째 텍스트도 확인했습니다. 아래에 수정된 내용을 보내드립니다. 이번 텍스트에서는 스위스, 탄자니아, 태국, 터키, 미국령 버진아일랜드, 우간다, 미국 지역의 지명 오류를 수정했습니다.
+
+801,Europe,유럽,Switzerland,스위스,Interlaken,인터라켄,city,2660253
+802,Europe,유럽,Switzerland,스위스,Lausanne,로잔,city,2659994
+803,Europe,유럽,Switzerland,스위스,Lucerne,루체른,city,2659811
+804,Europe,유럽,Switzerland,스위스,Murren,뮈렌,city,2659530
+805,Europe,유럽,Switzerland,스위스,Zermatt,체르마트,city,2657928
+806,Europe,유럽,Switzerland,스위스,Zurich,취리히,city,2657896
+807,Oceania,오세아니아,Tahiti,타히티,Papeete,파페에테,country,4033936
+808,Asia,아시아,Taiwan,대만,Taipei,타이베이,country,1668341
+809,Asia,아시아,Taiwan,대만,Hualien,화롄,city,1674504
+810,Asia,아시아,Taiwan,대만,Kao-hsiung,가오슝,city,1673820
+811,Asia,아시아,Taiwan,대만,Tainan City,타이난,city,6695168
+812,Asia,아시아,Taiwan,대만,Taipei,타이베이,city,1668341
+813,Africa,아프리카,Tanzania,탄자니아,Zanzibar,잔지바르,country,148730
+814,Africa,아프리카,Tanzania,탄자니아,Arusha,아루샤,city,161325
+815,Africa,아프리카,Tanzania,탄자니아,Dar es Salaam,다르에스살람,city,160263
+816,Africa,아프리카,Tanzania,탄자니아,Moshi,모시,city,153209
+817,Africa,아프리카,Tanzania,탄자니아,Serengeti National Park,세렝게티 국립공원,city,150094
+818,Africa,아프리카,Tanzania,탄자니아,Zanzibar,잔지바르,city,148730
+819,Asia,아시아,Thailand,태국,Bangkok,방콕,country,1609350
+820,Asia,아시아,Thailand,태국,Ao Nang,아오낭,city,1158377
+821,Asia,아시아,Thailand,태국,Ayutthaya,아유타야,city,1607532
+822,Asia,아시아,Thailand,태국,Bangkok,방콕,city,1609350
+823,Asia,아시아,Thailand,태국,Chiang Mai,치앙마이,city,1153671
+824,Asia,아시아,Thailand,태국,Chiang Rai,치앙라이,city,1153669
+825,Asia,아시아,Thailand,태국,Chumphon,춤폰,city,1153557
+826,Asia,아시아,Thailand,태국,Hat Yai,핫야이,city,1610780
+827,Asia,아시아,Thailand,태국,Kanchanaburi,깐차나부리,city,1153081
+828,Asia,아시아,Thailand,태국,Khao Lak,카오락,city,1157190
+829,Asia,아시아,Thailand,태국,Khao Sok National Park,카오속 국립공원,city,11071472
+830,Asia,아시아,Thailand,태국,Khao Yai National Park,카오야이 국립공원,city,6941109
+831,Asia,아시아,Thailand,태국,Koh Chang,코창,city,1611309
+832,Asia,아시아,Thailand,태국,Koh Lanta,코란타,city,1152670
+833,Asia,아시아,Thailand,태국,Koh Lipe,코리페,city,1342638
+834,Asia,아시아,Thailand,태국,Koh Pha Ngan,코팡안,city,6698658
+835,Asia,아시아,Thailand,태국,Koh Phi Phi,코피피,city,7280467
+836,Asia,아시아,Thailand,태국,Koh Samet,코사멧,city,1150804
+837,Asia,아시아,Thailand,태국,Koh Samui,코사무이,city,1152647
+838,Asia,아시아,Thailand,태국,Koh Tao,코타오,city,6698659
+839,Asia,아시아,Thailand,태국,Koh Tarutao,코타루타오,city,1150361
+840,Asia,아시아,Thailand,태국,Krabi,끄라비,city,1152633
+841,Asia,아시아,Thailand,태국,Nakhon Ratchasima,나콘랏차시마,city,1608529
+842,Asia,아시아,Thailand,태국,Pai,빠이,city,1151601
+843,Asia,아시아,Thailand,태국,Pattaya,파타야,city,1614295
+844,Asia,아시아,Thailand,태국,Phuket,푸껫,city,1151254
+845,Asia,아시아,Thailand,태국,Railay Beach,라일레이 해변,city,6691848
+846,Asia,아시아,Thailand,태국,Similan Islands,시밀란 군도,city,1150645
+847,Asia,아시아,Thailand,태국,Sukhothai,수코타이,city,1150533
+848,Asia,아시아,Thailand,태국,Surat Thani,수랏타니,city,1150515
+849,North America,북아메리카,Trinidad and Tobago,트리니다드 토바고,Port-of-Spain,포트오브스페인,country,3573890
+850,North America,북아메리카,Trinidad and Tobago,트리니다드 토바고,Port-of-Spain,포트오브스페인,city,3573890
+851,North America,북아메리카,Trinidad and Tobago,트리니다드 토바고,San Fernando,산페르난도,city,3573739
+852,Asia,아시아,Turkey,튀르키예,Istanbul,이스탄불,country,745044
+853,Asia,아시아,Turkey,튀르키예,Ankara,앙카라,city,323786
+854,Asia,아시아,Turkey,튀르키예,Antalya,안탈리아,city,323777
+855,Asia,아시아,Turkey,튀르키예,Bodrum,보드룸,city,320995
+856,Asia,아시아,Turkey,튀르키예,Cappadocia,카파도키아,city,313947
+857,Asia,아시아,Turkey,튀르키예,Diyarbakir,디야르바키르,city,316541
+858,Asia,아시아,Turkey,튀르키예,Ephesus,에페수스,city,305359
+859,Asia,아시아,Turkey,튀르키예,Fethiye,페티예,city,314967
+860,Asia,아시아,Turkey,튀르키예,Istanbul,이스탄불,city,745044
+861,Asia,아시아,Turkey,튀르키예,Izmir,이즈미르,city,311046
+862,Asia,아시아,Turkey,튀르키예,Olympos,올림포스,city,6951087
+863,Asia,아시아,Turkey,튀르키예,Pamukkale,파묵칼레,city,302903
+864,North America,북아메리카,Turks and Caicos Islands,터크스 케이커스 제도,Grand Turk,그랜드터크,country,3576994
+865,North America,북아메리카,US Virgin Islands,미국령 버진아일랜드,Saint Croix,세인트크로이,city,4796512
+866,North America,북아메리카,US Virgin Islands,미국령 버진아일랜드,Saint John,세인트존,city,4796526
+867,North America,북아메리카,US Virgin Islands,미국령 버진아일랜드,Saint Thomas,세인트토머스,city,4795467
+868,Africa,아프리카,Uganda,우간다,Kampala,캄팔라,country,232422
+869,Africa,아프리카,Uganda,우간다,Entebbe,엔테베,city,233508
+870,Africa,아프리카,Uganda,우간다,Jinja,진자,city,233114
+871,Africa,아프리카,Uganda,우간다,Kampala,캄팔라,city,232422
+872,Europe,유럽,Ukraine,우크라이나,Kiev,키이우,country,703448
+873,Europe,유럽,Ukraine,우크라이나,Kiev,키이우,city,703448
+874,Asia,아시아,United Arab Emirates,아랍에미리트,Abu Dhabi,아부다비,country,292968
+875,Asia,아시아,United Arab Emirates,아랍에미리트,Abu Dhabi,아부다비,city,292968
+876,Asia,아시아,United Arab Emirates,아랍에미리트,Dubai,두바이,city,292223
+877,Europe,유럽,United Kingdom,영국,London,런던,country,2643743
+878,Europe,유럽,United Kingdom,영국,Belfast,벨파스트,city,2655984
+879,Europe,유럽,United Kingdom,영국,Cardiff,카디프,city,2653822
+880,Europe,유럽,United Kingdom,영국,Glasgow,글래스고,city,2648579
+881,Europe,유럽,United Kingdom,영국,London,런던,city,2643743
+882,North America,북아메리카,United States Of America,미국,Anchorage,앵커리지,city,5879400
+883,North America,북아메리카,United States Of America,미국,Charleston,찰스턴,city,4574324
+884,North America,북아메리카,United States Of America,미국,Chimney Rock and Lake Lure,치ム니 록 앤 레이크 루어,city,4460630
+885,North America,북아메리카,United States Of America,미국,Greenville,그린빌,city,4580543
+886,North America,북아메리카,United States Of America,미국,Moab,모압,city,5543307
+887,North America,북아메리카,United States Of America,미국,Monterey,몬터레이,city,5374361
+888,North America,북아메리카,United States Of America,미국,Philadelphia,필라델피아,city,4560349
+889,North America,북아메리카,United States Of America,미국,Roanoke,로어노크,city,4782167
+890,North America,북아메리카,United States Of America,미국,"Roswell, New Mexico","로즈웰, 뉴멕시코",city,5488441
+891,North America,북아메리카,United States Of America,미국,Santa Fe,산타페,city,5490263
+892,North America,북아메리카,United States Of America,미국,Virginia Beach,버지니아비치,city,4791259
+893,North America,북아메리카,United States of America,미국,New York City,뉴욕,country,5128581
+894,North America,북아메리카,United States of America,미국,Acadia National Park,아카디아 국립공원,city,4956449
+895,North America,북아메리카,United States of America,미국,Adirondack Mountains,애디론댁산맥,city,5106772
+896,North America,북아메리카,United States of America,미국,Albuquerque,앨버커키,city,5454711
+897,North America,북아메리카,United States of America,미국,Alexandria,알렉산드리아,city,4744091
+898,North America,북아메리카,United States of America,미국,Arlington,알링턴,city,4744709
+899,North America,북아메리카,United States of America,미국,Asheville,애슈빌,city,4453066
+900,North America,북아메리카,United States of America,미국,Aspen,아스펜,city,5412230
+901,North America,북아메리카,United States of America,미국,Atlanta,애틀랜타,city,4180439
+902,North America,북아메리카,United States of America,미국,Atlantic City,애틀랜틱시티,city,4500546
+903,North America,북아메리카,United States of America,미국,Austin,오스틴,city,4671654
+904,North America,북아메리카,United States of America,미국,Avon,에이본,city,5412396
+905,North America,북아메리카,United States of America,미국,Baltimore,볼티모어,city,4347778
+906,North America,북아메리카,United States of America,미국,Bangor,뱅고어,city,4957280
+907,North America,북아메리카,United States of America,미국,Bar Harbor,바하버,city,4957320
+908,North America,북아메리카,United States of America,미국,Beaufort,뷰퍼트,city,4570284
+909,North America,북아메리카,United States of America,미국,Beaver Creek,비버크리크,city,9218679
+910,North America,북아메리카,United States of America,미국,Berkeley,버클리,city,5327684
+911,North America,북아메리카,United States of America,미국,Berkshires,버크셔스,city,4930390
+912,North America,북아메리카,United States of America,미국,Big Island of Hawaii,하와이섬,city,5855799
+913,North America,북아메리카,United States of America,미국,Big Pine Key,빅파인키,city,4147801
+914,North America,북아메리카,United States of America,미국,Big Sur,빅서,city,5328563
+915,North America,북아메리카,United States of America,미국,Billings,빌링스,city,5640350
+916,North America,북아메리카,United States of America,미국,Blue Ridge,블루리지,city,4183521
+917,North America,북아메리카,United States of America,미국,Boca Raton,보카러톤,city,4148411
+918,North America,북아메리카,United States of America,미국,Boise,보이시,city,5586437
+919,North America,북아메리카,United States of America,미국,Boone,분,city,4456703
+920,North America,북아메리카,United States of America,미국,Boston,보스턴,city,4930956
+921,North America,북아메리카,United States of America,미국,Boulder,볼더,city,5574991
+922,North America,북아메리카,United States of America,미국,Breckenridge,브레켄리지,city,5414872
+923,North America,북아메리카,United States of America,미국,Bryce Canyon National Park,브라이스캐니언 국립공원,city,5535943
+924,North America,북아메리카,United States of America,미국,Burlington,벌링턴,city,5234372
+925,North America,북아메리카,United States of America,미국,Cape Canaveral,케이프커내버럴,city,4149959
+926,North America,북아메리카,United States of America,미국,Cape Cod,케이프코드,city,4932251
+927,North America,북아메리카,United States of America,미국,Carmel-by-the-Sea,카멀바이더시,city,5334320
+928,North America,북아메리카,United States of America,미국,Chapel Hill,채플힐,city,4460162
+929,North America,북아메리카,United States of America,미국,Charlotte,샬럿,city,4460243
+930,North America,북아메리카,United States of America,미국,Charlottesville,샬러츠빌,city,4752031
+931,North America,북아메리카,United States of America,미국,Chattanooga,채터누가,city,4612862
+932,North America,북아메리카,United States of America,미국,Chicago,시카고,city,4887398
+933,North America,북아메리카,United States of America,미국,Cincinnati,신시내티,city,4508722
+934,North America,북아메리카,United States of America,미국,Clearwater,클리어워터,city,4151316
+935,North America,북아메리카,United States of America,미국,Cleveland,클리블랜드,city,5150529
+936,North America,북아메리카,United States of America,미국,Cocoa Beach,코코아비치,city,4151441
+937,North America,북아메리카,United States of America,미국,"Cody, Wyoming","코디, 와이오밍",city,5821593
+938,North America,북아메리카,United States of America,미국,Colorado Springs,콜로라도스프링스,city,5417598
+939,North America,북아메리카,United States of America,미국,Columbia,컬럼비아,city,4575352
+940,North America,북아메리카,United States of America,미국,Columbia River Gorge,컬럼비아강 협곡,city,5756304
+941,North America,북아메리카,United States of America,미국,Columbus,콜럼버스,city,4509177
+942,North America,북아메리카,United States of America,미국,Cumberland Island National Seashore,컴벌랜드섬 국립해안,city,4190367
+943,North America,북아메리카,United States of America,미국,Dallas,댈러스,city,4684888
+944,North America,북아메리카,United States of America,미국,Daytona Beach,데이토나비치,city,4152872
+945,North America,북아메리카,United States of America,미국,Death Valley National Park,데스밸리 국립공원,city,5342048
+946,North America,북아메리카,United States of America,미국,Denali National Park,데날리 국립공원,city,5860543
+947,North America,북아메리카,United States of America,미국,Denver,덴버,city,5419384
+948,North America,북아메리카,United States of America,미국,Destin,데스틴,city,4153188
+949,North America,북아메리카,United States of America,미국,Detroit,디트로이트,city,4990729
+950,North America,북아메리카,United States of America,미국,Duck,덕,city,4464192
+951,North America,북아메리카,United States of America,미국,Duck Key,덕키,city,4153693
+952,North America,북아메리카,United States of America,미국,Durango,두랑고,city,5420241
+953,North America,북아메리카,United States of America,미국,Durham,더럼,city,4464368
+954,North America,북아메리카,United States of America,미국,El Paso,엘패소,city,5520993
+955,North America,북아메리카,United States of America,미국,Everglades National Park,에버글레이즈 국립공원,city,4154663
+956,North America,북아메리카,United States of America,미국,Fairbanks,페어뱅크스,city,5861897
+957,North America,북아메리카,United States of America,미국,Flagstaff,플래그스태프,city,5294810
+958,North America,북아메리카,United States of America,미국,Fort Lauderdale,포트로더데일,city,4155966
+959,North America,북아메리카,United States of America,미국,Gainesville,게인즈빌,city,4156404
+960,North America,북아메리카,United States of America,미국,Galveston,갤버스턴,city,4692883
+961,North America,북아메리카,United States of America,미국,Gatlinburg,개틀린버그,city,4624443
+962,North America,북아메리카,United States of America,미국,Glacier National Park,글레이셔 국립공원,city,5654292
+963,North America,북아메리카,United States of America,미국,Grand Canyon National Park,그랜드캐니언 국립공원,city,5296401
+964,North America,북아메리카,United States of America,미국,Grand Teton National Park,그랜드티턴 국립공원,city,5826327
+965,North America,북아메리카,United States of America,미국,Greensboro,그린즈버러,city,4469146
+966,North America,북아메리카,United States of America,미국,Hershey,허시,city,5193342
+967,North America,북아메리카,United States of America,미국,Hilo,힐로,city,5855927
+968,North America,북아메리카,United States of America,미국,Hilton Head Island,힐턴헤드아일랜드,city,4581833
+969,North America,북아메리카,United States of America,미국,Honolulu,호놀룰루,city,5856195
+970,North America,북아메리카,United States of America,미국,Hood River,후드리버,city,5731777
+971,North America,북아메리카,United States of America,미국,Hot Springs,핫스프링스,city,4115412
+972,North America,북아메리카,United States of America,미국,Houston,휴스턴,city,4699066
+973,North America,북아메리카,United States of America,미국,Islamorada,이슬라모라다,city,4159839
+974,North America,북아메리카,United States of America,미국,Jacksonville,잭슨빌,city,4160021
+975,North America,북아메리카,United States of America,미국,Jekyll Island,지킬섬,city,4202705
+976,North America,북아메리카,United States of America,미국,Joshua Tree National Park,조슈아트리 국립공원,city,5361305
+977,North America,북아메리카,United States of America,미국,Juneau,주노,city,5554072
+978,North America,북아메리카,United States of America,미국,Kauai,카우아이,city,5848511
+979,North America,북아메리카,United States of America,미국,Kennebunkport,케네벙크포트,city,4968747
+980,North America,북아메리카,United States of America,미국,Ketchikan,케치칸,city,5554428
+981,North America,북아메리카,United States of America,미국,Key Largo,키라고,city,4160795
+982,North America,북아메리카,United States of America,미국,Key West,키웨스트,city,4160812
+983,North America,북아메리카,United States of America,미국,Lancaster,랭커스터,city,5197079
+984,North America,북아메리카,United States of America,미국,Las Vegas,라스베이거스,city,5506956
+985,North America,북아메리카,United States of America,미국,Lewisburg,루이스버그,city,5197842
+986,North America,북아메리카,United States of America,미국,Los Angeles,로스앤젤레스,city,5368361
+987,North America,북아메리카,United States of America,미국,Marathon,마라톤,city,4163379
+988,North America,북아메리카,United States of America,미국,Martha's Vineyard,마서스비니어드,city,4943231
+989,North America,북아메리카,United States of America,미국,Maui,마우이,city,5850862
+990,North America,북아메리카,United States of America,미국,Memphis,멤피스,city,4641239
+991,North America,북아메리카,United States of America,미국,Miami,마이애미,city,4164138
+992,North America,북아메리카,United States of America,미국,Milwaukee,밀워키,city,5263045
+993,North America,북아메리카,United States of America,미국,Minneapolis,미니애폴리스,city,5037649
+994,North America,북아메리카,United States of America,미국,Mt. Lassen Volcanic National Park,래슨 화산 국립공원,city,5566560
+995,North America,북아메리카,United States of America,미국,Myrtle Beach,머틀비치,city,4588718
+996,North America,북아메리카,United States of America,미국,Mystic,미스틱,city,4839141
+997,North America,북아메리카,United States of America,미국,Nags Head,낵스헤드,city,4481427
+998,North America,북아메리카,United States of America,미국,Nantucket,낸터킷,city,4944903
+999,North America,북아메리카,United States of America,미국,Napa Valley,나파밸리,city,5376095
+1000,North America,북아메리카,United States of America,미국,Naples,네이플스,city,4165565
+1001,North America,북아메리카,United States of America,미국,Nashville,내슈빌,city,4644585
+1002,North America,북아메리카,United States of America,미국,New Bern,뉴번,city,4481682
+1003,North America,북아메리카,United States of America,미국,New Orleans,뉴올리언스,city,4335045
+1004,North America,북아메리카,United States of America,미국,New York City,뉴욕,city,5128581
+1005,North America,북아메리카,United States of America,미국,Newport,뉴포트,city,5223593
+1006,North America,북아메리카,United States of America,미국,Norfolk,노퍽,city,4776222
+1007,North America,북아메리카,United States of America,미국,North Conway,노스콘웨이,city,5090347
+1008,North America,북아메리카,United States of America,미국,Oahu,오아후,city,5851609
+1009,North America,북아메리카,United States of America,미국,Ocean City,오션시티,city,4364312
+1010,North America,북아메리카,United States of America,미국,Olympic National Park,올림픽 국립공원,city,5805712
+1011,North America,북아메리카,United States of America,미국,Orlando,올랜도,city,4167147
+1012,North America,북아메리카,United States of America,미국,Palm Springs,팜스프링스,city,5380668
+1013,North America,북아메리카,United States of America,미국,Panama City,파나마시티,city,4167694
+1014,North America,북아메리카,United States of America,미국,Park City Utah,파크시티,city,5779451
+1015,North America,북아메리카,United States of America,미국,Pasadena,패서디나,city,5381396
+1016,North America,북아메리카,United States of America,미국,Pensacola,펜서콜라,city,4168228
+1017,North America,북아메리카,United States of America,미국,Phoenix,피닉스,city,5308655
+1018,North America,북아메리카,United States of America,미국,Pittsburgh,피츠버그,city,5206379
+1019,North America,북아메리카,United States of America,미국,Pocono Mountains,포코노산맥,city,5202340
+1020,North America,북아메리카,United States of America,미국,Portland,포틀랜드,city,5746545
+1021,North America,북아메리카,United States of America,미국,"Portland, Maine","포틀랜드, 메인",city,4975802
+1022,North America,북아메리카,United States of America,미국,Providence,프로비던스,city,5224151
+1023,North America,북아메리카,United States of America,미국,Raleigh,롤리,city,4487042
+1024,North America,북아메리카,United States of America,미국,Rapid City,래피드시티,city,5768233
+1025,North America,북아메리카,United States of America,미국,Redwood National Park,레드우드 국립공원,city,5570186
+1026,North America,북아메리카,United States of America,미국,Reno,리노,city,5511077
+1027,North America,북아메리카,United States of America,미국,Richmond,리치먼드,city,4781708
+1028,North America,북아메리카,United States of America,미국,Round Pond,라운드폰드,city,4977024
+1029,North America,북아메리카,United States of America,미국,Sacramento,새크라멘토,city,5389489
+1030,North America,북아메리카,United States of America,미국,Saint Augustine,세인트오거스틴,city,4170894
+1031,North America,북아메리카,United States of America,미국,Saint Louis,세인트루이스,city,4407066
+1032,North America,북아메리카,United States of America,미국,Saint Petersburg,세인트피터즈버그,city,4171563
+1033,North America,북아메리카,United States of America,미국,Saint Simons,세인트시몬스,city,4220862
+1034,North America,북아메리카,United States of America,미국,Salt Lake City,솔트레이크시티,city,5780993
+1035,North America,북아메리카,United States of America,미국,San Antonio,샌안토니오,city,4726206
+1036,North America,북아메리카,United States of America,미국,San Diego,샌디에이고,city,5391811
+1037,North America,북아메리카,United States of America,미국,San Francisco,샌프란시스코,city,5391959
+1038,North America,북아메리카,United States of America,미국,Santa Barbara,산타바버라,city,5392952
+1039,North America,북아메리카,United States of America,미국,Santa Cruz,산타크루즈,city,5393052
+1040,North America,북아메리카,United States of America,미국,Santa Monica,산타모니카,city,5393212
+1041,North America,북아메리카,United States of America,미국,Sarasota,새러소타,city,4172131
+1042,North America,북아메리카,United States of America,미국,Savannah,서배너,city,4221552
+1043,North America,북아메리카,United States of America,미국,Seattle,시애틀,city,5809844
+1044,North America,북아메리카,United States of America,미국,Sedona,세도나,city,5313667
+1045,North America,북아메리카,United States of America,미국,Sequoia National Park,세쿼이아 국립공원,city,5394465
+1046,North America,북아메리카,United States of America,미국,Shenandoah National Park,셰넌도어 국립공원,city,4785275
+1047,North America,북아메리카,United States of America,미국,Sonoma,소노마,city,5397095
+1048,North America,북아메리카,United States of America,미국,South Lake Tahoe,사우스레이크타호,city,5397664
+1049,North America,북아메리카,United States of America,미국,Sun Valley,선밸리,city,5609286
+1050,North America,북아메리카,United States of America,미국,Tallahassee,탤러해시,city,4174715
+1051,North America,북아메리카,United States of America,미국,Tampa,탬파,city,4174757
+1052,North America,북아메리카,United States of America,미국,The Hamptons,햄프턴스,city,5139030
+1053,North America,북아메리카,United States of America,미국,Vail,베일,city,5442727
+1054,North America,북아메리카,United States of America,미국,Valdosta,발도스타,city,4228147
+1055,North America,북아메리카,United States of America,미국,Washington,워싱턴,city,4140963
+1056,North America,북아메리카,United States of America,미국,West Palm Beach,웨스트팜비치,city,4177887
+1057,North America,북아메리카,United States of America,미국,Williamsburg,윌리엄즈버그,city,4793846
+1058,North America,북아메리카,United States of America,미국,Wilmington,윌밍턴,city,4499379
+1059,North America,북아메리카,United States of America,미국,Winston-Salem,윈스턴세일럼,city,4499612
+1060,North America,북아메리카,United States of America,미국,Wisconsin Dells,위스콘신델스,city,5279422
+1061,North America,북아메리카,United States of America,미국,Woodstock,우드스톡,city,5145072
+1062,North America,북아메리카,United States of America,미국,Yellowstone National Park,옐로스톤 국립공원,city,5843642
+1063,North America,북아메리카,United States of America,미국,Yosemite National Park,요세미티 국립공원,city,5410952
+1064,North America,북아메리카,United States of America,미국,Zion National Park,자이언 국립공원,city,5550114
+1065,South America,남아메리카,Uruguay,우루과이,Montevideo,몬테비데오,country,3441575
+1066,South America,남아메리카,Uruguay,우루과이,Colonia del Sacramento,콜로니아델사크라멘토,city,3443013
+1067,South America,남아메리카,Uruguay,우루과이,Montevideo,몬테비데오,city,3441575
+1068,South America,남아메리카,Uruguay,우루과이,Piriapolis,피리아폴리스,city,3441074
+1069,South America,남아메리카,Uruguay,우루과이,Punta del Este,푼타델에스테,city,3440939
+1070,South America,남아메리카,Uruguay,우루과이,Salto,살토,city,3440714
+1071,Oceania,오세아니아,Vanautu,바누아투,Port Vila,포트빌라,country,2135171
+1072,Asia,아시아,Vietnam,베트남,Hanoi,하노이,country,1581130
+1073,Asia,아시아,Vietnam,베트남,Can Tho,껀터,city,1586203
+1074,Asia,아시아,Vietnam,베트남,Cat Ba,깟바,city,1586052
+1075,Asia,아시아,Vietnam,베트남,Da Nang,다낭,city,1583992
+1076,Asia,아시아,Vietnam,베트남,Dalat,달랏,city,1584071
+1077,Asia,아시아,Vietnam,베트남,Halong Bay,하롱베이,city,1581250
+1078,Asia,아시아,Vietnam,베트남,Hanoi,하노이,city,1581130
+1079,Asia,아시아,Vietnam,베트남,Ho Chi Minh City,호찌민,city,1566083
+1080,Asia,아시아,Vietnam,베트남,Hoi An,호이안,city,1580541
+1081,Asia,아시아,Vietnam,베트남,Hue,후에,city,1580240
+1082,Asia,아시아,Vietnam,베트남,Mui Ne,무이네,city,7304197
+1083,Asia,아시아,Vietnam,베트남,Nha Trang,나트랑,city,1572151
+1084,Asia,아시아,Vietnam,베트남,Ninh Binh,닌빈,city,1571968
+1085,Asia,아시아,Vietnam,베트남,Phu Quoc,푸꾸옥,city,12253704
+1086,Asia,아시아,Vietnam,베트남,Sapa,사파,city,1568043
+1087,Africa,아프리카,Zambia,잠비아,Lusaka,루사카,country,909137
+1088,Africa,아프리카,Zimbabwe,짐바브웨,Harare,하라레,country,890299
