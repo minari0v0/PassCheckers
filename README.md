@@ -23,11 +23,26 @@ YOLOv11 기반 **커스텀 객체 탐지 모델**로 수하물 항목을 자동 
 
 ## ✨ 주요 기능
 
+### 🤖 AI 이미지 분석
 - 📤 **이미지 업로드 및 YOLO 추론 요청**
-- 🧠 **YOLOv11 기반 수하물 분류** (단일/다중)
+- 🧠 **YOLOv11 기반 수하물 분류** (단일/다중 객체 탐지)
+- 🎯 **SKU 모델 기반 바운딩 박스 탐지**
 - ⚖️ **무게 추정** (클래스별 평균 무게 기반)
-- 🧳 **패킹 도우미** (필수 품목 추천)
-- 🏷️ **미탐지 항목 수동 태그 기능** (외부 API 예정)
+- 🏷️ **미탐지 항목 수동 태그 기능**
+
+### 🧳 여행 도우미
+- 🌍 **여행지별 맞춤 패킹 추천** (날씨 기반)
+- 📅 **실시간 날씨 예보 연동** (14일 이내)
+- 📊 **과거 날씨 데이터 분석** (14일 이후)
+- 👥 **동반자별 맞춤 추천** (혼자/연인/가족/친구/아이와 함께)
+- 🎨 **테마별 추천** (힐링/맛집/쇼핑/액티비티/문화)
+- ✈️ **비행 조건별 추천** (장거리/단거리 비행)
+
+### 👤 사용자 관리
+- 🔐 **JWT 기반 인증 시스템**
+- 📊 **분석 기록 저장 및 조회**
+- 👤 **프로필 관리**
+- 🔄 **실시간 세션 관리** (Redis)
 
 ---
 
@@ -35,48 +50,101 @@ YOLOv11 기반 **커스텀 객체 탐지 모델**로 수하물 항목을 자동 
 
 ```bash
 PassCheckers/
-├── frontend/                  # Nuxt 3 프론트엔드
-│   ├── pages/                # Vue 페이지 컴포넌트
-│   ├── components/           # 재사용 가능한 Vue 컴포넌트
-│   ├── composables/          # Vue 3 컴포저블
-│   ├── middleware/           # Nuxt 미들웨어
-│   ├── layouts/              # 레이아웃 템플릿
-│   ├── assets/               # 정적 자산
-│   ├── public/               # 공개 리소스
-│   ├── server/               # 서버사이드 렌더링
-│   ├── app.vue               # 메인 Vue 컴포넌트
-│   ├── nuxt.config.ts        # Nuxt 설정
-│   ├── package.json          # 프론트엔드 의존성
-│   └── tsconfig.json         # TypeScript 설정
+├── frontend/                          # ✅ Nuxt 3 프론트엔드
+│   ├── pages/                         # Vue 페이지 컴포넌트
+│   │   ├── index.vue                  # 메인 페이지 (풀페이지)
+│   │   ├── classification.vue         # 이미지 분류 페이지
+│   │   ├── recommend.vue              # 여행 추천 페이지
+│   │   ├── packing.vue                # 패킹 도우미 페이지
+│   │   ├── profile.vue                # 사용자 프로필
+│   │   ├── login.vue                  # 로그인 페이지
+│   │   └── ...
+│   ├── components/                    # Vue 컴포넌트
+│   │   ├── classification/            # 분류 관련 컴포넌트
+│   │   ├── packing/                   # 패킹 관련 컴포넌트
+│   │   ├── recommend/                 # 추천 관련 컴포넌트
+│   │   ├── profile/                   # 프로필 관련 컴포넌트
+│   │   └── ...
+│   ├── composables/                   # Vue 3 컴포저블
+│   ├── middleware/                    # Nuxt 미들웨어
+│   ├── layouts/                       # 레이아웃 템플릿
+│   ├── assets/                        # 정적 자산
+│   ├── public/                        # 공개 리소스
+│   ├── server/                        # 서버사이드 렌더링
+│   ├── app.vue                        # 메인 Vue 컴포넌트
+│   ├── nuxt.config.ts                 # Nuxt 설정
+│   ├── package.json                   # 프론트엔드 의존성
+│   └── tsconfig.json                  # TypeScript 설정
 │
-├── backend/                  # Flask 백엔드 서버
-│   ├── models/               # 데이터 모델
-│   ├── repository/           # DB 접근 계층
-│   ├── service/              # 서비스 로직
-│   ├── routes/               # API 라우트
-│   ├── classification/       # 분류 관련 모듈
-│   ├── matching/             # 매칭 관련 모듈
-│   ├── sku/                  # SKU 관련 모듈
-│   ├── yolo/                 # YOLO 관련 모듈
-│   ├── app.py                # Flask 앱 실행 엔트리포인트
-│   ├── config.py             # 환경 설정
-│   ├── requirements.txt      # Python 패키지 목록
-│   └── venv/                 # 가상환경
+├── backend/                           # ✅ Flask 백엔드 서버
+│   ├── models/                        # 데이터 모델
+│   │   ├── user.py                    # 사용자 모델
+│   │   ├── item_model.py              # 아이템 모델
+│   │   ├── detected_item_model.py     # 탐지된 아이템 모델
+│   │   └── pytorch/                   # AI 모델 파일
+│   │       ├── YOLOv11_model.pt       # YOLO 모델
+│   │       └── SKU_model.pt           # SKU 모델
+│   ├── repository/                    # DB 접근 계층
+│   │   └── user_repo.py               # 사용자 데이터 접근
+│   ├── service/                       # 서비스 로직
+│   │   └── user_service.py            # 사용자 서비스
+│   ├── services/                      # 외부 서비스
+│   │   ├── amadeus_service.py         # 항공편 정보 API
+│   │   ├── gemini_service.py          # Gemini AI 서비스
+│   │   ├── weather_service.py         # 날씨 API 서비스
+│   │   └── recommendation_service.py  # 추천 서비스
+│   ├── routes/                        # API 라우트
+│   │   ├── user.py                    # 사용자 관련 API
+│   │   ├── classify.py                # 이미지 분류 API
+│   │   ├── recommend.py               # 추천 API
+│   │   ├── items.py                   # 아이템 관리 API
+│   │   ├── analysis.py                # 분석 결과 API
+│   │   ├── locations.py               # 여행지 정보 API
+│   │   ├── flights.py                 # 항공편 정보 API
+│   │   ├── packing.py                 # 패킹 관련 API
+│   │   ├── weight.py                  # 무게 관련 API
+│   │   ├── share.py                   # 공유 관련 API
+│   │   ├── community.py               # 커뮤니티 API
+│   │   └── category.py                # 카테고리 API
+│   ├── matching/                      # 매칭 관련 모듈
+│   │   ├── matcher.py                 # 매칭 로직
+│   │   ├── item_service.py            # 아이템 서비스
+│   │   └── recommend_matching_service.py # 추천 매칭
+│   ├── sku/                           # SKU 관련 모듈
+│   │   └── detect.py                  # SKU 탐지
+│   ├── yolo/                          # YOLO 관련 모듈
+│   │   └── detect.py                  # YOLO 탐지
+│   ├── db/                            # 데이터베이스 유틸
+│   │   └── database_utils.py          # DB 연결 및 유틸리티
+│   ├── data_import/                   # 데이터 가져오기
+│   │   ├── import_csv_to_mysql.py     # CSV → MySQL
+│   │   ├── 1_locations.csv            # 여행지 데이터
+│   │   ├── 2_budgets.csv              # 예산 데이터
+│   │   ├── 3_cost_breakdowns.csv      # 비용 상세 데이터
+│   │   ├── 4_location_content.csv     # 여행지 콘텐츠
+│   │   ├── items_weight.csv           # 아이템 무게 데이터
+│   │   ├── recommend/                 # 추천 관련 데이터
+│   │   │   ├── airline_code.csv       # 항공사 코드
+│   │   │   ├── location_details.csv   # 여행지 상세 정보
+│   │   │   └── weather_data.csv       # 날씨 데이터
+│   │   └── README.md                  # 데이터 가져오기 가이드
+│   ├── static/                        # 정적 파일
+│   │   └── thumbnails/                # 썸네일 이미지
+│   ├── app.py                         # Flask 앱 메인 파일
+│   ├── config.py                      # 환경 설정
+│   ├── requirements.txt               # Python 패키지 목록
+│   ├── env.example                    # 환경 변수 예시
+│   └── README.md                      # 백엔드 문서
 │
-├── backend_merge_file/       # 병합 예정 백엔드 코드 (수정 금지)
-│   ├── yolo/                 # YOLO 객체 탐지
-│   ├── sku/                  # SKU 분류
-│   ├── routes/               # API 라우트
-│   ├── services/             # 외부 서비스
-│   ├── models/               # 데이터 모델
-│   ├── matching/             # 매칭 로직
-│   └── db/                   # 데이터베이스
+├── logs/                              # ✅ 로그 파일 (Git 무시)
+│   ├── backend.log                    # 백엔드 로그
+│   └── frontend.log                   # 프론트엔드 로그
 │
-├── logs/                     # 로그 파일
-│   ├── backend.log           # 백엔드 로그
-│   └── frontend.log          # 프론트엔드 로그
-│
-└── README.md                 # 프로젝트 문서
+├── README.md                          # ✅ 프로젝트 메인 문서
+├── DEVELOPMENT.md                     # ✅ 개발 가이드
+├── db_tables.md                       # ✅ 데이터베이스 스키마 문서
+├── check_tables.sql                   # DB 테이블 확인 쿼리
+└── package.json                       # 루트 패키지 설정
 ```
 
 ---
@@ -213,18 +281,51 @@ get refresh_token:1
 
 ---
 
-## 🧭 시스템 흐름도
+## 🧭 시스템 아키텍처
 
-```bash
-(시스템 다이어그램 이미지 추가 예정)
+```mermaid
+graph TB
+    A[사용자] --> B[Nuxt 3 프론트엔드]
+    B --> C[Flask 백엔드 API]
+    C --> D[YOLOv11 모델]
+    C --> E[SKU 모델]
+    C --> F[MySQL 데이터베이스]
+    C --> G[Redis 세션]
+    C --> H[날씨 API]
+    C --> I[Gemini AI]
+    
+    D --> J[객체 분류]
+    E --> K[바운딩 박스 탐지]
+    F --> L[사용자 데이터]
+    F --> M[물품 규정]
+    F --> N[여행지 정보]
+    G --> O[인증 토큰]
+    H --> P[실시간 예보]
+    I --> Q[패킹 추천]
 ```
 
 ---
 
-## 📸 샘플 예시 (시각화)
+## 📸 주요 화면
 
-- 입력 이미지
-- 분류 결과
+### 🏠 메인 페이지
+- **풀페이지 디자인**으로 각 기능을 직관적으로 안내
+- **반응형 UI**로 모든 디바이스에서 최적화된 경험
+
+### 📸 이미지 분류
+- **드래그 앤 드롭** 이미지 업로드
+- **실시간 AI 분석** 결과 표시
+- **바운딩 박스** 시각화 및 수정 가능
+
+### 🧳 패킹 추천
+- **설문 기반** 맞춤 추천
+- **날씨 데이터** 연동
+- **동반자/테마별** 개인화
+
+### 👤 사용자 프로필
+- **분석 기록** 관리
+- **프로필 편집** 기능
+- **계정 관리** 시스템
 
 ---
 
@@ -238,22 +339,54 @@ get refresh_token:1
 
 ---
 
+## 🎯 프로젝트 완성 현황
+
+### ✅ 완성된 기능들
+
+#### 🤖 AI 모델 시스템
+- **YOLOv11 커스텀 모델**: 수하물 객체 탐지 및 분류
+- **SKU 모델**: 바운딩 박스 정확한 탐지
+- **이중 모델 파이프라인**: SKU 탐지 → YOLO 분류
+- **무게 예측 알고리즘**: 클래스별 평균 무게 기반
+
+#### 🌍 여행 도우미 시스템
+- **날씨 기반 추천**: 실시간 예보 + 과거 데이터
+- **개인화 추천**: 동반자/테마/비행조건별 맞춤
+- **여행지 데이터**: 20개 테이블로 구성된 종합 데이터베이스
+- **Gemini AI 연동**: 지능형 패킹 추천
+
+#### 💻 웹 애플리케이션
+- **프론트엔드**: Nuxt 3 + Vue 3 + TypeScript
+- **백엔드**: Flask + MySQL + Redis
+- **인증 시스템**: JWT + Redis 세션 관리
+- **API**: RESTful API 30+ 엔드포인트
+
+#### 📊 데이터 관리
+- **사용자 관리**: 회원가입/로그인/프로필
+- **분석 기록**: 이미지 분석 결과 저장/조회
+- **물품 규정**: 수하물 규정 데이터베이스
+- **여행지 정보**: 위치/날씨/예산/콘텐츠 데이터
+
+### 🚀 배포 준비 완료
+
+- **프로덕션 서버**: Gunicorn/Waitress 지원
+- **환경 설정**: 개발/프로덕션 분리
+- **데이터베이스**: MySQL 스키마 완성
+- **문서화**: API 문서 및 사용 가이드 완성
+
+---
+
 ## 📝 개발 가이드
 
-### 프로젝트 구조 개선 사항
+### 프로젝트 구조 개선 완료 ✅
 
-1. **프론트엔드 분리**: 루트 디렉터리의 프론트엔드 코드를 `frontend/` 폴더로 이동
-2. **로그 파일 정리**: 모든 로그 파일을 `logs/` 폴더로 통합
-3. **문서화 개선**: 프로젝트 구조를 명확히 문서화
-4. **백엔드 통합 준비**: `backend_merge_file/`의 코드를 `backend/`로 병합할 준비
+1. **프론트엔드 분리**: ✅ 완료
+2. **로그 파일 정리**: ✅ 완료  
+3. **문서화 개선**: ✅ 완료
+4. **백엔드 통합**: ✅ 완료
 
 ### 주의사항
 
-- `backend_merge_file/` 폴더는 **절대 수정하지 마세요**
-- 이 폴더는 다른 환경에서 작업된 코드로, 병합 시 참고용입니다
-- 모든 수정 작업은 `backend/` 폴더에서 진행하세요
-
-
-#### 마지막 수정사항
-- nuxt/config.ts 복구
-- config.py 복구 
+- 프로젝트가 **완성 상태**로 모든 핵심 기능이 구현됨
+- `backend/` 폴더에서 모든 백엔드 로직 관리
+- `frontend/` 폴더에서 모든 프론트엔드 로직 관리 
