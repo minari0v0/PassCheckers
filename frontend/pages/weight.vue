@@ -1,7 +1,34 @@
 <template>
   <div style="min-height: 125vh;">
+    <!-- 네비게이션 바 -->
+    <div style="position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: white; border-bottom: 1px solid #e0e0e0; padding: 12px 0;">
+      <div style="max-width: 1200px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 24px;">
+          <button @click="$router.push('/')" style="background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #1976D2; font-weight: 600;">
+            <q-icon name="home" size="20px" />
+            홈
+          </button>
+          <button @click="$router.push('/classification')" style="background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #1976D2; font-weight: 600;">
+            <q-icon name="camera_alt" size="20px" />
+            수하물 분류
+          </button>
+          <button @click="$router.push('/recommend')" style="background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #1976D2; font-weight: 600;">
+            <q-icon name="flight_takeoff" size="20px" />
+            여행 추천
+          </button>
+          <button @click="$router.push('/community')" style="background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #1976D2; font-weight: 600;">
+            <q-icon name="forum" size="20px" />
+            커뮤니티
+          </button>
+        </div>
+        <div style="display: flex; align-items: center; gap: 16px;">
+          <span style="color: #1976D2; font-weight: 600;">무게 예측</span>
+        </div>
+      </div>
+    </div>
+
     <!-- 상단 안내문구 -->
-    <section style="text-align:center; margin-top:48px; margin-bottom:32px;">
+    <section style="text-align:center; margin-top: 120px; margin-bottom:32px;">
       <h1 style="font-size:2.2rem; font-weight:bold;">
         예상 무게 확인, <span style="color:var(--main-blue);">수하물 무게 예측</span>
       </h1>
@@ -252,7 +279,7 @@ interface ClassificationHistory {
 
 interface WeightItem {
   item_name_ko: string;
-  predicted_weight_value: number | null;
+  predicted_weight_value: number | string | null;
   predicted_weight_unit: string | null;
 }
 
@@ -457,16 +484,24 @@ const adjustedWeightData = computed(() => {
     let adjustedUnit = item.predicted_weight_unit;
 
     if (originalValue !== null && adjustedUnit !== null) {
-      const isClothing = CLOTHING_KEYWORDS.some(keyword => item.item_name_ko.includes(keyword));
-      if (isClothing && multiplier !== 0) {
-        let originalGrams = adjustedUnit === 'kg' ? originalValue * 1000 : originalValue;
-        originalGrams *= (1 + multiplier);
-        if (originalGrams > 1000) {
-          adjustedValue = originalGrams / 1000;
-          adjustedUnit = 'kg';
+      // 문자열인 경우 숫자로 변환
+      const numValue = typeof originalValue === 'string' ? parseFloat(originalValue) : originalValue;
+      
+      // NaN이 아닌 경우에만 처리
+      if (!isNaN(numValue)) {
+        const isClothing = CLOTHING_KEYWORDS.some(keyword => item.item_name_ko.includes(keyword));
+        if (isClothing && multiplier !== 0) {
+          let originalGrams = adjustedUnit === 'kg' ? numValue * 1000 : numValue;
+          originalGrams *= (1 + multiplier);
+          if (originalGrams > 1000) {
+            adjustedValue = originalGrams / 1000;
+            adjustedUnit = 'kg';
+          } else {
+            adjustedValue = originalGrams;
+            adjustedUnit = 'g';
+          }
         } else {
-          adjustedValue = originalGrams;
-          adjustedUnit = 'g';
+          adjustedValue = numValue;
         }
       }
     }
@@ -476,7 +511,10 @@ const adjustedWeightData = computed(() => {
   adjustedItems.forEach(item => {
     const value = item.predicted_weight_value;
     if (value !== null && item.predicted_weight_unit !== null) {
-      totalWeightGrams += item.predicted_weight_unit === 'kg' ? value * 1000 : value;
+      const numValue = typeof value === 'string' ? parseFloat(value) : value;
+      if (!isNaN(numValue)) {
+        totalWeightGrams += item.predicted_weight_unit === 'kg' ? numValue * 1000 : numValue;
+      }
     }
   });
 
@@ -500,7 +538,10 @@ const categoryChartData = computed(() => {
     const value = item.predicted_weight_value;
     let weightInGrams = 0;
     if (value !== null && item.predicted_weight_unit) {
-        weightInGrams = item.predicted_weight_unit === 'kg' ? value * 1000 : value;
+      const numValue = typeof value === 'string' ? parseFloat(value) : value;
+      if (!isNaN(numValue)) {
+        weightInGrams = item.predicted_weight_unit === 'kg' ? numValue * 1000 : numValue;
+      }
     }
     categoryWeights.set(category, (categoryWeights.get(category) || 0) + weightInGrams);
     console.log(`[차트] ${item.item_name_ko} -> ${category}: ${weightInGrams}g`);
@@ -608,10 +649,23 @@ const recommendedCarrier = computed(() => {
   return { size: '28인치 이상' };
 });
 
-const formatWeight = (value: number, unit: string | null) => {
-  if (unit === 'g') return `${Math.round(value)}g`;
-  if (unit === 'kg') return `${parseFloat(value.toFixed(2))}kg`;
-  return `${value}`;
+const formatWeight = (value: number | string | null, unit: string | null) => {
+  // 값이 null이거나 유효하지 않은 경우 처리
+  if (value === null || value === undefined) {
+    return '무게 정보 없음';
+  }
+  
+  // 문자열인 경우 숫자로 변환
+  const numValue = typeof value === 'string' ? parseFloat(value) : value;
+  
+  // NaN인 경우 처리
+  if (isNaN(numValue)) {
+    return '무게 정보 없음';
+  }
+  
+  if (unit === 'g') return `${Math.round(numValue)}g`;
+  if (unit === 'kg') return `${numValue.toFixed(2)}kg`;
+  return `${numValue}`;
 };
 
 // 이미지 로드 디버깅 함수들
