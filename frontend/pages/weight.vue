@@ -1,34 +1,7 @@
 <template>
   <div style="min-height: 125vh;">
-    <!-- 네비게이션 바 -->
-    <div style="position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: white; border-bottom: 1px solid #e0e0e0; padding: 12px 0;">
-      <div style="max-width: 1200px; margin: 0 auto; padding: 0 32px; display: flex; align-items: center; justify-content: space-between;">
-        <div style="display: flex; align-items: center; gap: 24px;">
-          <button @click="$router.push('/')" style="background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #1976D2; font-weight: 600;">
-            <q-icon name="home" size="20px" />
-            홈
-          </button>
-          <button @click="$router.push('/classification')" style="background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #1976D2; font-weight: 600;">
-            <q-icon name="camera_alt" size="20px" />
-            수하물 분류
-          </button>
-          <button @click="$router.push('/recommend')" style="background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #1976D2; font-weight: 600;">
-            <q-icon name="flight_takeoff" size="20px" />
-            여행 추천
-          </button>
-          <button @click="$router.push('/community')" style="background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #1976D2; font-weight: 600;">
-            <q-icon name="forum" size="20px" />
-            커뮤니티
-          </button>
-        </div>
-        <div style="display: flex; align-items: center; gap: 16px;">
-          <span style="color: #1976D2; font-weight: 600;">무게 예측</span>
-        </div>
-      </div>
-    </div>
-
     <!-- 상단 안내문구 -->
-    <section style="text-align:center; margin-top: 120px; margin-bottom:32px;">
+    <section style="text-align:center; margin-top:48px; margin-bottom:32px;">
       <h1 style="font-size:2.2rem; font-weight:bold;">
         예상 무게 확인, <span style="color:var(--main-blue);">수하물 무게 예측</span>
       </h1>
