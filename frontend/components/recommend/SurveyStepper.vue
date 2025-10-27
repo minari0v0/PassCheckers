@@ -80,7 +80,7 @@
         </transition>
         <transition name="fade">
           <div v-show="currentStep === 2">
-            <DatePicker v-model.range="preferences.dates" :columns="2" title-position="left" expanded :min-date="new Date()" />
+            <DatePicker v-model.range="preferences.dates" :columns="datePickerColumns" title-position="left" expanded :min-date="new Date()" />
           </div>
         </transition>
         <transition-group name="fade" tag="div" class="card-grid companion-grid">
@@ -325,13 +325,37 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, nextTick } from 'vue';
+import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import { DatePicker } from 'v-calendar';
 import 'v-calendar/style.css';
 import { useApiUrl } from '~/composables/useApiUrl';
 
 const emit = defineEmits(['survey-complete']);
 const { getApiUrl } = useApiUrl();
+
+// --- 반응형 상태 ---
+const windowWidth = ref(process.client ? window.innerWidth : 0);
+
+const handleResize = () => {
+  windowWidth.value = window.innerWidth;
+};
+
+onMounted(() => {
+  if (process.client) {
+    window.addEventListener('resize', handleResize);
+    handleResize(); // 초기값 설정
+  }
+});
+
+onUnmounted(() => {
+  if (process.client) {
+    window.removeEventListener('resize', handleResize);
+  }
+});
+
+const datePickerColumns = computed(() => {
+  return windowWidth.value < 768 ? 1 : 2;
+});
 
 const currentStep = ref(1);
 const preferences = ref({
@@ -746,33 +770,37 @@ const submitSurvey = () => {
 </script>
 
 <style scoped>
+/* 기본 레이아웃 (PC) */
 .survey-layout {
-  display: flex;
-  gap: 24px;
+  position: relative;
   padding: 2rem;
-  align-items: flex-start;
-}
-
-.progress-panel-wrapper {
-  flex: 0 0 250px;
-  position: sticky;
-  top: 2rem;
 }
 
 .stepper-container {
-  flex: 1 1 0;
-  min-width: 0;
+  margin: 0 304px 0 274px; /* 280px + 24px, 250px + 24px */
   background: #fff;
   border: 1px solid #e0e0e0;
   border-radius: 16px;
   padding: 2rem;
 }
 
-.summary-panel-wrapper {
-  flex: 0 0 280px;
-  position: sticky;
+.progress-panel-wrapper {
+  position: absolute;
+  left: 2rem;
   top: 2rem;
+  width: 250px;
 }
+
+.summary-panel-wrapper {
+  position: absolute;
+  right: 2rem;
+  top: 2rem;
+  width: 280px;
+}
+
+/* ------------------------- */
+/* --- 컨텐츠 스타일 (공통) --- */
+/* ------------------------- */
 
 /* 패널 헤더 스타일 */
 .panel-header {
@@ -891,8 +919,6 @@ const submitSurvey = () => {
   color: #888;
 }
 
-
-
 .navigation-footer {
   display: flex;
   justify-content: space-between;
@@ -917,25 +943,27 @@ const submitSurvey = () => {
 .companion-grid {
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
 }
+
 .theme-layout-container {
   display: flex;
-  flex-direction: column; /* 행(row)들을 수직으로 쌓습니다 */
-  gap: 1rem;             /* 두 행 사이의 간격을 설정합니다 */
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .theme-row {
   display: flex;
-  justify-content: center; /* 행 내부의 카드들을 수평 중앙 정렬합니다 */
-  gap: 1rem;               /* 한 행에 있는 카드들 사이의 간격을 설정합니다 */
+  justify-content: center;
+  gap: 1rem;
 }
 
 .theme-card {
   position: relative;
   height: 120px;
   overflow: hidden;
-  flex: 1 1 0;      /* 카드가 행의 공간을 균등하게 차지하도록 설정합니다 (늘어나고 줄어듦) */
-  max-width: 32%;   /* 카드 3개가 간격을 포함하여 한 줄에 잘 맞도록 최대 너비를 제한합니다 */
+  flex: 1 1 0;
+  max-width: 32%;
 }
+
 .card-bg-image {
   position: absolute;
   top: 0;
@@ -1009,92 +1037,105 @@ const submitSurvey = () => {
   margin-top: 1rem;
 }
 
-/* 입력 스타일 */
-.input-wrapper {
-  position: relative;
-  max-width: 500px;
-  margin: 0 auto;
-}
-.suggestion-list {
-  position: absolute;
-  width: 100%;
-  top: 56px; /* 입력창의 기본 높이에 맞춰 고정. 힌트 텍스트를 덮어쓰기 위함 */
-  left: 0;
-  z-index: 10;
-  background: white;
-  border: 1px solid #ddd;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
+/* ... (다른 기존 스타일들) ... */
 
-.no-suggestions {
-  position: absolute;
-  width: 100%;
-  top: 56px;
-  left: 0;
-  z-index: 10;
-  background: white;
-  border: 1px solid #ddd;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  padding: 12px 16px;
-  color: #888;
-  font-size: 0.9rem;
-}
-
-/* 항공편 검색 스타일 */
-.flight-search-container {
+/* ------------------------- */
+/* --- 모바일 반응형 스타일 --- */
+/* ------------------------- */
+@media (max-width: 992px) {
+  /* 레이아웃 초기화 및 재정의 */
+  .survey-layout {
     display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-}
-.flight-input-group {
-    display: flex;
+    flex-wrap: wrap;
     gap: 1rem;
-    align-items: flex-start; /* 수직 정렬을 위해 center에서 flex-start로 변경 */
-}
-.flight-list {
-    margin-top: 1rem;
-}
-.no-results {
-    text-align: center;
-    color: #888;
-    padding: 2rem;
+    padding: 1rem;
+  }
+
+  .summary-panel-wrapper,
+  .progress-panel-wrapper,
+  .stepper-container {
+    position: static !important;
+    margin: 0 !important;
+  }
+
+  .progress-panel-wrapper {
+    order: 1 !important;
+    flex: 1 1 calc(50% - 0.5rem) !important;
+    width: calc(50% - 0.5rem) !important;
+  }
+
+  .summary-panel-wrapper {
+    order: 2 !important;
+    flex: 1 1 calc(50% - 0.5rem) !important;
+    width: calc(50% - 0.5rem) !important;
+  }
+
+  .stepper-container {
+    order: 3 !important;
+    flex: 1 1 100% !important;
+    width: 100% !important;
+    padding: 1.5rem;
+  }
+
+  /* 패널 내부 콘텐츠 최적화 */
+  .q-card__section {
+    padding: 12px;
+  }
+  .panel-title {
+    font-size: 1rem;
+  }
+  .selections-group, .progress-steps-group {
+    gap: 0.5rem;
+  }
+  .selection-item, .progress-step-item {
+    gap: 8px;
+    align-items: center;
+  }
+  .selection-label, .step-title-text {
+    font-size: 0.85rem;
+  }
+  .selection-value {
+    font-size: 0.9rem;
+  }
+  .step-main-title {
+    font-size: 1.6rem;
+  }
 }
 
-/* 이전 버튼 커스텀 스타일 */
-.prev-btn {
-  border: 2px solid #757575 !important;
-  box-shadow: 0 2px 8px rgba(117, 117, 117, 0.2) !important;
-  transition: all 0.3s ease !important;
-  border-radius: 20px !important;
-}
+@media (max-width: 768px) {
+  .summary-panel-wrapper,
+  .progress-panel-wrapper {
+    flex: 1 1 100%;
+  }
+  .summary-panel-wrapper {
+    order: 1;
+  }
+  .progress-panel-wrapper {
+    order: 2;
+  }
+  .stepper-container {
+    order: 3;
+    padding: 1rem;
+  }
+  
+  /* 테마 선택 UI 수정 */
+  .theme-layout-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  .theme-row {
+    display: contents;
+  }
+  .theme-card {
+    max-width: 100%;
+    height: 100px;
+    flex: 1 1 auto;
+  }
 
-.prev-btn:hover {
-  filter: brightness(1.1) !important;
-  border-color: #616161 !important;
-  box-shadow: 0 4px 12px rgba(117, 117, 117, 0.3) !important;
-}
-
-/* 다음 단계로 버튼과 패킹리스트 생성 버튼 커스텀 스타일 */
-.next-btn, .submit-btn {
-  border: 2px solid #2196f3 !important;
-  box-shadow: 0 2px 8px rgba(33, 150, 243, 0.2) !important;
-  transition: all 0.3s ease !important;
-}
-
-.next-btn, .submit-btn {
-  border-radius: 20px !important;
-}
-
-.next-btn:hover, .submit-btn:hover {
-  filter: brightness(1.1) !important;
-  border-color: #1976d2 !important;
-  box-shadow: 0 4px 12px rgba(33, 150, 243, 0.3) !important;
-}
-
-/* Quasar 버튼의 기본 애니메이션 효과 제거 */
-.prev-btn::before, .prev-btn::after,
-.next-btn::before, .next-btn::after,
-.submit-btn::before, .submit-btn::after {
-  display: none !important;
+  .navigation-footer {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
 }
 </style>
