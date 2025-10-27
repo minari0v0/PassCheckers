@@ -73,6 +73,7 @@
               :is-packed="isItemPacked(item.item_id)"
               :is-fully-prohibited="isFullyProhibited(item)"
               @item-dragstart="onDragStart"
+              @click="handleItemTap(item)"
             />
           </div>
 
@@ -88,6 +89,7 @@
             class="packing-list"
             :move="handleMove"
             :filter="'.is-packed'"
+            :disabled="isMobile"
           >
             <template #item="{ element }">
               <div 
@@ -97,6 +99,7 @@
                   'is-fully-prohibited': isFullyProhibited(element)
                 }"
                 @dragstart="onDragStart(element)"
+                @click="handleItemTap(element)"
               >
                 <span class="drag-handle">⠿</span>
                 <span class="item-icon">🧳</span> <!-- 아이콘은 나중에 동적으로 변경 가능 -->
@@ -128,6 +131,7 @@
               item-key="item_id"
               class="luggage-dropzone"
               :move="handleMove"
+              :disabled="isMobile"
 
             >
               <template #item="{ element }">
@@ -166,6 +170,7 @@
               item-key="item_id"
               class="luggage-dropzone"
               :move="handleMove"
+              :disabled="isMobile"
 
             >
               <template #item="{ element }">
@@ -240,6 +245,21 @@
 
     <!-- 패킹 완료 축하 애니메이션 -->
     <CelebrationAnimation v-if="isPackingComplete" />
+
+    <!-- Packing Choice Bottom Sheet -->
+    <q-dialog v-model="isPackingChoiceVisible" position="bottom">
+      <q-card style="width: 100%; border-top-left-radius: 16px; border-top-right-radius: 16px;">
+        <q-card-section class="q-pb-none">
+          <div class="text-h6">{{ selectedItemForPacking?.item_name }}</div>
+          <div class="text-subtitle2 text-grey">어디에 패킹하시겠어요?</div>
+        </q-card-section>
+
+        <q-card-actions align="around" class="q-py-md">
+          <q-btn unelevated rounded color="primary" label="기내 반입" @click="packItem('carry-on')" class="pack-choice-btn" />
+          <q-btn unelevated rounded color="secondary" label="위탁 수하물" @click="packItem('checked')" class="pack-choice-btn" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </div>
 </template>
 
@@ -540,6 +560,42 @@ const isPackingComplete = computed(() => {
   return packingProgress.value === 100 && allItems.value.length > 0;
 });
 
+const isMobile = ref(false);
+const checkMobile = () => {
+  if (typeof window !== 'undefined') {
+    isMobile.value = window.innerWidth <= 992;
+  }
+};
+
+const selectedItemForPacking = ref(null);
+const isPackingChoiceVisible = ref(false);
+
+const handleItemTap = (item) => {
+  if (!isMobile.value || isItemPacked(item.item_id)) return;
+  selectedItemForPacking.value = item;
+  isPackingChoiceVisible.value = true;
+};
+
+const packItem = (targetListType) => {
+  const item = selectedItemForPacking.value;
+  if (!item) return;
+
+  if (!checkRules(item, targetListType)) {
+    showProhibitedWarning(item, targetListType);
+  } else {
+    if (targetListType === 'carry-on') {
+      carryOnItems.value.push(item);
+    } else if (targetListType === 'checked') {
+      checkedItems.value.push(item);
+    }
+  }
+
+  isPackingChoiceVisible.value = false;
+  selectedItemForPacking.value = null;
+};
+
+
+
 const route = useRoute();
 
 // user 객체가 준비되면, URL 파라미터를 확인하거나 기록을 가져옵니다.
@@ -555,11 +611,27 @@ watch(user, (newUser) => {
 }, { immediate: true });
 
 onMounted(() => {
+
+  checkMobile();
+
+  updateImageSize();
+
+  window.addEventListener('resize', checkMobile);
+
   window.addEventListener('resize', updateImageSize);
+
 });
 
+
+
+
+
 onUnmounted(() => {
+
+  window.removeEventListener('resize', checkMobile);
+
   window.removeEventListener('resize', updateImageSize);
+
 });
 </script>
 
@@ -1020,6 +1092,12 @@ color: var(--subtitle-color);
   40%, 60% { transform: translate3d(4px, 0, 0); }
 }
 .shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+
+.pack-choice-btn {
+  flex-grow: 1;
+  margin: 0 8px;
+}
+
 /* 툴팁 너비 강제 지정을 위한 전역 스타일 */
     :global(.v-popper--theme-passcheckers-tooltip .v-popper__inner) {
       max-width: 400px !important;
@@ -1027,4 +1105,15 @@ color: var(--subtitle-color);
       word-break: keep-all !important;
     }
 
+@media (max-width: 992px) {
+  .packing-page-container {
+    padding: 1rem;
+  }
+  .packing-columns {
+    grid-template-columns: 1fr;
+  }
+  .packing-column {
+    padding: 1rem;
+  }
+}
 </style>
