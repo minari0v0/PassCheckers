@@ -794,29 +794,6 @@ const handleSurveyComplete = async (surveyData) => {
   text-align: center;
 }
 
-/* 반응형 디자인 */
-@media (max-width: 768px) {
-  .form-header-with-flight {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-  }
-  
-  .flight-info-cards {
-    width: 100%;
-    justify-content: space-between;
-  }
-  
-  .flight-info-card {
-    flex: 1;
-    min-width: 80px;
-  }
-  
-  .form-buttons {
-    flex-wrap: wrap;
-  }
-}
-
 .form-title {
   font-size: 2rem;
   font-weight: 700;
@@ -1161,5 +1138,112 @@ const handleSurveyComplete = async (surveyData) => {
 .packing-start-btn::before,
 .packing-start-btn::after {
   display: none !important;
+}
+
+/* ------------------------- */
+/* --- 모바일 반응형 스타일 --- */
+/* ------------------------- */
+@media (max-width: 992px) {
+  .survey-container-wide, .results-wrapper {
+    padding: 1rem;
+  }
+
+  .result-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .weather-column {
+    order: -1; /* 날씨 정보를 위로 올림 */
+  }
+}
+
+@media (max-width: 768px) {
+  .survey-container-wide, .results-wrapper {
+    padding: 0;
+  }
+
+  h1 {
+    font-size: 1.8rem !important;
+  }
+
+  .form-header-with-flight {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.5rem;
+    padding: 0 1rem; /* 헤더 좌우 여백 추가 */
+  }
+
+  .form-title {
+    font-size: 1.6rem;
+  }
+
+  .flight-info-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+    gap: 0.75rem;
+  }
+
+  .flight-info-card {
+    min-width: unset;
+  }
+
+  .flight-info-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 4px;
+  }
+
+  .flight-info-content .q-icon {
+    margin-right: 0 !important;
+  }
+
+  .forecast-grid-horizontal {
+    justify-content: flex-start;
+  }
+
+  .forecast-day-col {
+    flex-basis: calc(33.333% - 0.7rem); /* 한 줄에 3개씩 */
+    min-width: 90px;
+  }
+
+  /* 모달 창 크기 조정 */
+  .modal-content {
+    width: 95vw;
+    height: 85vh;
+  }
+
+  .modal-card-custom {
+    width: 100% !important;
+    max-width: 95vw !important;
+  }
+
+  .modal-card-custom .row .col-6 {
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+  
+  .modal-content-scrollable {
+    max-height: calc(85vh - 120px);
+  }
+}
+
+@media (max-width: 480px) {
+  h1 {
+    font-size: 1.6rem !important;
+  }
+
+  .form-buttons {
+    gap: 0.5rem;
+  }
+
+  .custom-button {
+    padding: 6px 10px !important;
+    font-size: 0.85rem !important;
+  }
+
+  .forecast-day-col {
+    flex-basis: calc(50% - 0.5rem); /* 한 줄에 2개씩 */
+  }
 }
 </style>
