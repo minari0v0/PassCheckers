@@ -1,8 +1,22 @@
 <template>
   <div class="profile-page">
     <div class="profile-container">
-      <!-- 좌측 네비게이션 사이드바 -->
-      <div class="profile-sidebar">
+      <!-- 모바일용 상단 탭 네비게이션 -->
+      <div class="mobile-nav-tabs lt-md">
+        <q-tabs
+          v-model="activeSection"
+          class="text-grey"
+          active-color="white"
+        >
+          <q-tab name="account" label="계정" />
+          <q-tab name="analysis" label="분석 결과" />
+          <q-tab name="activity" label="내 활동" />
+          <q-tab name="deletion" label="계정 탈퇴" />
+        </q-tabs>
+      </div>
+
+      <!-- 좌측 네비게이션 사이드바 (PC용) -->
+      <div class="profile-sidebar gt-sm">
         <div class="sidebar-header">
           <h2>내 정보</h2>
         </div>
@@ -1519,5 +1533,100 @@ onMounted(async () => {
 /* 유틸리티 클래스 */
 .text-negative {
   color: #dc143c !important;
+}
+
+/* ------------------------- */
+/* --- 모바일 반응형 스타일 --- */
+/* ------------------------- */
+@media (max-width: 991px) { /* Quasar의 md 브레이크포인트 직전 */
+  .profile-container {
+    flex-direction: column;
+  }
+
+    .profile-content {
+
+      width: 100%;
+
+      padding: 24px;
+
+    }
+
+  
+
+    /* 모바일 탭 디자인 */
+
+    .mobile-nav-tabs {
+
+      background-color: #f0f2f5;
+
+      padding: 4px;
+
+      border-bottom: 1px solid #e0e0e0;
+
+    }
+
+    .mobile-nav-tabs .q-tabs {
+
+      border-radius: 18px;
+
+    }
+
+    .mobile-nav-tabs .q-tab {
+
+      border-radius: 16px;
+
+      font-weight: 500;
+
+      margin: 4px;
+
+      transition: background-color 0.3s ease, color 0.3s ease;
+
+    }
+
+    .mobile-nav-tabs .q-tab--active {
+
+      background-color: var(--q-primary);
+
+      color: white !important;
+
+      box-shadow: 0 2px 8px rgba(33, 150, 243, 0.4);
+
+    }
+
+    .mobile-nav-tabs .q-tabs__indicator {
+
+      display: none;
+
+    }
+
+  
+
+    .section-header h1 {
+
+      font-size: 1.5rem;
+
+    }
+
+  .section-header p {
+    font-size: 0.9rem;
+  }
+
+  .profile-form, .analysis-list, .deletion-warning, .tab-content {
+    padding: 24px;
+  }
+}
+
+@media (max-width: 576px) { /* Quasar의 sm 브레이크포인트 */
+  .profile-content {
+    padding: 16px;
+  }
+
+  .profile-form, .analysis-list, .deletion-warning, .tab-content {
+    padding: 16px;
+  }
+
+  .results-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
