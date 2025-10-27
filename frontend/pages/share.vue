@@ -3662,4 +3662,46 @@ onUnmounted(() => {
   margin: 0 auto;
 }
 
+@media (max-width: 992px) {
+  .share-main-content {
+    grid-template-columns: 1fr;
+  }
+  .share-header {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .header-title {
+    font-size: 1.25rem;
+  }
+  .comments-tab-container {
+    height: auto;
+    min-height: 70vh;
+  }
+  .share-page-container {
+    padding: 1rem;
+  }
+  .page-title {
+    font-size: 1.8rem;
+  }
+  .carousel-nav {
+    width: 32px;
+    height: 32px;
+  }
+  .carousel-nav.prev {
+    left: 4px;
+  }
+  .carousel-nav.next {
+    right: 4px;
+  }
+  .tab-btn {
+    padding: 0.5rem 0.75rem;
+  }
+  .share-header {
+    padding: 0.01rem 0;
+  }
+  .host-panel {
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 2rem;
+  }
+}
 </style>
