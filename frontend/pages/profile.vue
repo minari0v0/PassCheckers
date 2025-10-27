@@ -7,7 +7,9 @@
           v-model="activeSection"
           class="text-grey"
           active-color="white"
+          ref="tabsRef"
         >
+          <div class="sliding-pill-indicator" :style="indicatorStyle"></div>
           <q-tab name="account" label="계정" />
           <q-tab name="analysis" label="분석 결과" />
           <q-tab name="activity" label="내 활동" />
@@ -359,7 +361,7 @@ useHead({
     middleware: 'auth'
 })
 
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '~/composables/useAuth'
 import { useApiUrl } from '~/composables/useApiUrl'
@@ -823,8 +825,33 @@ onMounted(async () => {
     loadUserInfo(),
     loadAnalysisResults(),
     loadUserActivity()
-  ])
-  })
+  ]);
+  updateIndicator(); // 초기 위치 설정
+})
+
+// --- 슬라이딩 탭 애니메이션 로직 ---
+const tabsRef = ref(null);
+const indicatorStyle = ref({ left: '0px', width: '0px' });
+
+const updateIndicator = () => {
+  nextTick(() => {
+    if (tabsRef.value) {
+      const activeTabEl = tabsRef.value.$el.querySelector('.q-tab--active');
+      if (activeTabEl) {
+        indicatorStyle.value = {
+          left: `${activeTabEl.offsetLeft}px`,
+          width: `${activeTabEl.offsetWidth}px`,
+        };
+      }
+    }
+  });
+};
+
+watch(activeSection, () => {
+  // 탭 변경 시 애니메이션이 부드럽게 보이도록 약간의 딜레이 후 실행
+  setTimeout(updateIndicator, 50);
+}, { flush: 'post' });
+
   </script> 
 
 <style scoped>
@@ -1553,59 +1580,167 @@ onMounted(async () => {
 
   
 
-    /* 모바일 탭 디자인 */
-
-    .mobile-nav-tabs {
-
-      background-color: #f0f2f5;
-
-      padding: 4px;
-
-      border-bottom: 1px solid #e0e0e0;
-
-    }
-
-    .mobile-nav-tabs .q-tabs {
-
-      border-radius: 18px;
-
-    }
-
-    .mobile-nav-tabs .q-tab {
-
-      border-radius: 16px;
-
-      font-weight: 500;
-
-      margin: 4px;
-
-      transition: background-color 0.3s ease, color 0.3s ease;
-
-    }
-
-    .mobile-nav-tabs .q-tab--active {
-
-      background-color: var(--q-primary);
-
-      color: white !important;
-
-      box-shadow: 0 2px 8px rgba(33, 150, 243, 0.4);
-
-    }
-
-    .mobile-nav-tabs .q-tabs__indicator {
-
-      display: none;
-
-    }
+        .mobile-nav-tabs {
 
   
 
-    .section-header h1 {
+          background-color: #f0f2f5;
 
-      font-size: 1.5rem;
+  
 
-    }
+          padding: 4px;
+
+  
+
+          border-bottom: none !important; /* 기존 border-bottom 제거 */
+
+  
+
+          position: relative;
+
+  
+
+        }
+
+  
+
+        .mobile-nav-tabs .q-tabs {
+
+  
+
+          border-bottom: none !important;
+
+  
+
+          box-shadow: none !important;
+
+  
+
+        }
+
+  
+
+        .mobile-nav-tabs .q-tabs__content {
+
+  
+
+          position: relative;
+
+  
+
+          z-index: 1;
+
+  
+
+        }
+
+  
+
+        .mobile-nav-tabs .q-tab {
+
+  
+
+          z-index: 1; /* 텍스트가 인디케이터 위에 오도록 */
+
+  
+
+          transition: color 0.4s ease;
+
+  
+
+          border-bottom: none !important; /* 모든 탭의 밑줄 제거 */
+
+  
+
+        }
+
+  
+
+        .mobile-nav-tabs .q-tab--active {
+
+  
+
+          color: white !important; /* 활성 탭 텍스트 색상 */
+
+  
+
+          border-bottom: none !important; /* 활성 탭의 밑줄 제거 */
+
+  
+
+          box-shadow: none !important; /* 활성 탭의 그림자 제거 */
+
+  
+
+        }
+
+  
+
+        .mobile-nav-tabs .q-tabs__indicator {
+
+  
+
+          display: none;
+
+  
+
+        }
+
+  
+
+      .sliding-pill-indicator {
+
+  
+
+        position: absolute;
+
+  
+
+        height: 100%;
+
+  
+
+        top: 0;
+
+  
+
+        background-color: var(--q-primary);
+
+  
+
+        border-radius: 16px;
+
+  
+
+        box-shadow: 0 2px 8px rgba(33, 150, 243, 0.4);
+
+  
+
+        transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+
+  
+
+        z-index: 0; /* 탭 텍스트보다 뒤에 위치 */
+
+  
+
+      }
+
+  
+
+    
+
+  
+
+      .section-header h1 {
+
+  
+
+        font-size: 1.5rem;
+
+  
+
+      }
 
   .section-header p {
     font-size: 0.9rem;
