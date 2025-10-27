@@ -31,12 +31,12 @@
           no-caps
           class="text-weight-bold logo-btn"
           @click="$router.push('/')"
-          style="font-size:1.2rem; display:flex; align-items:center; gap:16px; background:transparent; height:56px; padding:0 16px 0 10px; margin-right:0; border-top-left-radius:0; border-bottom-left-radius:0; border-top-right-radius:0; border-bottom-right-radius:0;"
+          style="font-size:1.2rem; background:transparent; padding:0 16px 0 10px; margin-right:0; border-top-left-radius:0; border-bottom-left-radius:0; border-top-right-radius:0; border-bottom-right-radius:0;"
         >
-          <img src="/images/logo.png" alt="로고" style="height:48px;width:48px;object-fit:contain;background:none;display:inline-block;vertical-align:middle;" />
-          <span style="display:inline-flex;align-items:center;height:48px;line-height:48px;vertical-align:middle;">PassCheckers</span>
+          <img src="/images/logo.png" alt="로고" style="height:48px;width:48px;object-fit:contain;background:none;vertical-align:middle;" />
+          <span style="vertical-align:middle;margin-left:16px;">PassCheckers</span>
         </q-btn>
-        <div style="flex:1 1 auto; padding:0; margin:0; display:flex;">
+        <div class="gt-sm" style="padding:0; margin:0; display:flex;">
           <q-btn
             v-for="item in menu"
             :key="item.path"
@@ -51,6 +51,7 @@
             </template>
           </q-btn>
         </div>
+        <q-space />
         <div class="q-gutter-sm q-ml-md gt-sm" style="margin-right:32px; display:flex; align-items:center;">
           <!-- 인증되지 않은 사용자 -->
           <template v-if="!isAuthenticated">
@@ -98,20 +99,48 @@
             </div>
           </template>
         </div>
-        <q-btn flat dense round icon="menu" class="lt-md" @click="drawer = !drawer" />
+        <q-btn flat dense round icon="menu" class="lt-md hamburger-btn" v-show="!drawer" @click="drawer = true" />
       </q-toolbar>
       <q-drawer v-model="drawer" side="right" overlay class="lt-md">
-        <q-list>
-          <q-item clickable v-for="item in menu" :key="item.label" @click="navigateTo(item.path)">
+        <q-btn flat dense round icon="close" :class="['hamburger-btn', { 'is-active': drawer }]" @click="drawer = false" style="position: absolute; top: 10px; left: 10px; z-index: 1;" />
+        <q-list style="padding-top: 60px;">
+          <q-item clickable v-for="item in menu" :key="item.label" @click="navigateTo(item.path)" class="drawer-item">
+            <q-item-section avatar>
+              <q-icon :name="item.icon" />
+            </q-item-section>
             <q-item-section>{{ item.label }}</q-item-section>
           </q-item>
           <q-separator />
-          <q-item clickable>
-            <q-item-section>회원가입</q-item-section>
-          </q-item>
-          <q-item clickable>
-            <q-item-section>내정보</q-item-section>
-          </q-item>
+          <!-- 인증되지 않은 사용자 -->
+          <template v-if="!isAuthenticated">
+            <q-item clickable @click="navigateTo('/login')" class="drawer-item">
+              <q-item-section avatar>
+                <q-icon name="login" />
+              </q-item-section>
+              <q-item-section>로그인</q-item-section>
+            </q-item>
+            <q-item clickable @click="navigateTo('/signup')" class="drawer-item">
+              <q-item-section avatar>
+                <q-icon name="person_add" />
+              </q-item-section>
+              <q-item-section>회원가입</q-item-section>
+            </q-item>
+          </template>
+          <!-- 인증된 사용자 -->
+          <template v-else>
+            <q-item clickable @click="goToProfile" class="drawer-item">
+              <q-item-section avatar>
+                <q-icon name="account_circle" />
+              </q-item-section>
+              <q-item-section>내 정보</q-item-section>
+            </q-item>
+            <q-item clickable @click="logout" class="drawer-item">
+              <q-item-section avatar>
+                <q-icon name="logout" />
+              </q-item-section>
+              <q-item-section>로그아웃</q-item-section>
+            </q-item>
+          </template>
         </q-list>
       </q-drawer>
     </q-header>
@@ -138,14 +167,23 @@ import { useRoute, useRouter } from 'vue-router'
 import { useApiUrl } from '~/composables/useApiUrl'
 
 const drawer = ref(false)
+watch(drawer, (isOpen) => {
+  if (process.client) {
+    if (isOpen) {
+      document.body.classList.add('drawer-is-open');
+    } else {
+      document.body.classList.remove('drawer-is-open');
+    }
+  }
+});
 const menu = [
-  { label: '수하물 분류', path: '/classification' },
-  { label: '수하물 패킹', path: '/packing' },
-  { label: '수하물 무게 예측', path: '/weight' },
-  { label: '수하물 공유', path: '/share' },
-  { label: '여행 준비 추천', path: '/recommend' },
-  { label: '여행 정보', path: '/info' },
-  { label: '커뮤니티', path: '/community' }
+  { label: '수하물 분류', path: '/classification', icon: 'category' },
+  { label: '수하물 패킹', path: '/packing', icon: 'backpack' },
+  { label: '수하물 무게 예측', path: '/weight', icon: 'scale' },
+  { label: '수하물 공유', path: '/share', icon: 'share' },
+  { label: '여행 준비 추천', path: '/recommend', icon: 'recommend' },
+  { label: '여행 정보', path: '/info', icon: 'info' },
+  { label: '커뮤니티', path: '/community', icon: 'forum' }
 ]
 
 const route = useRoute()
@@ -447,5 +485,41 @@ function goToProfile() {
 
 .q-menu .q-item:hover {
   background-color: rgba(33, 150, 243, 0.1);
+}
+
+.hamburger-btn {
+  transition: transform 0.28s cubic-bezier(.4,0,.2,1);
+}
+.hamburger-btn.is-active {
+  transform: rotate(180deg);
+}
+
+/* Drawer Styles */
+.q-drawer .q-list {
+  padding: 20px 0;
+}
+.q-drawer .drawer-item {
+  padding: 12px 24px;
+  font-weight: 500;
+}
+.q-drawer .q-item__section {
+  color: #212121 !important;
+}
+
+.q-drawer .drawer-item .q-item__section--avatar .q-icon {
+  color: var(--main-blue) !important;
+}
+.q-drawer .drawer-item .q-item__section--main {
+  font-size: 1.05rem;
+}
+.q-drawer .q-separator {
+  margin: 12px 24px;
+}
+
+/* Hide fp-nav when drawer is open */
+body.drawer-is-open #fp-nav.fp-right {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  transition: opacity 0.2s ease-out, visibility 0s linear 0.2s !important;
 }
 </style>
