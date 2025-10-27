@@ -16,7 +16,7 @@
       <div style="display: flex; gap: 32px; flex-wrap: wrap;">
         
         <!-- 왼쪽: 이전 기록 목록 -->
-        <div style="flex: 1; min-width: 300px;">
+        <div style="flex: 1; min-width: 300px;" ref="historyListRef">
           <div style="display:flex; align-items:center; gap:8px; font-weight:600; font-size:1.2rem; margin-bottom:16px;">
             <q-icon name="history" color="primary" size="28px" />
             분류 기록 선택
@@ -61,7 +61,7 @@
         </div>
 
         <!-- 오른쪽: 선택된 기록의 무게 예측 결과 -->
-        <div style="flex: 2; min-width: 400px;">
+        <div style="flex: 2; min-width: 400px;" ref="resultCardRef">
           <div v-if="!selectedHistory" class="flex flex-center text-grey" style="height: 100%; flex-direction: column; gap: 16px; background: #fdfdff; border: 2px dashed #e0e0e0; border-radius: 16px;">
             <q-icon name="travel_explore" size="60px" />
             <p style="font-size: 1.2rem;">왼쪽에서 분석 기록을 선택하세요.</p>
@@ -218,11 +218,17 @@
         </div>
       </div>
     </div>
+
+    <transition name="fade">
+      <q-page-sticky position="bottom-right" :offset="[18, 18]" v-if="showScrollToTopBtn">
+        <q-btn round flat icon="keyboard_arrow_up" @click="scrollToHistory" aria-label="목록으로 돌아가기" style="background-color: rgba(0, 0, 0, 0.4); color: white;" />
+      </q-page-sticky>
+    </transition>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, computed, shallowRef, type Component } from 'vue';
+import { ref, onMounted, watch, computed, shallowRef, type Component, onUnmounted, nextTick } from 'vue';
 import { useAuth } from '~/composables/useAuth';
 import { useApiUrl } from '~/composables/useApiUrl';
 import { useQuasar } from 'quasar';
@@ -265,6 +271,41 @@ const { user } = useAuth();
 const { getApiBaseUrl, getApiUrl } = useApiUrl();
 const apiBaseUrl = getApiBaseUrl();
 const $q = useQuasar();
+
+const isMobile = ref(false);
+const historyListRef = ref<HTMLElement | null>(null);
+const resultCardRef = ref<HTMLElement | null>(null);
+const showScrollToTopBtn = ref(false);
+
+const checkMobile = () => {
+  if (typeof window !== 'undefined') {
+    isMobile.value = window.innerWidth <= 992;
+  }
+};
+
+const handleScroll = () => {
+  if (!isMobile.value || !selectedHistory.value || !historyListRef.value) {
+    showScrollToTopBtn.value = false;
+    return;
+  }
+  const headerHeight = 60;
+  const rect = historyListRef.value.getBoundingClientRect();
+  showScrollToTopBtn.value = rect.top < headerHeight;
+};
+
+const scrollToHistory = () => {
+  const headerHeight = 60; // Approximate height of the sticky header
+  const targetElement = historyListRef.value;
+  if (targetElement) {
+    const elementPosition = targetElement.getBoundingClientRect().top;
+    const offsetPosition = elementPosition + window.pageYOffset - headerHeight;
+
+    window.scrollTo({
+      top: offsetPosition,
+      behavior: 'smooth'
+    });
+  }
+};
 
 const classificationHistory = ref<ClassificationHistory[]>([]);
 const selectedHistory = ref<ClassificationHistory | null>(null);
@@ -375,6 +416,15 @@ onMounted(async () => {
   VueApexCharts.value = apexchartsModule.default;
   
   fetchHistory();
+
+  checkMobile();
+  window.addEventListener('resize', checkMobile);
+  window.addEventListener('scroll', handleScroll);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('resize', checkMobile);
+  window.removeEventListener('scroll', handleScroll);
 });
 const fetchWeightPrediction = async (analysisId: number) => {
   isWeightLoading.value = true;
@@ -431,9 +481,13 @@ const fetchCategories = async (items: WeightItem[]) => {
   }
 };
 
-watch(selectedHistory, (newHistory) => {
+watch(selectedHistory, async (newHistory) => {
   if (newHistory) {
-    fetchWeightPrediction(newHistory.id);
+    await fetchWeightPrediction(newHistory.id);
+    if (isMobile.value) {
+      await nextTick();
+      resultCardRef.value?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   } else {
     weightData.value = null;
     weightError.value = null;
@@ -726,5 +780,14 @@ const onImageError = (error: any) => {
 
 .season-btn.winter.selected { background-color: #42a5f5; color: white; }
 .season-btn.winter:not(.selected) { background-color: #e3f2fd; color: #1565c0; }
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
 
 </style>
