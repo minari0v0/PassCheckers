@@ -197,7 +197,7 @@ const { getApiUrl } = useApiUrl();
 const API_BASE_URL = getApiUrl('/api');
 
 const getCategoryIcon = (category) => {
-  const icons = { 'Accommodation': '🛏️', 'Food': '🍕', 'Transportation': '🚌', 'Entertainment': '🍿', 'Shopping': '🛍️', 'Default': '🍷' };
+  const icons = { 'Accommodation': '🛏️', 'Food': '🍕', 'Local Transportation': '🚌', 'Transportation': '🚌', 'Entertainment': '🍿', 'Shopping': '🛍️', 'Default': '🍷' };
   return icons[category] || icons['Default'];
 };
 
