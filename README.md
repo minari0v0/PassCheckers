@@ -341,7 +341,7 @@ graph TB
 - **그래프** 예측된 무게 시각화
 - **카테고리**화를 통해 개별 요소들 정리
 <p align="center">
-  <img src="./Screenshot_main.WeightPredict" width="85%" />
+  <img src="./Screenshot_WeightPredict" width="85%" />
 </p>
 
 ### 🧳 패킹 추천
