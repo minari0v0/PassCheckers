@@ -317,7 +317,7 @@ graph TB
 - **실시간 AI 분석** 결과 표시
 - **바운딩 박스** 시각화 및 수정 가능
 <p align="center">
-  <img src="./screenshot_result.png" width="85%" />
+  <img src="./Screenshot_result.png" width="85%" />
 </p>
 
 ### 🛄 수하물 패킹
@@ -325,7 +325,7 @@ graph TB
 - **반입 금지** 품목의 확실한 알림
 - **플로팅 윈도우** 현재 패킹 상태의 요약된 윈도우
 <p align="center">
-  <img src="./screenshot_Packing.png" width="85%" />
+  <img src="./Screenshot_Packing.png" width="85%" />
 </p>
 
 ### 📂 수하물 공유
@@ -333,7 +333,7 @@ graph TB
 - **통합 목록** 수하물 목록 제공
 - **댓글 등록** 간단한 메모 가능
 <p align="center">
-  <img src="./screenshot_Sharing.png" width="85%" />
+  <img src="./Screenshot_Sharing.png" width="85%" />
 </p>
 
 ### 📊 무게 예측
@@ -341,7 +341,7 @@ graph TB
 - **그래프** 예측된 무게 시각화
 - **카테고리**화를 통해 개별 요소들 정리
 <p align="center">
-  <img src="./screenshot_main.WeightPredict" width="85%" />
+  <img src="./Screenshot_main.WeightPredict" width="85%" />
 </p>
 
 ### 🧳 패킹 추천
